@@ -1,0 +1,10 @@
+import * as React from "react";
+import styles from "./styles.less";
+
+const {{ componentName }}: React.FC<PluginContext> = () => {
+  return <React.Fragment>{"This is a new plugin."}</React.Fragment>;
+};
+
+{{ componentName }}.displayName = "{{ componentName }}";
+
+export default {{ componentName }};

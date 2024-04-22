@@ -1,0 +1,25 @@
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.row:hover {
+  background-color: var(--theme-color-50);
+}
+
+.collapse-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  position: relative;
+}
+
+.collapse-icon svg {
+  position: absolute;
+}
+
+.collapsed .collapse-icon svg {
+  transform: rotate(-90deg);
+}

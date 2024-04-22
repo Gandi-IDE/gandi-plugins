@@ -1,0 +1,27 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "lib",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "paths": {
+      "plugins/*": ["src/plugins/*"],
+      "assets/*": ["./src/assets/*"],
+      "lib/*": ["./src/lib/*"],
+      "utils/*": ["./src/utils/*"],
+      "components/*": ["./src/components/*"],
+      "hooks/*": ["./src/hooks/*"],
+      "types/*": ["./src/types/*"]
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "target": "ES2017",
+    "jsx": "react"
+  },
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,80 @@
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.row:hover {
+  background-color: var(--theme-color-50);
+}
+
+.indent {
+  padding-left: 16px;
+}
+
+.double-indent {
+  padding-left: 32px;
+}
+
+.variable-name {
+  margin-right: 0.5em;
+  flex-shrink: 0;
+  max-width: 50%;
+}
+
+.variable-value {
+  color: var(--theme-color-g300);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collapse-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.collapse-icon svg {
+  position: absolute;
+}
+
+.collapsed .collapse-icon svg {
+  transform: rotate(-90deg);
+}
+
+.tackIcon {
+  margin-right: 6px;
+}
+
+.icon-list {
+  height: 16px;
+  flex: 1;
+  text-align: right;
+}
+
+.icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.icon:hover {
+  background-color: var(--theme-color-50);
+}
+
+.icon + .icon {
+  margin-left: 12px;
+}

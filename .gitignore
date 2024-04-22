@@ -1,0 +1,16 @@
+.DS_Store
+.idea
+.vscode
+
+# dependencies
+/node_modules
+
+# production
+/dist
+/lib
+
+# log
+*.log
+
+# style types
+*.less.d.ts
