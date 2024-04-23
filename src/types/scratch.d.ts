@@ -1,5 +1,6 @@
 declare namespace Scratch {
   export type RenderTarget = {
+    originalTargetId: string;
     blocks: Blocks;
     comments: Record<string, Comment>;
     currentCostume: number;
@@ -23,7 +24,7 @@ declare namespace Scratch {
     isOriginal: boolean;
     isStage: boolean;
     locked?: boolean;
-    renderer?: unknown;
+    renderer?: any;
     sprite: Sprite;
     tempo: number;
     textToSpeechLanguage: null;
@@ -38,6 +39,7 @@ declare namespace Scratch {
     createVariable(id: string, name: string, type: string, isCloud?: boolean): void;
     deleteVariable(id: string, isRemoteOperation?: boolean): void;
     getCostumes(): Array<Costume>;
+    getCostumeById(id: string): Scratch.Costume;
   };
 
   export type BlockState = {
@@ -143,6 +145,7 @@ declare namespace Scratch {
   };
 
   export type Costume = {
+    id: string;
     asset: Asset;
     assetId: string;
     bitmapResolution: number;
