@@ -3,6 +3,10 @@ import StatisticsIcon from "assets/icon--statistics.svg";
 
 const Statistics: React.FC<PluginContext> = ({ redux, msg, registerSettings }) => {
   React.useEffect(() => {
+    redux.dispatch({
+      type: "scratch-gui/settings/SWITCH_STATISTICS_STATUS",
+      open: true,
+    });
     const register = registerSettings(
       msg("plugins.statistics.title"),
       "plugin-statistics",
@@ -42,6 +46,10 @@ const Statistics: React.FC<PluginContext> = ({ redux, msg, registerSettings }) =
       <StatisticsIcon />,
     );
     return () => {
+      redux.dispatch({
+        type: "scratch-gui/settings/SWITCH_STATISTICS_STATUS",
+        open: false,
+      });
       register.dispose();
     };
   }, [redux, registerSettings, msg]);
