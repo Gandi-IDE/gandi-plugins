@@ -1,8 +1,0 @@
-{
-  "servers": [],
-  "routes": {
-    "": "index.html",
-    "/main.js": "static/js/main.js",
-    "/playground.js": "static/js/playground.js"
-  }
-}
