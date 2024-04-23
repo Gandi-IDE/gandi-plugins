@@ -3,6 +3,10 @@ import HistoricalVersionIcon from "assets/icon--statistics.svg";
 
 const HistoricalVersion: React.FC<PluginContext> = ({ redux, msg, registerSettings }) => {
   React.useEffect(() => {
+    redux.dispatch({
+      type: "scratch-gui/global-settings/SET_HISTORICAL_VERSION_USEABLE",
+      visible: true,
+    });
     const register = registerSettings(
       msg("plugins.historicalVersion.title"),
       "plugin-historical-version",
@@ -62,6 +66,10 @@ const HistoricalVersion: React.FC<PluginContext> = ({ redux, msg, registerSettin
       <HistoricalVersionIcon />,
     );
     return () => {
+      redux.dispatch({
+        type: "scratch-gui/global-settings/SET_HISTORICAL_VERSION_USEABLE",
+        visible: false,
+      });
       register.dispose();
     };
   }, [registerSettings, msg]);
