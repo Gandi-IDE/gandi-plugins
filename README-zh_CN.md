@@ -88,20 +88,29 @@
       getCostumeFromTarget: (costumeIndex: number, targetId?: string) => void;
 
       /**
-      * 根据角色的 ID 更新指定服装。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {boolean} isVector - 是否为矢量图像。
-      * @param {ImageData | string} image - 图像数据或图像文件路径。
-      * @param {number} rotationCenterX - 旋转中心 X 坐标。
-      * @param {number} rotationCenterY - 旋转中心 Y 坐标。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
+       * 更新指定角色的造型。
+       * @param {object} costumeData - 造型数据。
+       * @param {string} [costumeData.costumeId] - 造型的唯一标识符（可选，优先使用），默认当前选中的造型。
+       * @param {string} [costumeData.costumeId] - 造型的的索引（可选），默认当前选中的造型。
+       * @param {boolean} costumeData.isVector - 是否为矢量图像。
+       * @param {ArrayBufferLike | string} costumeData.bitmap - 造型位图或其数据。
+       * @param {number} costumeData.rotationCenterX - 造型旋转中心的 X 坐标。
+       * @param {number} costumeData.rotationCenterY - 造型旋转中心的 Y 坐标。
+       * @param {number} costumeData.width - 造型宽度。
+       * @param {number} costumeData.height - 造型高度。
+       * @param {string} [targetId] - 目标的唯一标识符（可选），默认当前选中的角色。
+       * @returns {void}
+       */
       updateCostumeByTargetId: (
-        isVector: boolean,
-        image: ImageData | string,
-        rotationCenterX: number,
-        rotationCenterY: number,
+        costumeData: {
+          isVector?: boolean,
+          costumeId?: string;
+          bitmap: ArrayBufferLike | string;
+          rotationCenterX: number;
+          rotationCenterY: number;
+          width: number;
+          height: number;
+        },
         targetId?: string,
       ) => void;
 
@@ -135,18 +144,22 @@
        getSoundFromTarget: (soundIndex: number, targetId?: string) => void;
 
       /**
-      * 根据角色的 ID 更新指定声音缓冲区。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {number} soundIndex - 声音索引。
-      * @param {AudioBuffer} newBuffer - 新的声音缓冲区。
-      * @param {ArrayBuffer} soundEncoding - 声音编码。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
+       * 根据指定的角色的ID更新声音缓冲区。
+       * 如果未提供targetId，则操作当前选中的角色。
+       * @param {Object} soundData - 包含声音数据的对象。
+       * @param {string} [soundData.soundId] - 声音的ID。
+       * @param {number} [soundData.soundIndex] - 声音的索引。
+       * @param {AudioBuffer} soundData.newBuffer - 新的声音缓冲区。
+       * @param {ArrayBuffer} soundData.soundEncoding - 声音的编码。
+       * @param {string} [targetId] - 所属角色的ID（可选）。
+       * @returns {void}
+       */
       updateSoundBufferByTargetId: (
-        soundIndex: number,
-        newBuffer: AudioBuffer,
-        soundEncoding: ArrayBuffer,
+        soundData: {
+          soundId?: string;
+          soundIndex?: number;
+          soundEncoding: ArrayBuffer;
+        },
         targetId?: string,
       ) => void;
 

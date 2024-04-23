@@ -85,20 +85,29 @@
        */
       getCostumeFromTarget: (costumeIndex: number, targetId?: string) => void;
       /**
-       * Updates the costume of the target sprite specified by targetId.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {boolean} isVector - Whether it's a vector image.
-       * @param {ImageData | string} image - Image data or image file path.
-       * @param {number} rotationCenterX - X-coordinate of the rotation center.
-       * @param {number} rotationCenterY - Y-coordinate of the rotation center.
-       * @param {string} [targetId] - ID of the target sprite (optional).
+       * Update the costume of the specified target.
+       * @param {object} costumeData - Costume data.
+       * @param {string} [costumeData.costumeId] - Unique identifier of the costume (optional).
+       * @param {number} [costumeData.costumeIndex] - The index of the costume (optional).
+       * @param {ArrayBufferLike | string} costumeData.bitmap - Bitmap or data of the costume.
+       * @param {boolean} costumeData.isVector - Whether the costume is a vector image.
+       * @param {number} costumeData.rotationCenterX - X coordinate of the rotation center of the costume.
+       * @param {number} costumeData.rotationCenterY - Y coordinate of the rotation center of the costume.
+       * @param {number} costumeData.width - Width of the costume.
+       * @param {number} costumeData.height - Height of the costume.
+       * @param {string} [targetId] - Unique identifier of the target (optional).
        * @returns {void}
        */
       updateCostumeByTargetId: (
-        isVector: boolean,
-        image: ImageData | string,
-        rotationCenterX: number,
-        rotationCenterY: number,
+        costumeData: {
+          isVector?: boolean,
+          costumeId?: string;
+          bitmap: ArrayBufferLike | string;
+          rotationCenterX: number;
+          rotationCenterY: number;
+          width: number;
+          height: number;
+        },
         targetId?: string,
       ) => void;
       /**
@@ -133,16 +142,20 @@
       /**
        * Updates the sound buffer of the target sprite specified by targetId.
        * If targetId is not provided, operates on the currently selected sprite.
-       * @param {number} soundIndex - Sound index.
-       * @param {AudioBuffer} newBuffer - New sound buffer.
-       * @param {ArrayBuffer} soundEncoding - Sound encoding.
-       * @param {string} [targetId] - ID of the target sprite (optional).
+       * @param {Object} soundData - Object containing sound data.
+       * @param {string} [soundData.soundId] - The ID of the sound.
+       * @param {number} [soundData.soundIndex] - The index of the sound.
+       * @param {AudioBuffer} soundData.newBuffer - The new sound buffer.
+       * @param {ArrayBuffer} soundData.soundEncoding - The encoding of the sound.
+       * @param {string} [targetId] - The ID of the target sprite (optional).
        * @returns {void}
        */
       updateSoundBufferByTargetId: (
-        soundIndex: number,
-        newBuffer: AudioBuffer,
-        soundEncoding: ArrayBuffer,
+        soundData: {
+          soundId?: string;
+          soundIndex?: number;
+          soundEncoding: ArrayBuffer;
+        },
         targetId?: string,
       ) => void;
 
