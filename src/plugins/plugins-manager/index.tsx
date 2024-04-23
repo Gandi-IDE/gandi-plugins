@@ -53,9 +53,12 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({ registerSettings, msg, 
         onChange: loadPluginURL,
       },
       ...ALL_PLUGINS.map((key) => {
+        const title = messages[`plugins.${spinalToCamel(key)}.title`]
+          ? msg(`plugins.${spinalToCamel(key)}.title`)
+          : key;
         return {
           key: spinalToCamel(key),
-          label: msg(`plugins.${spinalToCamel(key)}.title`),
+          label: title,
           type: "switch",
           value: DEFAULT_INJECT_PLUGINS.includes(key),
           description: messages[`plugins.${spinalToCamel(key)}.description`]
