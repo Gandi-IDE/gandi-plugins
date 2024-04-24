@@ -21,4 +21,5 @@ export default {
   "custom-css": () => import(/* webpackChunkName: "plugin-custom-css" */ "src/plugins/custom-css"),
   "extension-manager": () => import(/* webpackChunkName: "plugin-extension-manager" */ "src/plugins/extension-manager"),
   "voice-cooperation": () => import(/* webpackChunkName: "plugin-voice-cooperation" */ "src/plugins/voice-cooperation"),
+  "costume-crud": () => import(/* webpackChunkName: "plugin-costume-crud" */ "src/plugins/costume-crud"),
 } as const;
