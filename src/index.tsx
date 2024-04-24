@@ -9,7 +9,11 @@ const App = () => {
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   const handleInit = React.useCallback(() => {
-    iframeRef.current.contentWindow.postMessage({ name: "plugins-inject", path: location.origin + "/main.js" }, "*");
+    const path = location.pathname === "/" ? "" : "/gandi-plugins/dist";
+    iframeRef.current.contentWindow.postMessage(
+      { name: "plugins-inject", path: location.origin + path + "/main.js" },
+      "*",
+    );
     if (!initd.current) {
       initTimeout.current = setTimeout(handleInit, 3000);
     }

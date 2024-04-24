@@ -13,6 +13,7 @@
   "scripts": {
     "createPlugin": "plop",
     "start": "webpack-dev-server --config webpackDevServer.config.js",
+    "build": "webpack --config webpack.config.js --progress",
     "lint": "tslint -p tsconfig.json",
     "prepublishOnly": "pnpm install && pnpm build",
     "clean": "rimraf lib && mkdirp lib && rimraf ./dist && mkdirp dist"
