@@ -153,11 +153,15 @@ function buildPlugin(onComplete) {
       return;
     }
     if (stats.hasErrors()) {
+      const errors = stats.compilation.errors;
+      errors.forEach((error) => {
+        console.error(error.message || error);
+      });
       console.error("Plug-in build failed.");
     } else {
       console.log(`Plug-in(${pluginName}) built successfully.`);
-      if (onComplete) onComplete();
     }
+    if (onComplete) onComplete();
   });
 }
 
