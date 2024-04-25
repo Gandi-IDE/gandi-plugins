@@ -275,7 +275,6 @@ const lineText = {
       const regex = new RegExp(".{1," + charactersPerLine + "}", "g");
       return inputString.match(regex);
     }
-    console.log(Blockly.FieldTextInput.prototype.render_);
 
     Blockly.FieldTextInput.prototype.render_ = function () {
       if (textarea == "textarea") {
