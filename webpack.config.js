@@ -86,10 +86,6 @@ module.exports = {
           from: "./favicon.ico",
           to: "./",
         },
-        {
-          from: "./app.json",
-          to: "./",
-        },
       ],
     }),
   ],
