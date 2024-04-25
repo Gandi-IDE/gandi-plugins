@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export default {
   folder: () => import(/* webpackChunkName: "plugin-folder" */ "src/plugins/folder"),
   "code-find": () => import(/* webpackChunkName: "plugin-code-find" */ "src/plugins/code-find"),
@@ -9,4 +10,5 @@ export default {
   "dropdown-searchable": () => import(/* webpackChunkName: "plugin-dropdown-searchable" */ "src/plugins/dropdown-searchable"),
   statistics: () => import(/* webpackChunkName: "plugin-statistics" */ "src/plugins/statistics"),
   "historical-version": () => import(/* webpackChunkName: "plugin-historical-version" */ "src/plugins/historical-version"),
+  "custom-plugin": () => import(/* webpackChunkName: "plugin-custom-plugin" */ "src/plugins/custom-plugin"),
 } as const;

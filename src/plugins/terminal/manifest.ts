@@ -4,7 +4,8 @@ export default {
   description: "The console lets you log running variables to make debugging easier.",
   credits: [
     {
-      name: "CCW",
+      name: "Luka@CCW",
+      link: "https://www.ccw.site/student/60d986a9fa5edd0db16a111f",
     },
   ],
 };

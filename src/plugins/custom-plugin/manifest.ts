@@ -1,7 +1,7 @@
 export default {
-  name: "Code Batch Select",
+  name: "custom-plugin",
   type: "component",
-  description: "Helps you batch select code",
+  description: "Supports a more flexible way to load plug-ins",
   credits: [
     {
       name: "Luka@CCW",

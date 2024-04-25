@@ -13,10 +13,7 @@ function insertContent(filePath, contentToInsert, line) {
     // Read the content of the file
     let data = fs.readFileSync(filePath, "utf8").toString().split("\n");
 
-    // Find the index of the last line
     const insertIndex = typeof line === "number" ? line : data.length - 2;
-
-    // Insert content before the last line
     data.splice(insertIndex, 0, contentToInsert);
 
     // Write the modified content back to the file
@@ -59,6 +56,12 @@ function spinalToTitleCase(spinalCaseString) {
     .join(" ");
 
   return titleCaseString;
+}
+
+function hyphenToCamelCase(str) {
+  return str.replace(/-([a-z])/g, function (match, letter) {
+    return letter.toUpperCase();
+  });
 }
 
 /**
@@ -114,7 +117,7 @@ module.exports = function (plop) {
             const itemPath = path.join("./src/plugins", item);
             return fs.statSync(itemPath).isDirectory();
           });
-          if (input === "custom-plugin" || subFolders.includes(input)) {
+          if (subFolders.includes(input)) {
             return "Name check failed due to duplication.";
           }
           return true;
@@ -174,7 +177,7 @@ module.exports = function (plop) {
       });
       const nameKey = name.split("-").length > 1 ? `"${name}"` : name;
 
-      insertContent("./src/plugins/plugins-manager/index.tsx", `  "${name}",`, 10);
+      insertContent("./src/plugins/plugins-manager/index.tsx", `  "${name}",`, 11);
 
       // Update the entry file.
       insertContent(
@@ -182,10 +185,20 @@ module.exports = function (plop) {
         `  ${nameKey}: () => import(/* webpackChunkName: "plugin-${name}" */ "src/plugins/${name}"),`,
       );
       // Update the manifest.
+      const pluginsManifestFilePath = "./src/plugins-manifest.ts";
+      const fileContent = fs.readFileSync(pluginsManifestFilePath, "utf8");
+      const match = fileContent.match(/export\s+default\s+\{/);
+      let nextPluginLine = 0;
+      if (match) {
+        nextPluginLine = fileContent.substr(0, match.index).split("\n").length - 2;
+      }
+      const moduleName = hyphenToCamelCase(name);
       insertContent(
-        "./src/plugins-manifest.ts",
-        `  ${nameKey}: () => import(/* webpackChunkName: "plugin-${name}-manifest" */ "src/plugins/${name}/manifest"),`,
+        pluginsManifestFilePath,
+        `import ${moduleName} from "src/plugins/${name}/manifest";`,
+        nextPluginLine,
       );
+      insertContent(pluginsManifestFilePath, `  ${nameKey}: ${moduleName},`);
       const actions = [];
       if (name) {
         actions.push(

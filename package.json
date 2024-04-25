@@ -14,7 +14,7 @@
     "createPlugin": "plop",
     "start": "webpack-dev-server --config webpackDevServer.config.js",
     "build": "webpack --config webpack.config.js --progress",
-    "lint": "tslint -p tsconfig.json",
+    "lint": "eslint src --ext .js,.ts",
     "prepublishOnly": "pnpm install && pnpm build",
     "clean": "rimraf lib && mkdirp lib && rimraf ./dist && mkdirp dist"
   },
@@ -38,6 +38,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.5",
+    "react-hot-toast": "^2.4.1",
     "react-intl": "^6.1.1"
   },
   "devDependencies": {
@@ -78,7 +79,8 @@
     "typescript": "^4.8.3",
     "webpack": "^5.90.3",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "^4.11.1",
+    "yargs": "^17.7.2"
   },
   "browserslist": [
     "last 2 versions",

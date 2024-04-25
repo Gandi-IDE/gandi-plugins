@@ -80,8 +80,6 @@ declare global {
     blockly: any;
     intl: IntlShape;
     trackEvents: TrackEvents;
-    registerSettings: PluginRegister;
-    msg: (id: string) => string;
     redux: PluginsRedux;
     utils: {
       /**
@@ -204,27 +202,38 @@ declare global {
       // Removes options from the sound context menu.
       removeSoundContextMenuItems(itemKeyList: Array<string>): void;
     };
+    msg: (id: string) => string;
+    injectPlugin: (plugin: unknown, type: string, pluginName: string) => void;
+    registerSettings: PluginRegister;
   }
 
   interface PluginSetting {
     type: "input" | "select" | "switch" | "hotkey" | "checkBoxGroup";
+    disabled?: boolean;
     inputProps?: {
       type?: string;
       placeholder?: string;
+      onInput?: (event: React.FormEventHandler<HTMLInputElement>) => void;
+      onPressEnter?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+      onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+      onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
     };
+    description?: string;
     key: string;
     label?: string;
     value: Value;
+    tags?: Array<{ text: string; link?: string }>;
     autoSave?: boolean;
     style?: CSSProperties;
     options?: Array<SettingOption>;
-    onChange: (
+    onChange?: (
       value:
         | Value
         | {
             keys: string[];
             stringKeys: string[];
           },
+      cancelChange?: () => void,
     ) => void;
   }
 

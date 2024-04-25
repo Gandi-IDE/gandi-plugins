@@ -9,11 +9,7 @@ const App = () => {
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   const handleInit = React.useCallback(() => {
-    const path = location.pathname === "/" ? "" : location.pathname.slice(0, -11);
-    iframeRef.current.contentWindow.postMessage(
-      { name: "plugins-inject", path: location.origin + path + "/main.js" },
-      "*",
-    );
+    iframeRef.current.contentWindow.postMessage({ name: "plugins-inject", path: location.origin + "/main.js" }, "*");
     if (!initd.current) {
       initTimeout.current = setTimeout(handleInit, 3000);
     }

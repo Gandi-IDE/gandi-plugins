@@ -1,12 +1,25 @@
+import folder from "src/plugins/folder/manifest";
+import codeFind from "src/plugins/code-find/manifest";
+import codeFilter from "src/plugins/code-filter/manifest";
+import devTools from "src/plugins/dev-tools/manifest";
+import codeSwitch from "src/plugins/code-switch/manifest";
+import terminal from "src/plugins/terminal/manifest";
+import codeBatchSelect from "src/plugins/code-batch-select/manifest";
+import dropdownSearchable from "src/plugins/dropdown-searchable/manifest";
+import statistics from "src/plugins/statistics/manifest";
+import historicalVersion from "src/plugins/historical-version/manifest";
+import customPlugin from "src/plugins/custom-plugin/manifest";
+
 export default {
-  folder: () => import(/* webpackChunkName: "plugin-folder-manifest" */ "src/plugins/folder/manifest"),
-  "code-find": () => import(/* webpackChunkName: "plugin-code-find-manifest" */ "src/plugins/code-find/manifest"),
-  "code-filter": () => import(/* webpackChunkName: "plugin-code-filter-manifest" */ "src/plugins/code-filter/manifest"),
-  "dev-tools": () => import(/* webpackChunkName: "plugin-dev-tools-manifest" */ "src/plugins/dev-tools/manifest"),
-  "code-switch": () => import(/* webpackChunkName: "plugin-code-switch-manifest" */ "src/plugins/code-switch/manifest"),
-  terminal: () => import(/* webpackChunkName: "plugin-terminal-manifest" */ "src/plugins/terminal/manifest"),
-  "code-batch-select": () => import(/* webpackChunkName: "plugin-code-batch-select-manifest" */ "src/plugins/code-batch-select/manifest"),
-  "dropdown-searchable": () => import(/* webpackChunkName: "plugin-dropdown-searchable-manifest" */ "src/plugins/dropdown-searchable/manifest"),
-  statistics: () => import(/* webpackChunkName: "plugin-statistics-manifest" */ "src/plugins/statistics/manifest"),
-  "historical-version": () => import(/* webpackChunkName: "plugin-historical-version-manifest" */ "src/plugins/historical-version/manifest"),
-} as const;
+  folder,
+  "code-find": codeFind,
+  "code-filter": codeFilter,
+  "dev-tools": devTools,
+  "code-switch": codeSwitch,
+  terminal,
+  "code-batch-select": codeBatchSelect,
+  "dropdown-searchable": dropdownSearchable,
+  statistics,
+  "historical-version": historicalVersion,
+  "custom-plugin": customPlugin,
+};
