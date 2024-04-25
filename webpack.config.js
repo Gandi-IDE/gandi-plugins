@@ -12,7 +12,7 @@ module.exports = {
     path: path.join(__dirname, "dist"),
     libraryTarget: "umd",
     library: "GandiPlugins",
-    filename: "[name].js",
+    filename: "static/js/[name].js",
     chunkFilename: "[name].[hash:5].js",
     clean: true, // Clean the output directory before emit.
   },
@@ -84,6 +84,10 @@ module.exports = {
       patterns: [
         {
           from: "./favicon.ico",
+          to: "./",
+        },
+        {
+          from: "./app.json",
           to: "./",
         },
       ],

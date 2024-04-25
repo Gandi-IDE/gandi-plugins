@@ -45,6 +45,7 @@ class PluginsController {
     const intl = this.createIntl(options.locale);
     this.context = Object.assign(options, {
       intl,
+      injectPlugin: this.injectPlugin.bind(this),
       msg: (id: string) => intl.formatMessage({ id }),
     });
     this.disabledPlugins = options.disabledPlugins || [];
@@ -72,6 +73,7 @@ class PluginsController {
     this.wrapperElement.appendChild(div);
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
+      disabledPlugins: this.disabledPlugins,
       loadAndInjectPlugin: this.loadAndInjectPlugin.bind(this),
       plugins: this.plugins,
     });
@@ -136,15 +138,16 @@ class PluginsController {
    */
   loadAndInjectPlugin(pluginName: string) {
     let cancelled = false;
-    pluginsManifest[pluginName]().then(({ default: manifest }) => {
-      if (cancelled) return;
-      pluginsEntry[pluginName]().then(({ default: plugin }) => {
-        if (cancelled) return;
+    const manifest = pluginsManifest[pluginName];
+    pluginsEntry[pluginName]().then(({ default: plugin }) => {
+      delete LoadingPlugins[pluginName];
+      if (cancelled) {
         delete LoadingPlugins[pluginName];
-        if (this.context) {
-          this.injectPlugin(plugin, manifest.type, pluginName);
-        }
-      });
+        return;
+      }
+      if (this.context) {
+        this.injectPlugin(plugin, manifest.type, pluginName);
+      }
     });
     LoadingPlugins[pluginName] = () => {
       cancelled = true;

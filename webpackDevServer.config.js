@@ -83,9 +83,6 @@ module.exports = {
     ignored: ["/node_modules", "/dist", "/lib"],
   },
   devServer: {
-    static: {
-      directory: path.join(__dirname, "dist"),
-    },
     headers: {
       "Access-Control-Allow-Origin": "*",
     },

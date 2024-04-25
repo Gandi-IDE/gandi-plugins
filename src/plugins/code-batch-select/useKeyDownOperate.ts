@@ -36,7 +36,7 @@ const useKeyDownOperate: (params: { blockly: any; workspace: Blockly.WorkspaceSv
       batchDeleteBlocks = true;
     }
     if (isCtrlKeyDown(e)) {
-      if (e.keyCode == 86 && blockly.clipboardBatchElements.length > 0) {
+      if (e.keyCode == 86 && blockly.clipboardBatchElements?.length > 0) {
         // 'ctrl + v'
         pasteBatchedElements(mousemoveRef.current, workspace, blockly.clipboardBatchElements);
       } else if (selectedElements.length === 0) {
