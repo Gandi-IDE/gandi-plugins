@@ -9,4 +9,5 @@ export default {
   "dropdown-searchable": () => import(/* webpackChunkName: "plugin-dropdown-searchable" */ "src/plugins/dropdown-searchable"),
   statistics: () => import(/* webpackChunkName: "plugin-statistics" */ "src/plugins/statistics"),
   "historical-version": () => import(/* webpackChunkName: "plugin-historical-version" */ "src/plugins/historical-version"),
+  "no-popups": () => import(/* webpackChunkName: "plugin-no-popups" */ "src/plugins/no-popups"),
 } as const;
