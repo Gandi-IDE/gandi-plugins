@@ -64,7 +64,7 @@ if (!manifest) {
 function buildPlugin(onComplete) {
   console.log("Start building plugin...");
   const pluginName = spinalToPascal(argv.name);
-  const entryFilePath = `./src/plugins/${argv.name}${manifest.type === "component" ? "/temp-wrapper.tsx" : ""}`;
+  const entryFilePath = `./src/plugins/${argv.name}/temp-wrapper.tsx`;
   const webpackConfig = {
     mode: "development",
     entry: {

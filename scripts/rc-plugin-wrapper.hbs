@@ -12,15 +12,12 @@ window.Scratch.plugins.register((context) => {
 
   const pluginsWrapper = document.body.querySelector("#gandi-plugins-wrapper");
   pluginsWrapper.appendChild(div);
+  const locale = context.intl.locale;
+  const intl = createIntl({locale, messages: pluginsL10n[locale]}, createIntlCache());
   const Plugin = React.createElement(PluginComponent, {
     ...context,
-    intl: createIntl(
-      {
-        locale: context.intl.locale,
-        messages: pluginsL10n[context.intl.locale],
-      },
-      createIntlCache(),
-    ),
+    intl,
+    msg: (id: string) => intl.formatMessage({ id }),
   });
   const root = ReactDOM.createRoot(div);
   root.render(Plugin);
