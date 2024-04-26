@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
+const handlebars = require("handlebars");
 const argv = require("yargs").argv;
 
 /**
@@ -63,7 +64,7 @@ if (!manifest) {
 function buildPlugin(onComplete) {
   console.log("Start building plugin...");
   const pluginName = spinalToPascal(argv.name);
-  const entryFilePath = `./src/plugins/${argv.name}${manifest.type === "component" ? "/rejector.tsx" : ""}`;
+  const entryFilePath = `./src/plugins/${argv.name}${manifest.type === "component" ? "/temp-wrapper.tsx" : ""}`;
   const webpackConfig = {
     mode: "development",
     entry: {
@@ -165,47 +166,47 @@ function buildPlugin(onComplete) {
   });
 }
 
-if (manifest.type === "component") {
-  /**
-   * Read the source file and modify it to include the plugin name.
-   * Then write the modified content to a target file.
-   * Finally, build the plugin.
-   */
-  fs.readFile(path.join(__dirname, "rc-plugin-wrapper.jsx"), "utf8", (err, data) => {
+const wrapperFilePath = `${manifest.type === "component" ? "rc" : "func"}-plugin-wrapper.hbs`;
+
+/**
+ * Read the source file and modify it to include the plugin name.
+ * Then write the modified content to a target file.
+ * Finally, build the plugin.
+ */
+fs.readFile(path.join(__dirname, wrapperFilePath), "utf8", (err, data) => {
+  if (err) {
+    console.error("Error reading source file:", err);
+    return;
+  }
+  // Modify the source file content to include the plugin name
+  const modifiedData = handlebars.compile(data)({
+    pluginName: argv.name,
+  });
+  const targetDirectory = `./src/plugins/${argv.name}/`;
+
+  // Create the target directory if it doesn't exist
+  if (!fs.existsSync(targetDirectory)) {
+    fs.mkdirSync(targetDirectory);
+  }
+
+  // Write the modified content to the target file
+  const targetFile = path.join(targetDirectory, "temp-wrapper.tsx");
+  fs.writeFile(targetFile, modifiedData, "utf8", (err) => {
     if (err) {
-      console.error("Error reading source file:", err);
+      console.error("Error writing target file:", err);
       return;
     }
-    // Modify the source file content to include the plugin name
-    const modifiedData = data.replace(/pluginName = "plugin";/g, `pluginName = "${argv.name}";`);
-    const targetDirectory = `./src/plugins/${argv.name}/`;
-
-    // Create the target directory if it doesn't exist
-    if (!fs.existsSync(targetDirectory)) {
-      fs.mkdirSync(targetDirectory);
-    }
-
-    // Write the modified content to the target file
-    const targetFile = path.join(targetDirectory, "rejector.tsx");
-    fs.writeFile(targetFile, modifiedData, "utf8", (err) => {
-      if (err) {
-        console.error("Error writing target file:", err);
-        return;
-      }
-      console.log(`Target file added: ${targetFile}`);
-      // Build the plugin after writing the target file
-      buildPlugin(() => {
-        // Delete the added file after building the plugin
-        fs.unlink(targetFile, (err) => {
-          if (err) {
-            console.error("Error deleting file:", err);
-            return;
-          }
-          console.log("Added file deleted.");
-        });
+    console.log(`Target file added: ${targetFile}`);
+    // Build the plugin after writing the target file
+    buildPlugin(() => {
+      // Delete the added file after building the plugin
+      fs.unlink(targetFile, (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+          return;
+        }
+        console.log("Added file deleted.");
       });
     });
   });
-} else {
-  buildPlugin();
-}
+});
