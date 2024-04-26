@@ -100,9 +100,6 @@ devDependencies:
   eslint-plugin-react:
     specifier: ^7.31.8
     version: 7.34.1(eslint@8.57.0)
-  express:
-    specifier: ^4.18.3
-    version: 4.18.3
   html-webpack-plugin:
     specifier: ^5.6.0
     version: 5.6.0(webpack@5.90.3)
