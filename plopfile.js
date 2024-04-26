@@ -177,7 +177,18 @@ module.exports = function (plop) {
       });
       const nameKey = name.split("-").length > 1 ? `"${name}"` : name;
 
-      insertContent("./src/plugins/plugins-manager/index.tsx", `  "${name}",`, 11);
+      try {
+        const data = fs.readFileSync("./src/plugins/plugins-manager/index.tsx", "utf8");
+        const lines = data.split("\n");
+        const lineNumber = lines.findIndex((line) => line.includes("const DEFAULT_INJECT_PLUGINS = ["));
+        if (lineNumber !== -1) {
+          insertContent("./src/plugins/plugins-manager/index.tsx", `  "${name}",`, lineNumber + 1);
+        } else {
+          console.log("Search string not found in the file: plugins-manager/index.tsx");
+        }
+      } catch (err) {
+        console.error("Error reading file:", err);
+      }
 
       // Update the entry file.
       insertContent(
