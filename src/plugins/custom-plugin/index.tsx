@@ -66,19 +66,12 @@ const CustomPlugin = ({ msg, registerSettings, injectPlugin }: PluginContext) =>
                 if (inputElement.current && inputElement.current.files) {
                   const file = inputElement.current.files[0];
                   if (file) {
-                    const fileName = extractFileName(file.name);
                     const pluginLoadPromise = new Promise<void>((resolve, reject) => {
                       const reader = new FileReader();
                       reader.onload = () => {
                         const script = document.createElement("script");
                         script.onload = () => {
-                          const pluginModule = window[fileName];
-                          if (pluginModule) {
-                            injectPlugin(pluginModule.default, "function", camelToKebab(fileName));
-                            resolve();
-                          } else {
-                            reject("Could not find plugin module");
-                          }
+                          resolve();
                         };
                         script.onerror = (error) => {
                           console.error(`Script file loading failed: ${error}`);
