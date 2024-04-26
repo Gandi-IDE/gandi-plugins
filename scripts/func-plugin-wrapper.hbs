@@ -5,15 +5,16 @@ import { createIntl, createIntlCache } from "@formatjs/intl";
 const pluginName = "{{pluginName}}";
 
 window.Scratch.plugins.register((context) => {
+  const locale = context.intl.locale;
+  const intl = createIntl({locale, messages: pluginsL10n[locale]}, createIntlCache());
   const instance = plugin({
     ...context,
-    intl: createIntl(
-      {
-        locale: context.intl.locale,
-        messages: pluginsL10n[context.intl.locale],
-      },
-      createIntlCache(),
-    ),
+    intl,
+    msg: (id: string) => intl.formatMessage({ id }),
   });
-  this.plugins[pluginName] = instance.dispose || (() => false);
+  return {
+    dispose: instance.dispose || (() => {
+      /* noop */
+    }),
+  };
 }, pluginName);
