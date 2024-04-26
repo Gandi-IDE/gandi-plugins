@@ -15,5 +15,9 @@ window.Scratch.plugins.register((context) => {
       createIntlCache(),
     ),
   });
-  this.plugins[pluginName] = instance.dispose || (() => false);
+  return {
+    dispose: instance.dispose || (() => {
+      /* noop */
+    }),
+  };
 }, pluginName);
