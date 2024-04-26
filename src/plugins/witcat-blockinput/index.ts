@@ -4,23 +4,27 @@ import BlockinputaIcon from "assets/icon--witcat-blockinput.svg";
 
 let show = false;
 
-let cheaklong = 50,
+let cheakLong = 50,
   timer = null;
 
 const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
-  let interval: string | number | NodeJS.Timeout = setInterval(() => {
-    const input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement | undefined;
+  const listener = () => {
+    const input = document.getElementsByClassName("blocklyHtmlInput")[0] as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | undefined;
     if (input !== undefined) {
-      if (input.value.length > cheaklong) {
+      if (input.value.length > cheakLong) {
         if (!show) {
           show = true;
-          poupus(input).then(() => {
+          popups(input).then(() => {
             show = false;
           });
         }
       }
     }
-  }, 100);
+  };
+  document.body.addEventListener("startInputing", listener);
   lineText.textLeft(true);
   lineText.svg(blockly);
   lineText.svgstart(true, vm, workspace, blockly);
@@ -28,7 +32,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
   lineText.changTextarea(true, vm, workspace, blockly);
   lineText.texthide(20, vm, workspace, blockly);
 
-  const poupus = (input: HTMLInputElement | HTMLTextAreaElement): Promise<void> => {
+  const popups = (input: HTMLInputElement | HTMLTextAreaElement): Promise<void> => {
     return new Promise((resolve) => {
       const div = document.createElement("div");
       div.style.position = "fixed";
@@ -140,7 +144,6 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
         attributes: true,
         childList: true,
         subtree: true,
-        attributeFilter: ["style"],
       };
 
       const callback = function (mutationsList: MutationRecord[], observer: MutationObserver) {
@@ -149,16 +152,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
         if (input !== undefined) {
           inputstyle();
           observer.observe(input.parentElement, config);
-        }
-      };
-
-      const observer = new MutationObserver(callback);
-      observer.observe(input.parentElement, config);
-
-      const intervals = setInterval(() => {
-        const input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement | undefined;
-        if (input == undefined) {
-          clearInterval(intervals);
+        } else {
           div.style.backgroundColor = "#00000000";
           modal.style.height = "0%";
           (document.getElementsByClassName("modals")[0] as HTMLDivElement).style.backgroundColor = "#00000000";
@@ -169,7 +163,10 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             resolve();
           }, 300);
         }
-      }, 100);
+      };
+
+      const observer = new MutationObserver(callback);
+      observer.observe(input.parentElement, config);
 
       setTimeout(() => {
         div.style.backgroundColor = "var(--theme-scrollbar-color)";
@@ -177,7 +174,6 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
         (document.getElementsByClassName("modals")[0] as HTMLDivElement).style.backgroundColor =
           "var(--theme-color-300)";
         span.style.color = "var(--theme-color-g300)";
-        console.log(document.getElementsByClassName("modal-title"));
         (document.getElementsByClassName("modal-title")[0] as HTMLElement).style.color = "var(--theme-text-primary)";
       }, 300);
     });
@@ -199,22 +195,9 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             value: true,
             onChange: (value: boolean) => {
               if (value) {
-                interval = setInterval(() => {
-                  const input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement | undefined;
-                  if (input !== undefined) {
-                    if (input.value.length > cheaklong) {
-                      if (!show) {
-                        show = true;
-                        poupus(input).then(() => {
-                          show = false;
-                        });
-                      }
-                    }
-                  }
-                }, 100);
+                document.body.addEventListener("startInputing", listener);
               } else {
-                clearInterval(interval);
-                interval = undefined;
+                document.body.removeEventListener("startInputing", listener);
               }
             },
           },
@@ -227,7 +210,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             label: msg("witcat.blockinput.option.show"),
             value: 50,
             onChange: (value: number) => {
-              cheaklong = value;
+              cheakLong = value;
             },
           },
           {
@@ -278,10 +261,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
   );
   return {
     dispose: () => {
-      if (interval !== undefined) {
-        clearInterval(interval);
-        interval = undefined;
-      }
+      document.body.removeEventListener("startInputing", listener);
       lineText.svgstart(false, vm, workspace, blockly);
       lineText.changTextarea(false, vm, workspace, blockly);
       lineText.textLeft(false);

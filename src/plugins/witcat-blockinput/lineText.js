@@ -152,6 +152,8 @@ const lineText = {
       // The animated properties themselves
       htmlInput.style.fontSize = Blockly.BlockSvg.FIELD_TEXTINPUT_FONTSIZE_FINAL + "pt";
       div.style.boxShadow = "0px 0px 0px 4px " + Blockly.Colours.fieldShadow;
+      const event = new Event("startInputing");
+      document.body.dispatchEvent(event);
     };
 
     Blockly.FieldTextInput.prototype.resizeEditor_ = function () {
@@ -228,6 +230,8 @@ const lineText = {
       div.style.top = xy.y + "px";
     };
     Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = function (e) {
+      const event = new Event("startInputing");
+      document.body.dispatchEvent(event);
       var htmlInput = Blockly.FieldTextInput.htmlInput_;
       var tabKey = 9,
         enterKey = 13,
