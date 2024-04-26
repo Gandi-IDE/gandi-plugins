@@ -9,6 +9,9 @@ let svgStart = true,
   textarea = "textarea";
 
 const lineText = {
+  originShowEditorFunc: null,
+  originHtmlInputKeyDown_: null,
+  originalRender_: null,
   svgstart: function (start, vm, workspace, blockly) {
     svgStart = start;
     this.updateAllBlocks(vm, workspace, blockly);
@@ -50,6 +53,11 @@ const lineText = {
     blockly.BlockSvg.MAX_DISPLAY_LENGTH = num > 0 ? num : Infinity;
     this.updateAllBlocks(vm, workspace, blockly);
   },
+  dispose: function (Blockly) {
+    Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditorFunc;
+    Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
+    Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
+  },
   textarea: function (Blockly) {
     const originShowEditorFunc = Blockly.FieldTextInput.prototype.showEditor_;
     Blockly.FieldTextInput.prototype.showEditor_ = function (e) {
@@ -57,7 +65,7 @@ const lineText = {
       document.createElement = function (tagName) {
         document.createElement = originalCreateElement;
         if (tagName === "INPUT") {
-          return originalCreateElement.call(document, "TEXTAREA");
+          return originalCreateElement.call(document, textarea);
         } else {
           return originalCreateElement.call(document, tagName);
         }
