@@ -1,0 +1,19 @@
+import pluginsL10n from "src/plugins-l10n";
+import plugin from "./index";
+import { createIntl, createIntlCache } from "@formatjs/intl";
+
+const pluginName = "{{pluginName}}";
+
+window.Scratch.plugins.register((context) => {
+  const instance = plugin({
+    ...context,
+    intl: createIntl(
+      {
+        locale: context.intl.locale,
+        messages: pluginsL10n[context.intl.locale],
+      },
+      createIntlCache(),
+    ),
+  });
+  this.plugins[pluginName] = instance.dispose || (() => false);
+}, pluginName);
