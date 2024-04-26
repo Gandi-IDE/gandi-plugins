@@ -4,7 +4,7 @@ import BlockinputaIcon from "assets/icon--witcat-blockinput.svg";
 
 let show = false;
 
-let cheakLong = 50,
+let checkLong = 50,
   timer = null;
 
 const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
@@ -14,7 +14,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
       | HTMLTextAreaElement
       | undefined;
     if (input !== undefined) {
-      if (input.value.length > cheakLong) {
+      if (input.value.length > checkLong) {
         if (!show) {
           show = true;
           popups(input).then(() => {
@@ -210,7 +210,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             label: msg("witcat.blockinput.option.show"),
             value: 50,
             onChange: (value: number) => {
-              cheakLong = value;
+              checkLong = value;
             },
           },
           {
