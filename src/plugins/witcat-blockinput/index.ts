@@ -7,7 +7,7 @@ let show = false;
 let cheaklong = 50,
   timer = null;
 
-const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }) => {
+const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
   let interval: string | number | NodeJS.Timeout = setInterval(() => {
     const input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement | undefined;
     if (input !== undefined) {
