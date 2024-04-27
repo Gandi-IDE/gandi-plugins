@@ -10,6 +10,8 @@ import { LoadingPlugins } from "src/plugins-controller";
 const ALL_PLUGINS = Object.keys(Plugins);
 // When the line numbers of the variables below change, plopfile.js needs to be updated.
 const DEFAULT_INJECT_PLUGINS = [
+  // 非官方拓插件，不默认加载。建议修改生成器代码。
+  //"custom-colorways",
   "custom-plugin",
   "folder",
   "statistics",

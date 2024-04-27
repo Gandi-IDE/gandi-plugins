@@ -129,5 +129,10 @@
   "plugins.statistics.title": "Status Bar",
   "plugins.statistics.description": "Count the number of blocks and file size of the project",
   "plugins.statistics.option.countCodeNum": "Count code lines",
-  "plugins.statistics.option.projectSize": "Measure project size"
+  "plugins.statistics.option.projectSize": "Measure project size",
+  "plugins.custonColorways.title": "Customize Gandi colorways",
+  "plugins.custonColorways.code": "Background color of code area",
+  
+  "plugins.custonColorways.unitB": "Component border color", 
+  "plugins.custonColorways.this":"'Current Options' prompt color"
 }

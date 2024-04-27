@@ -129,5 +129,12 @@
   "plugins.statistics.title": "统计栏",
   "plugins.statistics.description": "统计工程文件的代码数量和文件大小。",
   "plugins.statistics.option.countCodeNum": "统计代码数量",
-  "plugins.statistics.option.projectSize": "统计工程大小"
+  "plugins.statistics.option.projectSize": "统计工程大小",
+  "plugins.custonColorways.title":"自定义Gandi配色",
+  "plugins.custonColorways.code":"代码区背景颜色",
+  "plugins.custonColorways.unit":"组件背景颜色",
+  "plugins.custonColorways.unitB":"组件边框颜色",
+  "plugins.custonColorways.this":"“当前选项”提示颜色"
+
+
 }
