@@ -129,5 +129,9 @@
   "plugins.statistics.title": "Status Bar",
   "plugins.statistics.description": "Count the number of blocks and file size of the project",
   "plugins.statistics.option.countCodeNum": "Count code lines",
-  "plugins.statistics.option.projectSize": "Measure project size"
+  "plugins.statistics.option.projectSize": "Measure project size",
+  "plugins.kukemcBeautify.title": "kukemc Gandi beautification",
+  "plugins.kukemcBeautify.description": "Better looking Gandi IDE!",
+  "plugins.kukemcBeautify.groundglass": "Ground glass",
+  "plugins.kukemcBeautify.confirm": "Resetting the Ground glass effect can be done by refreshing the webpage.\nWould you like to refresh now?" 
 }
