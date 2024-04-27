@@ -64,7 +64,10 @@ const lineText = {
       const originalCreateElement = document.createElement;
       document.createElement = function (tagName) {
         document.createElement = originalCreateElement;
-        if (tagName === "INPUT") {
+        if (
+          tagName === "INPUT" &&
+          document.getElementsByClassName("gandi_custom-procedures_workspace_1d2uW").length == 0
+        ) {
           return originalCreateElement.call(document, textarea);
         } else {
           return originalCreateElement.call(document, tagName);
