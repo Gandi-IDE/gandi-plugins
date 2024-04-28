@@ -1,6 +1,10 @@
 import * as React from "react";
 import KukemcBeautifyIcon from "assets/icon--kukemcbeautify.svg";
 
+let ground = false
+let transparency = 0.29;
+let ambiguity = 10;
+
 // Define an interface for the color in RGB format
 interface RGBColor {
   r: number;
@@ -45,11 +49,12 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
           description: msg("plugins.kukemcBeautify.description"),
           items: [
             {
-              key: "dropdown",
+              key: "Ground",
               label: msg("plugins.kukemcBeautify.groundglass"),
               type: "switch",
               value: false,
               onChange: (value: boolean) => {
+                ground = value;
                 if (value) {
                   groundGlass();
                 } else {
@@ -59,6 +64,36 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
                         location.reload();
                     }, 500);
                   }
+                }
+              },
+            },
+            {
+              key: "transparent",
+              label: msg("plugins.kukemcBeautify.transparent"),
+              type: "input",
+              inputProps: {
+                type: "number",
+              },
+              value: 0.29,
+              onChange: (value: number) => {
+                transparency = value
+                if (ground) {
+                  groundGlass();
+                }
+              },
+            },
+            {
+              key: "ambiguity",
+              label: msg("plugins.kukemcBeautify.ambiguity"),
+              type: "input",
+              inputProps: {
+                type: "number",
+              },
+              value: 10,
+              onChange: (value: number) => {
+                ambiguity = value
+                if (ground) {
+                  groundGlass();
                 }
               },
             },
@@ -105,11 +140,11 @@ function groundGlass(): void {
           ].includes(rule.selectorText);
 
           if (rule.selectorText === '.blocklyToolboxDiv') {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, 0.10)`, 'blur(5px)');
+            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity-5}px)`);
           } else if (rule.selectorText === '.gandi_collapsible-box_collapsible-box_1_329') {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, 0.29)`, '');
+            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, '');
           } else if (isTargetSelector) {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, 0.29)`, 'blur(10px)');
+            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity}px)`);
           }
         }
       }

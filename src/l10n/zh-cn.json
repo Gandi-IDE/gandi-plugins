@@ -133,5 +133,7 @@
   "plugins.kukemcBeautify.title": "酷可mc的Gandi美化",
   "plugins.kukemcBeautify.description": "更好看的Gandi IDE！",
   "plugins.kukemcBeautify.groundglass": "毛玻璃效果",
+  "plugins.kukemcBeautify.transparent": "UI透明度",
+  "plugins.kukemcBeautify.ambiguity": "UI模糊度",
   "plugins.kukemcBeautify.confirm": "刷新网页后即可重置毛玻璃效果\n需要现在刷新吗？"
 }
