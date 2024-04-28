@@ -57,6 +57,8 @@ if (!manifest) {
   return;
 }
 
+const wrapperFileName = `temp-wrapper.${manifest.type === "component" ? "jsx" : "js"}`;
+
 /**
  * Build the plugin using webpack.
  * @param {Function} onComplete - Callback function to execute on completion.
@@ -64,7 +66,7 @@ if (!manifest) {
 function buildPlugin(onComplete) {
   console.log("Start building plugin...");
   const pluginName = spinalToPascal(argv.name);
-  const entryFilePath = `./src/plugins/${argv.name}/temp-wrapper.tsx`;
+  const entryFilePath = `./src/plugins/${argv.name}/${wrapperFileName}`;
   const webpackConfig = {
     mode: "development",
     entry: {
@@ -190,7 +192,7 @@ fs.readFile(path.join(__dirname, wrapperFilePath), "utf8", (err, data) => {
   }
 
   // Write the modified content to the target file
-  const targetFile = path.join(targetDirectory, "temp-wrapper.tsx");
+  const targetFile = path.join(targetDirectory, wrapperFileName);
   fs.writeFile(targetFile, modifiedData, "utf8", (err) => {
     if (err) {
       console.error("Error writing target file:", err);
