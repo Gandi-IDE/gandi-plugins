@@ -10,7 +10,7 @@ window.Scratch.plugins.register((context) => {
   const instance = plugin({
     ...context,
     intl,
-    msg: (id: string) => intl.formatMessage({ id }),
+    msg: (id) => intl.formatMessage({ id }),
   });
   return {
     dispose: instance.dispose || (() => {
