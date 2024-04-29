@@ -11,5 +11,6 @@ export default {
   statistics: () => import(/* webpackChunkName: "plugin-statistics" */ "src/plugins/statistics"),
   "historical-version": () => import(/* webpackChunkName: "plugin-historical-version" */ "src/plugins/historical-version"),
   "custom-plugin": () => import(/* webpackChunkName: "plugin-custom-plugin" */ "src/plugins/custom-plugin"),
+  "witcat-blockinput": () => import(/* webpackChunkName: "plugin-witcat-blockinput" */ "src/plugins/witcat-blockinput"),
   "kukemc-beautify": () => import(/* webpackChunkName: "plugin-kukemc-beautify" */ "src/plugins/kukemc-beautify"),
 } as const;
