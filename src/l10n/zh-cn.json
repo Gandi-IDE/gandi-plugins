@@ -130,7 +130,7 @@
   "plugins.statistics.description": "统计工程文件的代码数量和文件大小。",
   "plugins.statistics.option.countCodeNum": "统计代码数量",
   "plugins.statistics.option.projectSize": "统计工程大小",
-  "plugins.kukemcBeautify.title": "酷可mc的Gandi美化",
+  "plugins.kukemcBeautify.title": "Gandi美化",
   "plugins.kukemcBeautify.description": "更好看的Gandi IDE！",
   "plugins.kukemcBeautify.groundglass": "毛玻璃效果",
   "plugins.kukemcBeautify.transparent": "UI透明度",
