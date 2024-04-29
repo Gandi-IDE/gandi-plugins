@@ -9,6 +9,8 @@ import dropdownSearchable from "src/plugins/dropdown-searchable/manifest";
 import statistics from "src/plugins/statistics/manifest";
 import historicalVersion from "src/plugins/historical-version/manifest";
 import customPlugin from "src/plugins/custom-plugin/manifest";
+import witcatBlockinput from "src/plugins/witcat-blockinput/manifest";
+import kukemcBeautify from "src/plugins/kukemc-beautify/manifest";
 import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
 
 export default {
@@ -23,5 +25,7 @@ export default {
   statistics,
   "historical-version": historicalVersion,
   "custom-plugin": customPlugin,
+  "witcat-blockinput": witcatBlockinput,
+  "kukemc-beautify": kukemcBeautify,
   "better-sprite-menu": BetterSpriteMenu,
 };
