@@ -9,6 +9,7 @@ import dropdownSearchable from "src/plugins/dropdown-searchable/manifest";
 import statistics from "src/plugins/statistics/manifest";
 import historicalVersion from "src/plugins/historical-version/manifest";
 import customPlugin from "src/plugins/custom-plugin/manifest";
+import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
 
 export default {
   folder,
@@ -22,4 +23,5 @@ export default {
   statistics,
   "historical-version": historicalVersion,
   "custom-plugin": customPlugin,
+  "better-sprite-menu": BetterSpriteMenu,
 };

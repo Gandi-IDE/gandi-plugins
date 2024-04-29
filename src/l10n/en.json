@@ -129,5 +129,10 @@
   "plugins.statistics.title": "Status Bar",
   "plugins.statistics.description": "Count the number of blocks and file size of the project",
   "plugins.statistics.option.countCodeNum": "Count code lines",
-  "plugins.statistics.option.projectSize": "Measure project size"
+  "plugins.statistics.option.projectSize": "Measure project size",
+  "plugins.betterSpriteMenus.title": "Better sprite menus",
+  "plugins.betterSpriteMenus.layouts": "Choose your layout",
+  "plugins.betterSpriteMenus.layout.default": "Default",
+  "plugins.betterSpriteMenus.layout.grid": "Scratch's Grid",
+  "plugins.betterSpriteMenus.layout.compact": "Compact"
 }
