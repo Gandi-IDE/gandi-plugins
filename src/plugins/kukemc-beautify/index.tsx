@@ -1,7 +1,7 @@
 import * as React from "react";
 import KukemcBeautifyIcon from "assets/icon--kukemcbeautify.svg";
 
-let ground = false
+let ground = false;
 let transparency = 0.29;
 let ambiguity = 10;
 
@@ -21,20 +21,13 @@ function hexToRgb(hex: string): RGBColor {
     const b = parseInt(result[3], 16);
     return { r, g, b };
   }
-  throw new Error('Invalid hex color format');
+  throw new Error("Invalid hex color format");
 }
 
 // Helper function to apply style changes
 function applyStyleChanges(rule: CSSStyleRule, background: string, backdropFilter: string): void {
   rule.style.backgroundColor = background;
   rule.style.backdropFilter = backdropFilter;
-}
-
-// Define interface for KukemcBeautify props
-interface KukemcBeautifyProps {
-  blockly: any;  // Define more specific types as needed
-  msg: (key: string) => string;
-  registerSettings: (title: string, className: string, settings: any[], icon: JSX.Element) => { dispose: () => void };
 }
 
 const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
@@ -61,7 +54,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
                   const userChoice = confirm(msg("plugins.kukemcBeautify.confirm"));
                   if (userChoice) {
                     setTimeout(() => {
-                        location.reload();
+                      location.reload();
                     }, 500);
                   }
                 }
@@ -76,7 +69,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               },
               value: 0.29,
               onChange: (value: number) => {
-                transparency = value
+                transparency = value;
                 if (ground) {
                   groundGlass();
                 }
@@ -91,7 +84,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               },
               value: 10,
               onChange: (value: number) => {
-                ambiguity = value
+                ambiguity = value;
                 if (ground) {
                   groundGlass();
                 }
@@ -111,11 +104,11 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
 };
 
 function groundGlass(): void {
-  const styleElements = document.head.getElementsByTagName('style');
-  
+  const styleElements = document.head.getElementsByTagName("style");
+
   const htmlElement = document.documentElement;
   const computedStyle = window.getComputedStyle(htmlElement);
-  const themeColorHex = computedStyle.getPropertyValue('--theme-color-300').trim(); // Remove any potential whitespace
+  const themeColorHex = computedStyle.getPropertyValue("--theme-color-300").trim(); // Remove any potential whitespace
 
   const themeColorRgb = hexToRgb(themeColorHex);
 
@@ -128,21 +121,21 @@ function groundGlass(): void {
         for (let j = 0; j < sheet.cssRules.length; j++) {
           const rule = sheet.cssRules[j] as CSSStyleRule;
           const isTargetSelector = [
-            '.blocklyWidgetDiv .goog-menu',
-            '.gandi_context-menu_context-menu_2SJM-',
-            '.blocklyToolboxDiv',
-            '.gandi_plugins_plugins-root_xA3t3',
-            '.gandi_collapsible-box_collapsible-box_1_329',
-            '.gandi_target-pane_count_3fmUd',
-            '.gandi_editor-wrapper_tabList_4HFZz',
-            '.gandi_setting-modal_modal-overlay_3wJji',
-            '.gandi_bulletin-modal_modal-overlay_TBAhj',
+            ".blocklyWidgetDiv .goog-menu",
+            ".gandi_context-menu_context-menu_2SJM-",
+            ".blocklyToolboxDiv",
+            ".gandi_plugins_plugins-root_xA3t3",
+            ".gandi_collapsible-box_collapsible-box_1_329",
+            ".gandi_target-pane_count_3fmUd",
+            ".gandi_editor-wrapper_tabList_4HFZz",
+            ".gandi_setting-modal_modal-overlay_3wJji",
+            ".gandi_bulletin-modal_modal-overlay_TBAhj",
           ].includes(rule.selectorText);
 
-          if (rule.selectorText === '.blocklyToolboxDiv') {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity-5}px)`);
-          } else if (rule.selectorText === '.gandi_collapsible-box_collapsible-box_1_329') {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, '');
+          if (rule.selectorText === ".blocklyToolboxDiv") {
+            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity - 5}px)`);
+          } else if (rule.selectorText === ".gandi_collapsible-box_collapsible-box_1_329") {
+            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, "");
           } else if (isTargetSelector) {
             applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity}px)`);
           }
@@ -150,7 +143,7 @@ function groundGlass(): void {
       }
     }
   } catch (error) {
-    console.error('Error applying ground glass effect:', error);
+    console.error("Error applying ground glass effect:", error);
   }
 }
 
