@@ -130,7 +130,7 @@
   "plugins.statistics.description": "统计工程文件的代码数量和文件大小。",
   "plugins.statistics.option.countCodeNum": "统计代码数量",
   "plugins.statistics.option.projectSize": "统计工程大小",
-  "plugins.witcatBlockinput.title": "白猫的积木输入",
+  "plugins.witcatBlockinput.title": "积木输入",
   "witcat.blockinput.title": "积木输入",
   "witcat.blockinput.description": "让积木的输入框有更多可能！",
   "witcat.blockinput.option.start": "高级输入框",

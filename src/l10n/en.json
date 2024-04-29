@@ -130,7 +130,7 @@
   "plugins.statistics.description": "Count the number of blocks and file size of the project",
   "plugins.statistics.option.countCodeNum": "Count code lines",
   "plugins.statistics.option.projectSize": "Measure project size",
-  "plugins.witcatBlockinput.title": "Witcat`s Block Input",
+  "plugins.witcatBlockinput.title": "Block Input",
   "witcat.blockinput.title": "Block Input",
   "witcat.blockinput.description": "Make the input box of blocks more possible!",
   "witcat.blockinput.option.start": "Advanced input field",
