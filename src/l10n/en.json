@@ -138,5 +138,11 @@
   "witcat.blockinput.option.hide": "Outside content omitted",
   "witcat.blockinput.option.linetext": "Multi-line",
   "witcat.blockinput.option.border": "Border restoration",
-  "witcat.blockinput.option.textalign": "Text-align left"
+  "witcat.blockinput.option.textalign": "Text-align left",
+  "plugins.kukemcBeautify.title": "Gandi beautification",
+  "plugins.kukemcBeautify.description": "Better looking Gandi IDE!",
+  "plugins.kukemcBeautify.groundglass": "Ground glass",
+  "plugins.kukemcBeautify.transparent": "UI transparent",
+  "plugins.kukemcBeautify.ambiguity": "UI ambiguity",
+  "plugins.kukemcBeautify.confirm": "Resetting the Ground glass effect can be done by refreshing the webpage.\nWould you like to refresh now?" 
 }
