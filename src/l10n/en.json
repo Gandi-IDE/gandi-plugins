@@ -130,7 +130,7 @@
   "plugins.statistics.description": "Count the number of blocks and file size of the project",
   "plugins.statistics.option.countCodeNum": "Count code lines",
   "plugins.statistics.option.projectSize": "Measure project size",
-  "plugins.kukemcBeautify.title": "kukemc Gandi beautification",
+  "plugins.kukemcBeautify.title": "Gandi beautification",
   "plugins.kukemcBeautify.description": "Better looking Gandi IDE!",
   "plugins.kukemcBeautify.groundglass": "Ground glass",
   "plugins.kukemcBeautify.transparent": "UI transparent",
