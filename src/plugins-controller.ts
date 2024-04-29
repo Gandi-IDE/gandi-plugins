@@ -45,7 +45,6 @@ class PluginsController {
     const intl = this.createIntl(options.locale);
     this.context = Object.assign(options, {
       intl,
-      injectPlugin: this.injectPlugin.bind(this),
       msg: (id: string) => intl.formatMessage({ id }),
     });
     this.disabledPlugins = options.disabledPlugins || [];

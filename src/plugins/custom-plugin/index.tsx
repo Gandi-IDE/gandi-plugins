@@ -1,9 +1,8 @@
 import * as React from "react";
 import toast from "react-hot-toast";
-import { camelToKebab, extractFileName } from "utils/name-helper";
 import CustomPluginIcon from "assets/icon--custom-plugin.svg";
 
-const CustomPlugin = ({ msg, registerSettings, injectPlugin }: PluginContext) => {
+const CustomPlugin = ({ msg, registerSettings }: PluginContext) => {
   const customPluginScript = React.useRef<HTMLScriptElement>(null);
   const inputElement = React.useRef<HTMLInputElement>(null);
 
