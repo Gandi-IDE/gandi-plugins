@@ -203,7 +203,6 @@ declare global {
       removeSoundContextMenuItems(itemKeyList: Array<string>): void;
     };
     msg: (id: string) => string;
-    injectPlugin: (plugin: unknown, type: string, pluginName: string) => void;
     registerSettings: PluginRegister;
   }
 
