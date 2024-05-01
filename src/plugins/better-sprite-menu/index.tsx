@@ -106,7 +106,8 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       width: min-content;
     }
     `
-
+    //Used to reorginize the stage selector to achive vertical stage selector
+    //Also used with some extra CSS styles but they are deleted. Don't worry, it's not THAT hard to recreate, totally...
     const stageInit = () => {
       let spriteInfo = document.getElementsByClassName("gandi_sprite-info_sprite-info_3EyZh")[0];
       let spriteSelector = document.getElementsByClassName("gandi_sprite-selector_sprite-selector_2KgCX")[0];
