@@ -70,7 +70,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       text-align: center;
       display: flex;
       padding-top: 2px;
-      font-size: 0.7rem;
+      font-size: 0.625rem;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       text-overflow: ellipsis;
     }
@@ -96,84 +96,6 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     .gandi_sprite-selector-item_sprite-item_2leTl.gandi_sprite-selector-item_is-selected_1u9Zv .gandi_sprite-selector_sprite-wrapper_1C5Mq{
       border-color: var(--theme-color-300);
     }
-
-    .gandi_stage-selector_stage-selector_3oWOr{
-      display: grid;
-      height: 100%;
-      align-items: start;
-      border-top: none;
-      border-left: 1px solid var(--theme-color-200);
-    }
-
-    .gandi_collapsible-box_body_9ccdv {
-      display: flex;
-    }
-
-    .gandi_stage-selector_stage-selector-info_bf2Ez {
-      display: block;
-      padding-top: 10px;
-    }
-
-    .gandi_stage-selector_title_1UlNu {
-      padding-bottom: 10px;
-      font-size: 0.625rem;
-    }
-
-    .gandi_stage-selector_name_2s1_t {
-      padding: 10px;
-      font-size: 0.6rem;
-      padding-left: 3px;
-    }
-
-    .gandi_target-pane_stage-selector-wrapper_qekSW {
-      width: 83px
-    }
-
-    .gandi_target-pane_target-list_10PNw {
-      position: absolute;
-      flex-direction: row;
-      height: 100%;
-      scrollbar-width: none;
-    }
-
-    .gandi_target-pane_count_3fmUd {
-      top: 105%;
-    }
-
-    .gandi_sprite-info_icon-wrapper_3Wbqq {
-      padding: 0px;
-      box-sizing: border-box;
-    }
-
-    .gandi_sprite-info_row_1om5V gandi_sprite-info_row-primary_10JrS, .gandi_sprite-info_row_1om5V {
-      justify-content: space-between;
-      display: flex;
-    }
-
-    .gandi_sprite-info_sprite-info_3EyZh {
-      width: 362px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--theme-color-300);
-  }
-
-    .gandi_input_input-form_l9eYg, .gandi_sprite-info_sprite-input_17wjb {
-      font-size: 0.625rem;
-      width: 68px;
-    }
-
-    .gandi_sprite-info_ratio-wrapper_3tMzi {
-      width: 50px
-    }
-
-    .gandi_sprite-selector_scroll-wrapper_3NNnc {
-      overflow: auto;
-    }
-
-    .gandi_sprite-selector_sprite-selector_2KgCX {
-      overflow: auto;
-    }
     `
 
     const compactSpriteMenu = document.createElement('style')
@@ -185,15 +107,15 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     }
     `
 
-    const setupStage = () => {
+    const stageInit = () => {
       let spriteInfo = document.getElementsByClassName("gandi_sprite-info_sprite-info_3EyZh")[0];
       let spriteSelector = document.getElementsByClassName("gandi_sprite-selector_sprite-selector_2KgCX")[0];
       spriteSelector.prepend(spriteInfo);
-
+    
       let stageTitle = document.getElementsByClassName("gandi_stage-selector_title_1UlNu")[0]
       let stageInfo = document.getElementsByClassName("gandi_stage-selector_stage-selector-info_bf2Ez")[0]
       stageInfo.prepend(stageTitle)
-
+    
       let stageSelector = document.getElementsByClassName("gandi_target-pane_stage-selector-wrapper_qekSW")[0]
       let targetPane = document.getElementsByClassName("gandi_target-pane_target-list_10PNw")[0]
       targetPane.append(stageSelector)
@@ -209,7 +131,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       switch(currentSpriteMenuLayout) {
         case "grid":
           document.head.appendChild(gridSpriteMenu);
-          setupStage()
+          //stageInit()
           break;
         case "compact":
           document.head.appendChild(compactSpriteMenu);
