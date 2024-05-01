@@ -11,6 +11,7 @@ import historicalVersion from "src/plugins/historical-version/manifest";
 import customPlugin from "src/plugins/custom-plugin/manifest";
 import witcatBlockinput from "src/plugins/witcat-blockinput/manifest";
 import kukemcBeautify from "src/plugins/kukemc-beautify/manifest";
+import fastInput from "src/plugins/fast-input/manifest";
 import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
 
 export default {
@@ -27,5 +28,6 @@ export default {
   "custom-plugin": customPlugin,
   "witcat-blockinput": witcatBlockinput,
   "kukemc-beautify": kukemcBeautify,
+  "fast-input": fastInput,
   "better-sprite-menu": BetterSpriteMenu,
 };
