@@ -27,7 +27,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       max-width: 4.21rem;
       min-width: 4rem;
       min-height: 4rem;
-      margin: calc(0.5rem / 2);
+      margin: calc(0.3rem / 2);
       padding-top: 3px;
       padding-left: 3px;
     }
