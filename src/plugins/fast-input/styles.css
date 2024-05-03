@@ -1,0 +1,106 @@
+.sa-mcp-root {
+  display: flex;
+  white-space: nowrap;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  position: absolute;
+  min-width: 100px;
+  border-radius: 8px;
+  box-shadow: 0px 24px 20px rgba(32, 57, 94, 0.05), 0px 2px 20px rgba(0, 0, 0, 0.08);
+  z-index: 101;
+}
+
+.sa-mcp-container {
+  display: flex;
+  flex-flow: column;
+  position: absolute;
+  top: -6px;
+  box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  background-color: var(--theme-color-200);
+  overflow: hidden;
+}
+
+.sa-mcp-input-wrapper {
+  position: relative;
+  margin: 5px 8px;
+  height: 32px;
+  line-height: 32px;
+  background: var(--theme-color-500);
+  border: 1px solid var(--theme-color-200);
+  border-radius: 8px;
+}
+
+.sa-mcp-input-wrapper:focus-within {
+  border: 1px solid var(--theme-brand-color);
+}
+
+.sa-mcp-input-wrapper[data-error="true"] {
+  border-color: red;
+}
+
+.sa-mcp-input-wrapper .sa-mcp-input {
+  color: var(--theme-text-primary);
+}
+
+.sa-mcp-input-wrapper > input {
+  position: absolute;
+  outline: none;
+  border: 0;
+  width: 100%;
+  font-size: 12px;
+  padding: 7px 8px;
+  background-color: transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sa-mcp-input-suggestion {
+  color: hsla(225, 15%, 40%, 0.65);
+}
+
+.sa-mcp-preview-container {
+  padding: 0 4px;
+  flex: auto;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.sa-mcp-preview-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.sa-mcp-preview-blocks {
+  width: 100%;
+  min-height: 100%;
+  /* https://stackoverflow.com/a/22166728/8448397 */
+  float: left;
+}
+
+.sa-mcp-preview-scrollbar {
+  position: absolute;
+  width: 11px;
+  right: 0;
+  bottom: 0;
+}
+
+.sa-mcp-preview-block-bg {
+  width: 100%;
+  fill: transparent;
+  cursor: grab;
+}
+
+.sa-mcp-preview-block {
+  filter: brightness(95%);
+  cursor: grab;
+}
+
+.sa-mcp-preview-block-selection {
+  filter: brightness(103%);
+}
+
+.sa-mcp-preview-block-bg-selection {
+  fill: #7774;
+}

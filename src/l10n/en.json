@@ -132,7 +132,27 @@
   "plugins.statistics.option.projectSize": "Measure project size",
   "plugins.custonColorways.title": "Customize Gandi colorways",
   "plugins.custonColorways.code": "Background color of code area",
-  
   "plugins.custonColorways.unitB": "Component border color", 
   "plugins.custonColorways.this":"'Current Options' prompt color"
+  "plugins.witcatBlockinput.title": "Block Input",
+  "witcat.blockinput.title": "Block Input",
+  "witcat.blockinput.description": "Make the input box of blocks more possible!",
+  "witcat.blockinput.option.start": "Advanced input field",
+  "witcat.blockinput.option.show": "Displays when words exceed",
+  "witcat.blockinput.option.hide": "Outside content omitted",
+  "witcat.blockinput.option.linetext": "Multi-line",
+  "witcat.blockinput.option.border": "Border restoration",
+  "witcat.blockinput.option.textalign": "Text-align left",
+  "plugins.kukemcBeautify.title": "Gandi beautification",
+  "plugins.kukemcBeautify.description": "Better looking Gandi IDE!",
+  "plugins.kukemcBeautify.groundglass": "Ground glass",
+  "plugins.kukemcBeautify.transparent": "UI transparent",
+  "plugins.kukemcBeautify.ambiguity": "UI ambiguity",
+  "plugins.kukemcBeautify.confirm": "Resetting the Ground glass effect can be done by refreshing the webpage.\nWould you like to refresh now?",
+  "plugins.fastInput.title": "Fast Input",
+  "plugins.fastInput.description": "Inspired by ScratchAddons' InsertBlocksByName, this plugin adds the feature of using Pinyin abbreviations for input in Chinese language;💡 Usage: Hold down the Shift key and click to open the block input window in the code area, enter the block name or Pinyin abbreviation, use the arrow keys and Enter key to navigate, use the Tab key for auto-completion, and hold down the Shift key to drag the block to prevent the list from closing.",
+  "plugins.fastInput.popup_scale": "Block scaling",
+  "plugins.fastInput.popup_width": "Popup width",
+  "plugins.fastInput.popup_max_height": "Popup maximum height"
 }
+

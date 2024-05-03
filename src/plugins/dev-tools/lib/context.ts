@@ -10,7 +10,6 @@ export const DevToolsContext = createContext<PluginContext>({
   msg: null,
   utils: null,
   redux: null,
-  injectPlugin: null,
 });
 
 export const useDevToolsContext = () => useContext(DevToolsContext);

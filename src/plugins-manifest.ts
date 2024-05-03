@@ -10,6 +10,9 @@ import statistics from "src/plugins/statistics/manifest";
 import historicalVersion from "src/plugins/historical-version/manifest";
 import customPlugin from "src/plugins/custom-plugin/manifest";
 import customColorways from "src/plugins/custom-colorways/manifest";
+import witcatBlockinput from "src/plugins/witcat-blockinput/manifest";
+import kukemcBeautify from "src/plugins/kukemc-beautify/manifest";
+import fastInput from "src/plugins/fast-input/manifest";
 
 export default {
   folder,
@@ -24,4 +27,7 @@ export default {
   "historical-version": historicalVersion,
   "custom-plugin": customPlugin,
   "custom-colorways": customColorways,
+  "witcat-blockinput": witcatBlockinput,
+  "kukemc-beautify": kukemcBeautify,
+
 };
