@@ -4,7 +4,7 @@ import HistoricalVersionIcon from 'assets/icon--statistics.svg';
 const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
   React.useEffect(() => {
     let currentSpriteMenuLayout = 'default'
-    const menuLayoutList = ["default", "grid", "compact"]
+    const menuLayoutList = ["default", "grid", "compact", "superCompact"]
     const id = "BetterSpriteMenu";
 
     const gridSpriteMenu = document.createElement('style')
@@ -96,6 +96,10 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     .gandi_sprite-selector-item_sprite-item_2leTl.gandi_sprite-selector-item_is-selected_1u9Zv .gandi_sprite-selector_sprite-wrapper_1C5Mq{
       border-color: var(--theme-color-300);
     }
+
+    .gandi_sprite-selector-item_folder_YmvKs {
+      padding-bottom: 11px;
+    }
     `
 
     const compactSpriteMenu = document.createElement('style')
@@ -103,9 +107,67 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
 
     compactSpriteMenu.innerHTML = `
     .gandi_sprite-selector_sprite-wrapper_1C5Mq {
-      width: min-content;
+      height: 25px;
+    }
+    .gandi_sprite-selector-item_sprite-item_2leTl {
+      height: 110%
+    }
+    .gandi_sprite-selector-item_target-visible-button_2fD8J, .gandi_sprite-selector-item_more_kADxQ {
+      display: none;
+    }
+    .gandi_sprite-selector-item_sprite-image-outer_2R2jZ {
+      width: 20px;
+      height: 20px;
+    }
+    .gandi_sprite-selector-item_sprite-info_EBuo9 {
+      font-size: 11px;
+    }
+
+    .gandi_stage-selector_stage-selector_3oWOr {
+      height: 30px;
+    }
+    .gandi_stage-selector_costume-canvas_2L_6h {
+      height: 20px
+    }
+    .gandi_stage-selector_name_2s1_t, .gandi_stage-selector_title_1UlNu {
+      font-size: 11px;
     }
     `
+
+    const superCompactSpriteMenu = document.createElement('style')
+    superCompactSpriteMenu.id = id + menuLayoutList[3]
+
+    superCompactSpriteMenu.innerHTML = `
+    .gandi_sprite-selector_sprite-wrapper_1C5Mq {
+      height: 25px;
+      width: 89.5px;
+    }
+    .gandi_sprite-selector-item_sprite-item_2leTl {
+      height: 110%
+      border-right: 1px solid var(--theme-color-200);
+    }
+    .gandi_sprite-selector-item_target-visible-button_2fD8J, .gandi_sprite-selector-item_more_kADxQ {
+      display: none;
+    }
+    .gandi_sprite-selector-item_sprite-image-outer_2R2jZ {
+      width: 20px;
+      height: 20px;
+    }
+    .gandi_sprite-selector-item_sprite-info_EBuo9 {
+      font-size: 11px;
+    }
+
+    .gandi_stage-selector_stage-selector_3oWOr {
+      height: 30px;
+    }
+    .gandi_stage-selector_costume-canvas_2L_6h {
+      height: 20px
+    }
+    .gandi_stage-selector_name_2s1_t, .gandi_stage-selector_title_1UlNu {
+      font-size: 11px;
+    }
+    `
+
     //Used to reorginize the stage selector to achive vertical stage selector
     //Also used with some extra CSS styles but they are deleted. Don't worry, it's not THAT hard to recreate, totally...
     const stageInit = () => {
@@ -137,6 +199,9 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
         case "compact":
           document.head.appendChild(compactSpriteMenu);
           break;
+        case "superCompact":
+          document.head.appendChild(superCompactSpriteMenu);
+          break;
       }
     }
 
@@ -157,6 +222,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
                 { label: msg('plugins.betterSpriteMenus.layout.default'), value: menuLayoutList[0] },
                 { label: msg('plugins.betterSpriteMenus.layout.grid'), value: menuLayoutList[1] },
                 { label: msg('plugins.betterSpriteMenus.layout.compact'), value: menuLayoutList[2] },
+                { label: msg('plugins.betterSpriteMenus.layout.superCompact'), value: menuLayoutList[3] },
               ],
               onChange: (value) => {
                 currentSpriteMenuLayout = value.toString();

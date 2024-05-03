@@ -154,5 +154,6 @@
   "plugins.betterSpriteMenus.layouts": "Choose your layout",
   "plugins.betterSpriteMenus.layout.default": "Default",
   "plugins.betterSpriteMenus.layout.grid": "Scratch's Grid",
-  "plugins.betterSpriteMenus.layout.compact": "Compact"
+  "plugins.betterSpriteMenus.layout.compact": "Compact",
+  "plugins.betterSpriteMenus.layout.superCompact": "Super Compact"
 }
