@@ -1,5 +1,5 @@
-import styles from "./styles.less";
-
+import React from "react";
+import CustomColorwaysIcon from "assets/icon--custom-colorways.svg";
 const CustomColorways = ({ registerSettings, msg }: PluginContext) => {
   // 设置脚本区背景颜色
   function setCodeShoreColor(color: string) {
@@ -91,7 +91,8 @@ const CustomColorways = ({ registerSettings, msg }: PluginContext) => {
       },
     ],
     // 这个是插件的一个icon，可以是一个 React 组件，或者一个 img 的地址
-    "",
+    // 本人不会画svg，icon暂时空着，有时间的话麻烦开发大佬帮忙画一个，希望这不影响PR
+    React.createElement(CustomColorwaysIcon),
   );
 
 
