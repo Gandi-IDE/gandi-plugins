@@ -4,6 +4,8 @@ import KukemcBeautifyIcon from "assets/icon--kukemcbeautify.svg";
 let ground = false;
 let transparency = 0.29;
 let ambiguity = 10;
+const styleElement = document.createElement("style");
+document.head.appendChild(styleElement);
 
 // Define an interface for the color in RGB format
 interface RGBColor {
@@ -130,18 +132,18 @@ function groundGlass(): void {
             ".gandi_editor-wrapper_tabList_4HFZz",
             ".gandi_setting-modal_modal-overlay_3wJji",
             ".gandi_bulletin-modal_modal-overlay_TBAhj",
+            ".gandi_collapsible-box_header_dc9Es",
           ].includes(rule.selectorText);
 
           if (rule.selectorText === ".blocklyToolboxDiv") {
             applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity - 5}px)`);
-          } else if (rule.selectorText === ".gandi_collapsible-box_collapsible-box_1_329") {
-            applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, "");
           } else if (isTargetSelector) {
             applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity}px)`);
           }
         }
       }
     }
+    styleElement.innerText = `.gandi-stage-wrapper{backdrop-filter: none;}.gandi_stage-header_stage-header-wrapper_1F4gT{backdrop-filter: blur(${ambiguity}px);}.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}`;
   } catch (error) {
     console.error("Error applying ground glass effect:", error);
   }
