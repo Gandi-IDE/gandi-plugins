@@ -1,5 +1,5 @@
 import * as React from 'react';
-import HistoricalVersionIcon from 'assets/icon--BetterSpriteMenu.svg';
+import BetterSpriteMenuIcon from 'assets/icon--BetterSpriteMenu.svg';
 
 const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
   React.useEffect(() => {
@@ -239,7 +239,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
           ],
         },
       ],
-      <HistoricalVersionIcon />,
+      <BetterSpriteMenuIcon />,
     );
     return () => {
       register.dispose();
