@@ -1,11 +1,11 @@
 import * as React from 'react';
-import HistoricalVersionIcon from 'assets/icon--statistics.svg';
+import HistoricalVersionIcon from 'assets/icon--BetterSpriteMenu.svg';
 
 const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
   React.useEffect(() => {
     let currentSpriteMenuLayout = 'default'
     const menuLayoutList = ["default", "grid", "compact", "superCompact"]
-    const id = "BetterSpriteMenu";
+    const id = "BetterSpriteMenu_";
 
     const gridSpriteMenu = document.createElement('style')
     gridSpriteMenu.id = id + menuLayoutList[1]
@@ -104,7 +104,6 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
 
     const compactSpriteMenu = document.createElement('style')
     compactSpriteMenu.id = id + menuLayoutList[2]
-
     compactSpriteMenu.innerHTML = `
     .gandi_sprite-selector_sprite-wrapper_1C5Mq {
       height: 25px;
@@ -136,7 +135,6 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
 
     const superCompactSpriteMenu = document.createElement('style')
     superCompactSpriteMenu.id = id + menuLayoutList[3]
-
     superCompactSpriteMenu.innerHTML = `
     .gandi_sprite-selector_sprite-wrapper_1C5Mq {
       height: 25px;
@@ -167,30 +165,16 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       font-size: 11px;
     }
     `
-
-    //Used to reorginize the stage selector to achive vertical stage selector
-    //Also used with some extra CSS styles but they are deleted. Don't worry, it's not THAT hard to recreate, totally...
-    const stageInit = () => {
-      let spriteInfo = document.getElementsByClassName("gandi_sprite-info_sprite-info_3EyZh")[0];
-      let spriteSelector = document.getElementsByClassName("gandi_sprite-selector_sprite-selector_2KgCX")[0];
-      spriteSelector.prepend(spriteInfo);
-    
-      let stageTitle = document.getElementsByClassName("gandi_stage-selector_title_1UlNu")[0]
-      let stageInfo = document.getElementsByClassName("gandi_stage-selector_stage-selector-info_bf2Ez")[0]
-      stageInfo.prepend(stageTitle)
-    
-      let stageSelector = document.getElementsByClassName("gandi_target-pane_stage-selector-wrapper_qekSW")[0]
-      let targetPane = document.getElementsByClassName("gandi_target-pane_target-list_10PNw")[0]
-      targetPane.append(stageSelector)
-    }
-
-    const updateSpriteMenuStyle = () => {
+    const removeAllStyles = () => {
       for (let i = 0; i < menuLayoutList.length; i++) {
         const element = document.getElementById(id + menuLayoutList[i]);
         if (element) {
           element.remove()
         }
       }
+    }
+    const updateSpriteMenuStyle = () => {
+      removeAllStyles()
       switch(currentSpriteMenuLayout) {
         case "grid":
           document.head.appendChild(gridSpriteMenu);
@@ -205,24 +189,46 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       }
     }
 
+    let collapsibleBox = document.querySelectorAll('.gandi_collapsible-box_collapsible-box_1_329')[1];
+
+    // Create a new MutationObserver instance
+    let observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.attributeName === "class" && currentSpriteMenuLayout == "grid") {
+          let targetElement = mutation.target as Element;
+          let newClassList = targetElement.className.split(' ');
+
+          if (newClassList.includes('gandi_collapsible-box_collapsed_oQuU1')) {
+            console.log('The element contains the class "gandi_collapsible-box_collapsed_oQuU1"');
+            removeAllStyles();
+          } else {
+            updateSpriteMenuStyle()
+          }
+        }
+      });
+    });
+
+    let config = { attributes: true, attributeFilter: ['class'] };
+    observer.observe(collapsibleBox, config);
+    
     const register = registerSettings(
-      msg('plugins.betterSpriteMenus.title'),
-      'better-sprite-menus',
+      msg('plugins.betterSpriteMenu.title'),
+      'Better Sprite Menu',
       [
         {
           key: 'layouts',
-          label: msg('plugins.betterSpriteMenus.title'),
+          label: msg('plugins.betterSpriteMenu.layouts'),
           items: [
             {
-              key: 'selector',
+              key: 'layout',
               type: 'select',
-              label: msg('plugins.betterSpriteMenus.layouts'),
+              label: msg('plugins.betterSpriteMenu.layouts.label'),
               value: currentSpriteMenuLayout,
               options: [
-                { label: msg('plugins.betterSpriteMenus.layout.default'), value: menuLayoutList[0] },
-                { label: msg('plugins.betterSpriteMenus.layout.grid'), value: menuLayoutList[1] },
-                { label: msg('plugins.betterSpriteMenus.layout.compact'), value: menuLayoutList[2] },
-                { label: msg('plugins.betterSpriteMenus.layout.superCompact'), value: menuLayoutList[3] },
+                { label: msg('plugins.betterSpriteMenu.layouts.default'), value: menuLayoutList[0] },
+                { label: msg('plugins.betterSpriteMenu.layouts.grid'), value: menuLayoutList[1] },
+                { label: msg('plugins.betterSpriteMenu.layouts.compact'), value: menuLayoutList[2] },
+                { label: msg('plugins.betterSpriteMenu.layouts.superCompact'), value: menuLayoutList[3] },
               ],
               onChange: (value) => {
                 currentSpriteMenuLayout = value.toString();

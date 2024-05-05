@@ -150,10 +150,13 @@
   "plugins.fastInput.popup_scale": "Block scaling",
   "plugins.fastInput.popup_width": "Popup width",
   "plugins.fastInput.popup_max_height": "Popup maximum height",
-  "plugins.betterSpriteMenus.title": "Better Sprite Menu",
-  "plugins.betterSpriteMenus.layouts": "Choose your layout",
-  "plugins.betterSpriteMenus.layout.default": "Default",
-  "plugins.betterSpriteMenus.layout.grid": "Scratch's Grid",
-  "plugins.betterSpriteMenus.layout.compact": "Compact",
-  "plugins.betterSpriteMenus.layout.superCompact": "Super Compact"
+  "plugins.betterSpriteMenu.title": "Better Sprite Menu",
+  "plugins.betterSpriteMenu.layouts": "Layouts",
+  "plugins.betterSpriteMenu.layouts.label": "Sprite Selector layout:",
+  "plugins.betterSpriteMenu.layouts.default": "Default",
+  "plugins.betterSpriteMenu.layouts.grid": "Scratch's Grid",
+  "plugins.betterSpriteMenu.layouts.compact": "Compact",
+  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact",
+  "plugins.betterSpriteMenu.tools": "Tools",
+  "plugins.betterSpriteMenu.tools.searchbar": "Enable searchbar:"
 }
