@@ -15,7 +15,8 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
   let disposeBlockTextarea = null;
   let disposeOutputShapeChange = null;
   let disposeMultilineText = null;
-  let textAlign = "center";
+  // 默认左对齐
+  let textAlign = "left";
 
   const getToolboxAndWorkspaceBlocks = () => {
     const toolbox = workspace.getToolbox();
@@ -231,6 +232,7 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
   useBlockTextarea();
   useSquareOutputShape();
   useMultilineText();
+  blockly.BlockSvg.MAX_DISPLAY_LENGTH = DEFAULT_TEXT_MAX_LENGTH;
   getToolboxAndWorkspaceBlocks().forEach((block) => {
     if (block.type === "text") {
       const inputBlock = block.inputList[0].fieldRow[0];
