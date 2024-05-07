@@ -1,5 +1,5 @@
 import type { IntlShape } from "react-intl";
-import type { CSSProperties, ReactElement, ReactNode } from "react";
+import type { CSSProperties, ReactNode, ReactElement } from "react";
 
 interface Action<T = any> {
   type: T;
