@@ -1,5 +1,5 @@
 import type { IntlShape } from "react-intl";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface Action<T = any> {
   type: T;
@@ -34,7 +34,7 @@ interface SettingOption {
 interface SettingCategory {
   key: string;
   label: string;
-  description?: string;
+  description?: ReactNode;
   items: Array<PluginSetting>;
 }
 
