@@ -86,18 +86,7 @@ declare namespace Blockly {
         y_: number;
         targetBlock: () => null | Block;
       };
-      fieldRow: Array<{
-        arrowWidth_: number;
-        class_?: string;
-        name?: string;
-        renderSep: number;
-        renderWidth: number;
-        size_: { width: number; height: number };
-        sourceBlock_: Blockly.Block;
-        textElement_: HTMLElement;
-        text_: string;
-        getText: () => string;
-      }>;
+      fieldRow: Array<FieldTextInput>;
       fieldWidth: number;
       name: string;
       outlinePath: null;
@@ -134,12 +123,16 @@ declare namespace Blockly {
     getRootBlock: () => Block;
     getNextBlock: () => Block;
     getConnections_(all?: boolean): Array<Connection>;
-    getOutputShape: () => unknown;
     getSurroundParent: () => null | Block;
     getRelativeToSurfaceXY: () => {
       x: number;
       y: number;
     };
+    removeInput(name: string, opt_quiet?: boolean | undefined): void;
+    removeSelect(): void;
+    render(): void;
+    setOutputShape(outputShape: number | null): void;
+    getOutputShape(): number | null;
     moveBy(dx: number, dy: number): void;
     dispose(healStack?: boolean, animate?: boolean): void;
   }
@@ -194,7 +187,7 @@ declare namespace Blockly {
     fireChangeListener(event: Events.Abstract): void;
     fireDeletionListeners(block: BlockSvg, undoFunc?: UnKnownFunction | undefined): void;
     forceDeleteVariableById(id: string): void;
-    getAllBlocks(ordered?: boolean): Array<Block>;
+    getAllBlocks(ordered?: boolean): Array<BlockSvg>;
     getAllGlobalProcedureMutations(): unknown;
     getAllVariables(): Array<VariableModel>;
     getBlockById(id: string): Blockly.Block;
@@ -608,6 +601,25 @@ declare namespace Blockly {
     animateLid_(): void;
     close(): void;
     click(): void;
+  }
+
+  export interface FieldTextInput extends Field {
+    argType_: Array<string>;
+    arrowWidth_: number;
+    class_?: string;
+    name: string;
+    renderSep: number;
+    renderWidth: number;
+    restrictor_?: unknown;
+    size_: { width: number; height: number };
+    sourceBlock_: Blockly.Block;
+    textElement_: HTMLElement;
+    text_: string;
+    useTouchInteraction_: boolean;
+    verify_when_blur_?: unknown;
+    visible_: boolean;
+    maxDisplayLength: number;
+    workspace_: Blockly.WorkspaceSvg;
   }
 
   export interface Field {

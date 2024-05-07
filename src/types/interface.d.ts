@@ -1,5 +1,5 @@
 import type { IntlShape } from "react-intl";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
 
 interface Action<T = any> {
   type: T;
@@ -241,7 +241,7 @@ declare global {
       pluginName: string,
       id: string,
       settings: Array<SettingCategory>,
-      icon?: any,
+      icon?: string | ReactElement,
     ): {
       dispose(): void;
     };
