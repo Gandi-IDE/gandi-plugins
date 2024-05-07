@@ -1,189 +1,125 @@
-import lineText from "./lineText";
 import React from "react";
-import BlockinputaIcon from "assets/icon--witcat-blockinput.svg";
+import BlockinputIcon from "assets/icon--witcat-blockinput.svg";
+import { createBlockTextareaElement } from "./textarea";
 
-let show = false;
+function splitStringIntoLines(inputString: string, charactersPerLine: number): Array<string> {
+  const regex = new RegExp(".{1," + charactersPerLine + "}", "g");
+  return inputString.match(regex) || [];
+}
 
-let checkLong = 50,
-  timer = null;
+const DEFAULT_TEXT_MAX_LENGTH = 20;
+const DEFAULT_MAX_STRING_LENGTH = 50;
 
-const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
-  lineText.originShowEditorFunc = blockly.FieldTextInput.prototype.showEditor_;
-  lineText.originHtmlInputKeyDown_ = blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
-  lineText.originalRender_ = blockly.FieldTextInput.prototype.render_;
-  document.body.addEventListener("startInputing", () => {
-    const s = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLElement;
-    s.style.resize = "none";
-  });
-  const listener = () => {
-    const input = document.getElementsByClassName("blocklyHtmlInput")[0] as
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | undefined;
-    if (input !== undefined) {
-      if (input.value.length > checkLong) {
-        if (!show) {
-          show = true;
-          popups(input).then(() => {
-            show = false;
-          });
+const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginContext) => {
+  let maxStringLength = DEFAULT_MAX_STRING_LENGTH;
+  let disposeBlockTextarea = null;
+  let disposeOutputShapeChange = null;
+  let disposeMultilineText = null;
+  let textAlign = "center";
+
+  const getToolboxAndWorkspaceBlocks = () => {
+    const toolbox = workspace.getToolbox();
+    return toolbox.flyout_.getWorkspace().getAllBlocks().concat(workspace.getAllBlocks());
+  };
+
+  const convertInputToTextarea = () => {
+    blockly.FieldTextInput.htmlInput_.blur();
+    blockly.WidgetDiv.DIV.style.display = "none";
+    createBlockTextareaElement(
+      msg("plugins.witcatBlockinput.title"),
+      blockly.FieldTextInput.htmlInput_.defaultValue,
+      blockly.FieldTextInput.htmlInput_.value,
+      (value) => {
+        if (blockly.FieldTextInput.htmlInput_) {
+          blockly.FieldTextInput.htmlInput_.value = value;
+          blockly.WidgetDiv.hide();
+          blockly.DropDownDiv.hideWithoutAnimation();
+        }
+      },
+      textAlign,
+    );
+  };
+
+  const useMultilineText = () => {
+    const originalRenderFunc = blockly.FieldTextInput.prototype.render_;
+    const originUpdateWidthTextFunc = blockly.FieldTextInput.prototype.updateWidth;
+    blockly.FieldTextInput.prototype.updateWidth = function () {
+      this.textElement_.innerHTML = "";
+      const texts = splitStringIntoLines(this.getDisplayText_(), maxStringLength);
+      for (let index = 0; index < texts.length; index++) {
+        const text = texts[index];
+        const tspan = document.createElementNS(blockly.SVG_NS, "tspan");
+        tspan.textContent = text;
+        if (index > 0) {
+          tspan.setAttribute("dy", "16");
+        }
+        tspan.setAttribute("x", "0");
+        this.textElement_.appendChild(tspan);
+      }
+
+      this.size_.height = 16 * (texts.length + 1);
+      this.size_.width = this.textElement_.firstChild.getComputedTextLength();
+
+      this.arrowWidth_ = 0;
+      if (this.positionArrow) {
+        this.arrowWidth_ = this.positionArrow(this.size_.width);
+        this.size_.width += this.arrowWidth_;
+      }
+    };
+    blockly.FieldTextInput.prototype.render_ = function () {
+      originalRenderFunc.call(this);
+      if (this.textElement_) {
+        for (const iterator of this.textElement_.children) {
+          iterator.setAttribute("x", this.textElement_.getAttribute("x"));
         }
       }
-    }
+    };
+    disposeMultilineText = () => {
+      blockly.FieldTextInput.prototype.render_ = originalRenderFunc;
+      blockly.FieldTextInput.prototype.updateWidth = originUpdateWidthTextFunc;
+    };
   };
-  document.body.addEventListener("startInputing", listener);
-  lineText.textLeft(true);
-  lineText.svg(blockly);
-  lineText.svgstart(true, vm, workspace, blockly);
-  lineText.textarea(blockly);
-  lineText.changTextarea(true, vm, workspace, blockly);
-  lineText.texthide(20, vm, workspace, blockly);
 
-  const popups = (input: HTMLInputElement | HTMLTextAreaElement): Promise<void> => {
-    return new Promise((resolve) => {
-      const div = document.createElement("div");
-      div.style.position = "fixed";
-      div.style.top = "0px";
-      div.style.left = "0px";
-      div.style.width = "100%";
-      div.style.height = "100%";
-      div.style.zIndex = "9999";
-      div.style.transition = "all 0.2s ease-out";
-      div.style.backgroundColor = "#00000000";
+  const useSquareOutputShape = () => {
+    const originalJsonInit = blockly.Block.prototype.jsonInit;
+    blockly.Block.prototype.jsonInit = function (json: Record<string, unknown>) {
+      if (this.type === "text") {
+        originalJsonInit.call(this, {
+          ...json,
+          outputShape: blockly.OUTPUT_SHAPE_SQUARE,
+        });
+      } else {
+        originalJsonInit.call(this, json);
+      }
+    };
+    disposeOutputShapeChange = () => {
+      blockly.Block.prototype.jsonInit = originalJsonInit;
+    };
+  };
 
-      div.innerHTML = `
-        <div id="myModal" class="modal">
-          <div class="modals">
-            <span class="close">
-              &times;
-            </span>
-            <h5 class="modal-title">${msg("witcat.blockinput.title")}</h5>
-            <div class="modal-content">
-            </div>
-          </div>
-        </div>
-        <style>
-          .modal{
-            height:0%;
-            transition:all 0.2s ease-out;
-          }
+  const useBlockTextarea = () => {
+    const originShowEditorFunc = blockly.FieldTextInput.prototype.showEditor_;
+    blockly.FieldTextInput.prototype.showEditor_ = function (...args: unknown[]) {
+      originShowEditorFunc.call(this, ...args);
+      // 如果长度超过 20， 就显示自定义输入框
+      if (blockly.FieldTextInput.htmlInput_.value.length > maxStringLength) {
+        convertInputToTextarea();
+      }
+    };
+    const originHtmlInputChangeFunc = blockly.FieldTextInput.prototype.onHtmlInputChange_;
+    blockly.FieldTextInput.prototype.onHtmlInputChange_ = function (...args: unknown[]) {
+      originHtmlInputChangeFunc.call(this, ...args);
+      // 如果长度超过 20， 就显示自定义输入框
+      if (blockly.FieldTextInput.htmlInput_.value.length > maxStringLength) {
+        convertInputToTextarea();
+      }
+    };
 
-          .modal-content {
-            margin - top:16px;
-          height:calc(100% - 16px);
-          overflow: scroll;
-          }
-
-          .modals{
-            background - color: #00000000;
-            margin: 15vh 25vw;
-            padding: 20px;
-            border-radius:10px;
-            width: 50%;
-            height:70vh;
-            position:relative;
-            transition:all 0.3s ease-out;
-          }
-
-          .modal-content::-webkit-scrollbar-corner {
-            background - color: transparent;
-          }
-
-          .modal-content p {
-            color: var(--theme-text-primary);
-          }
-
-          .modals h5 {
-            position:relative;
-            bottom: 10px;
-            color: #00000000;
-            font-size: 20px;
-            transition:all 0.3s ease-out;
-          }
-
-          .close {
-            cursor: pointer;
-            position:absolute;
-            top:0;
-            right:10px;
-            font-size:28px;
-            font-weight:bold;
-            color: #00000000;
-            transition:all 0.3s ease-out;
-          }
-
-          //关闭特效
-          .close:hover,
-          .close:focus {
-            color: black;
-            text-decoration: none;
-          }
-
-        </style>
-        `;
-      const inputstyle = () => {
-        input.parentElement.style.transition = "all 0.3s ease-out";
-        input.parentElement.style.position = "fixed";
-        input.parentElement.style.top = "calc(15vh + 30px)";
-        input.parentElement.style.left = "25vw";
-        input.parentElement.style.width = "calc(50% - 20px)";
-        input.parentElement.style.height = "calc(70vh - 60px)";
-        input.parentElement.style.margin = "20px 10px";
-        input.parentElement.style.border = "none";
-        input.parentElement.style.background = "var(--theme-color-150)";
-        input.parentElement.style.borderRadius = "10px";
-        input.parentElement.style.transform = "";
-        input.parentElement.style.padding = "10px";
-        input.parentElement.style.boxShadow = "var(--theme-scrollbar-color) 0px 0px 0px 4px";
-        input.style.background = "var(--theme-color-150)";
-        input.style.border = "none";
-        input.style.color = "var(--theme-text-primary)";
-        input.style.borderRadius = "0px";
-      };
-      inputstyle();
-
-      document.body.appendChild(div);
-
-      const modal = document.getElementById("myModal") as HTMLDivElement;
-      const span = document.querySelector(".close") as HTMLSpanElement;
-
-      const config: MutationObserverInit = {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      };
-
-      const callback = function (mutationsList: MutationRecord[], observer: MutationObserver) {
-        observer.disconnect();
-        const input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement | undefined;
-        if (input !== undefined) {
-          inputstyle();
-          observer.observe(input.parentElement, config);
-        } else {
-          div.style.backgroundColor = "#00000000";
-          modal.style.height = "0%";
-          (document.getElementsByClassName("modals")[0] as HTMLDivElement).style.backgroundColor = "#00000000";
-          span.style.color = "#00000000";
-          (document.getElementsByClassName("modal-title")[0] as HTMLElement).style.color = "#00000000";
-          setTimeout(() => {
-            div.remove();
-            resolve();
-          }, 300);
-        }
-      };
-
-      const observer = new MutationObserver(callback);
-      observer.observe(input.parentElement, config);
-
-      setTimeout(() => {
-        div.style.backgroundColor = "var(--theme-scrollbar-color)";
-        modal.style.height = "80%";
-        (document.getElementsByClassName("modals")[0] as HTMLDivElement).style.backgroundColor =
-          "var(--theme-color-300)";
-        span.style.color = "var(--theme-color-g300)";
-        (document.getElementsByClassName("modal-title")[0] as HTMLElement).style.color = "var(--theme-text-primary)";
-      }, 300);
-    });
+    disposeBlockTextarea = () => {
+      blockly.FieldTextInput.prototype.showEditor_ = originShowEditorFunc;
+      blockly.FieldTextInput.prototype.onHtmlInputChange_ = originHtmlInputChangeFunc;
+      disposeBlockTextarea = null;
+    };
   };
 
   const register = registerSettings(
@@ -202,9 +138,9 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             value: true,
             onChange: (value: boolean) => {
               if (value) {
-                document.body.addEventListener("startInputing", listener);
-              } else {
-                document.body.removeEventListener("startInputing", listener);
+                useBlockTextarea();
+              } else if (disposeBlockTextarea) {
+                disposeBlockTextarea();
               }
             },
           },
@@ -215,9 +151,9 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
               type: "number",
             },
             label: msg("witcat.blockinput.option.show"),
-            value: 50,
+            value: DEFAULT_MAX_STRING_LENGTH,
             onChange: (value: number) => {
-              checkLong = value;
+              maxStringLength = Number(value) > 0 ? Number(value) : DEFAULT_MAX_STRING_LENGTH;
             },
           },
           {
@@ -226,7 +162,11 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
-              lineText.changTextarea(value, vm, workspace, blockly);
+              if (value) {
+                useMultilineText();
+              } else if (disposeBlockTextarea) {
+                disposeMultilineText();
+              }
             },
           },
           {
@@ -235,7 +175,17 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
-              lineText.svgstart(value, vm, workspace, blockly);
+              if (value) {
+                useSquareOutputShape();
+              } else if (disposeBlockTextarea) {
+                disposeOutputShapeChange();
+              }
+              getToolboxAndWorkspaceBlocks().forEach((block) => {
+                if (block.type === "text") {
+                  block.setOutputShape(value ? blockly.OUTPUT_SHAPE_SQUARE : blockly.OUTPUT_SHAPE_ROUND);
+                  block.render();
+                }
+              });
             },
           },
           {
@@ -244,7 +194,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
-              lineText.textLeft(value);
+              textAlign = value ? "left" : "center";
             },
           },
           {
@@ -252,38 +202,63 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             type: "input",
             inputProps: {
               type: "number",
+              onPressEnter: (e) => {
+                (e.target as HTMLInputElement).blur();
+              },
+              onBlur: (e) => {
+                blockly.BlockSvg.MAX_DISPLAY_LENGTH = Number(e.target.value) > 0 ? Number(e.target.value) : Infinity;
+                getToolboxAndWorkspaceBlocks().forEach((block) => {
+                  if (block.type === "text") {
+                    const inputBlock = block.inputList[0].fieldRow[0];
+                    inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+                    inputBlock.setVisible(false);
+                    inputBlock.setVisible(true);
+                    block.render();
+                  }
+                });
+              },
             },
             label: msg("witcat.blockinput.option.hide"),
-            value: 20,
-            onChange: (value: number) => {
-              debounce(() => {
-                lineText.texthide(value, vm, workspace, blockly);
-              }, 1000);
-            },
+            value: DEFAULT_TEXT_MAX_LENGTH,
           },
         ],
       },
     ],
-    React.createElement(BlockinputaIcon),
+    React.createElement(BlockinputIcon),
   );
+
+  // 默认开启
+  useBlockTextarea();
+  useSquareOutputShape();
+  useMultilineText();
+  getToolboxAndWorkspaceBlocks().forEach((block) => {
+    if (block.type === "text") {
+      const inputBlock = block.inputList[0].fieldRow[0];
+      inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+      inputBlock.setVisible(false);
+      inputBlock.setVisible(true);
+      block.setOutputShape(blockly.OUTPUT_SHAPE_SQUARE);
+      block.render();
+    }
+  });
   return {
     dispose: () => {
-      document.body.removeEventListener("startInputing", listener);
-      lineText.svgstart(false, vm, workspace, blockly);
-      lineText.changTextarea(false, vm, workspace, blockly);
-      lineText.textLeft(false);
-      lineText.texthide(Infinity, vm, workspace, blockly);
-      lineText.dispose(blockly);
+      disposeBlockTextarea?.();
+      disposeOutputShapeChange?.();
+      disposeMultilineText?.();
+      getToolboxAndWorkspaceBlocks().forEach((block) => {
+        if (block.type === "text") {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.setOutputShape(blockly.OUTPUT_SHAPE_ROUND);
+          block.render();
+        }
+      });
       register.dispose();
     },
   };
 };
 
 export default WitcatBlockinput;
-
-function debounce(func: { (): void; (): void }, delay: number) {
-  clearTimeout(timer);
-  timer = setTimeout(() => {
-    func();
-  }, delay);
-}
