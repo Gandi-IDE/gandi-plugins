@@ -1,6 +1,7 @@
 import React from "react";
 import BlockinputIcon from "assets/icon--witcat-blockinput.svg";
 import { createBlockTextareaElement } from "./textarea";
+import toast from "react-hot-toast";
 
 function splitStringIntoLines(inputString: string, charactersPerLine: number): Array<string> {
   const regex = new RegExp(".{1," + charactersPerLine + "}", "g");
@@ -10,7 +11,7 @@ function splitStringIntoLines(inputString: string, charactersPerLine: number): A
 const DEFAULT_TEXT_MAX_LENGTH = 20;
 const DEFAULT_MAX_STRING_LENGTH = 50;
 
-const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginContext) => {
+const WitcatBlockinput = ({ registerSettings, intl, msg, workspace, blockly }: PluginContext) => {
   let maxStringLength = DEFAULT_MAX_STRING_LENGTH;
   let disposeBlockTextarea = null;
   let disposeOutputShapeChange = null;
@@ -221,6 +222,30 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
             },
             label: msg("witcat.blockinput.option.hide"),
             value: DEFAULT_TEXT_MAX_LENGTH,
+            onChange: (value: string, cancelChange) => {
+              const numVal = Number(value);
+              if (numVal > 120) {
+                toast.error(
+                  intl.formatMessage(
+                    {
+                      id: "general.settings.maxValueTip",
+                    },
+                    { value: 120 },
+                  ),
+                );
+                cancelChange();
+              } else if (numVal < 0) {
+                toast.error(
+                  intl.formatMessage(
+                    {
+                      id: "general.settings.minValueTip",
+                    },
+                    { value: 0 },
+                  ),
+                );
+                cancelChange();
+              }
+            },
           },
         ],
       },
