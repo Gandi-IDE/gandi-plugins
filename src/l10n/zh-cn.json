@@ -2,6 +2,8 @@
   "general.blocks.anticlockwise": "逆时针",
   "general.blocks.clockwise": "顺时针",
   "general.blocks.greenFlag": "绿旗",
+  "general.settings.maxValueTip": "最大设置为 {value}",
+  "general.settings.minValueTip": "最小设置为 {value}",
   "plugins.pluginsManager.title": "插件",
   "plugins.pluginsManager.description": "下列是一些能够增强 Gandi 功能的插件，你可以根据自己的需要选择进行加载。",
   "plugins.pluginsManager.contributing": "所有插件均已开源，可以在{href}查看代码和创建插件。",
