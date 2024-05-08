@@ -233,7 +233,6 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
               onChange: (value) => {
                 currentSpriteMenuLayout = value.toString();
                 updateSpriteMenuStyle();
-                console.log(redux)
               },
             },
           ],
