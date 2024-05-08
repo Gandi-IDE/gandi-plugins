@@ -3,7 +3,6 @@ import * as ReactDOM from "react-dom";
 import { defineMessages } from "@formatjs/intl";
 import Tooltip from "components/Tooltip";
 import { hotkeyIsDown, transitionHotkeysToString } from "utils/hotkey-helper";
-import { isMac } from "lib/client-info";
 
 import TerminalIcon from "assets/icon--terminal.svg";
 import styles from "./styles.less";
@@ -18,10 +17,7 @@ const messages = defineMessages({
 
 const DEFAULT_SETTINGS = {
   hotkeys: {
-    visible: {
-      keys: ["altKey", "T"],
-      stringKeys: [isMac ? "Option" : "Alt", "T"],
-    },
+    visible: ["altKey", "T"],
   },
 };
 
@@ -38,10 +34,10 @@ const Terminal: React.FC<PluginContext> = ({ intl, vm, registerSettings, trackEv
   }, [vm]);
 
   React.useEffect(() => {
-    if (shortcutKey.keys.length) {
+    if (shortcutKey.length) {
       const handler = (e: KeyboardEvent) => {
         if (!rootRef.current.getBoundingClientRect().x) return;
-        if (hotkeyIsDown(shortcutKey.keys, e)) {
+        if (hotkeyIsDown(shortcutKey, e)) {
           e.preventDefault();
           handleShow();
         }
@@ -64,13 +60,8 @@ const Terminal: React.FC<PluginContext> = ({ intl, vm, registerSettings, trackEv
             type: "hotkey",
             label: intl.formatMessage(messages.title),
             value: shortcutKey,
-            onChange: (value) => {
-              setShortcutKey(
-                value as {
-                  keys: string[];
-                  stringKeys: string[];
-                },
-              );
+            onChange: (value: Array<string>) => {
+              setShortcutKey(value);
             },
           },
         ],
@@ -88,7 +79,7 @@ const Terminal: React.FC<PluginContext> = ({ intl, vm, registerSettings, trackEv
         icon={<TerminalIcon />}
         onClick={handleShow}
         tipText={intl.formatMessage(messages.title)}
-        shortcutKey={transitionHotkeysToString(shortcutKey.keys)}
+        shortcutKey={transitionHotkeysToString(shortcutKey)}
       />
     </section>,
     document.querySelector(".plugins-wrapper"),
