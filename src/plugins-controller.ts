@@ -6,6 +6,7 @@ import pluginsEntry from "./plugins-entry";
 import pluginsL10n from "./plugins-l10n";
 import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
+import { noop } from "lodash-es";
 
 export const LoadingPlugins = {};
 
@@ -13,7 +14,7 @@ interface PluginComponent extends React.FunctionComponent<PluginContext> {
   displayName: string;
 }
 
-interface PluginFunction {
+export interface PluginFunction {
   (context: PluginContext): {
     dispose?(): void;
   };
@@ -23,10 +24,6 @@ export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "
   disabledPlugins?: Array<string>;
   locale: string;
 }
-
-const noop = () => {
-  /* noop */
-};
 
 class PluginsController {
   context: PluginContext;
@@ -83,12 +80,6 @@ class PluginsController {
         root.unmount();
         this.wrapperElement.removeChild(div);
       },
-    };
-    if (!window.Scratch) window.Scratch = {};
-    if (!window.Scratch.plugins) window.Scratch.plugins = {};
-    window.Scratch.plugins.register = (plugin: PluginFunction, pluginName = "custom-plugin") => {
-      const instance = plugin(this.context);
-      this.plugins[pluginName] = instance?.dispose || noop;
     };
   }
 

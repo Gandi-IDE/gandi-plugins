@@ -8,7 +8,6 @@ import scratchblocks from "gandiblocks";
 import IF from "components/IF";
 import { hotkeyIsDown, transitionHotkeysToString } from "utils/hotkey-helper";
 import useStorageInfo from "hooks/useStorageInfo";
-import { isMac } from "lib/client-info";
 import zh_cn from "gandiblocks/locales/zh-cn.json"; // 中文
 import BlocksKeywordsParser from "utils/blocks-keywords-parser";
 import { scrollBlockIntoView } from "utils/block-helper";
@@ -79,10 +78,7 @@ const DROPDOWN_BLOCK_PAGE_SIZE = 20;
 
 const DEFAULT_SETTINGS = {
   hotkeys: {
-    visible: {
-      keys: ["ctrlKey", "F"],
-      stringKeys: [isMac ? "Command" : "Ctrl", "F"],
-    },
+    visible: ["ctrlKey", "F"],
   },
 };
 
@@ -432,10 +428,10 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
   }, [vm, workspace]);
 
   React.useEffect(() => {
-    if (shortcutKey.keys.length) {
+    if (shortcutKey.length) {
       const handler = (e: KeyboardEvent) => {
         if (!rootRef.current.getBoundingClientRect().x) return;
-        if (hotkeyIsDown(shortcutKey.keys, e)) {
+        if (hotkeyIsDown(shortcutKey, e)) {
           e.preventDefault();
           setContainerInfo({
             ...containerInfoRef.current,
@@ -462,13 +458,8 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
             type: "hotkey",
             label: intl.formatMessage(messages.title),
             value: shortcutKey,
-            onChange: (value) => {
-              setShortcutKey(
-                value as {
-                  keys: string[];
-                  stringKeys: string[];
-                },
-              );
+            onChange: (value: Array<string>) => {
+              setShortcutKey(value);
             },
           },
         ],
@@ -504,7 +495,7 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
         icon={<CodeFindIcon />}
         onClick={handleShow}
         tipText={intl.formatMessage(messages.intro)}
-        shortcutKey={transitionHotkeysToString(shortcutKey.keys)}
+        shortcutKey={transitionHotkeysToString(shortcutKey)}
       />
       {visible &&
         ReactDOM.createPortal(

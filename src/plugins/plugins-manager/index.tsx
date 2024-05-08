@@ -6,6 +6,7 @@ import pluginsManifest from "src/plugins-manifest";
 import Plugins from "../../plugins-entry";
 import messages from "../../l10n/en.json";
 import { LoadingPlugins } from "src/plugins-controller";
+import styles from "./styles.less";
 
 const ALL_PLUGINS = Object.keys(Plugins);
 // When the line numbers of the variables below change, plopfile.js needs to be updated.
@@ -31,6 +32,7 @@ interface PluginsManagerProps extends PluginContext {
 const PluginsManager: React.FC<PluginsManagerProps> = ({
   registerSettings,
   msg,
+  intl,
   plugins,
   disabledPlugins,
   loadAndInjectPlugin,
@@ -54,7 +56,32 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
         {
           key: "plugins",
           label: msg("plugins.pluginsManager.title"),
-          description: msg("plugins.pluginsManager.description"),
+          description: (
+            <>
+              {`${msg("plugins.pluginsManager.description")}`}
+              <br />
+              {intl.formatMessage(
+                {
+                  id: "plugins.pluginsManager.contributing",
+                  defaultMessage: "All plugins are open source and can be viewed and created at {href}.",
+                  description: "The description of the plugins",
+                },
+                {
+                  href: (
+                    <a
+                      href="https://github.com/Gandi-IDE/gandi-plugins"
+                      target="_blank"
+                      rel="noreferrer"
+                      key="more"
+                      className={styles.more}
+                    >
+                      {msg("plugins.pluginsManager.moreInfo")}
+                    </a>
+                  ),
+                },
+              )}
+            </>
+          ),
           items: ALL_PLUGINS.map((key) => {
             const pluginName = spinalToCamel(key);
             const title = messages[`plugins.${pluginName}.title`] ? msg(`plugins.${pluginName}.title`) : key;
@@ -66,7 +93,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
               disabled: disabledPlugins.includes(key),
               tags: pluginsManifest[key].credits || [],
               description: messages[`plugins.${pluginName}.description`]
-                ? msg(`plugins.${pluginName}.description`)
+                ? `${msg(`plugins.${pluginName}.description`)}`
                 : null,
               onChange: (value: boolean, cancelChange: () => void) => {
                 if (value === false && LoadingPlugins[key]) {

@@ -1,5 +1,5 @@
 import type { IntlShape } from "react-intl";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement, ReactNode } from "react";
 
 interface Action<T = any> {
   type: T;
@@ -14,27 +14,18 @@ interface Dispatch<A extends Action = AnyAction> {
   <T extends A>(action: T): T;
 }
 
-type Value =
-  | string
-  | number
-  | string[]
-  | number[]
-  | boolean
-  | {
-      keys: string[];
-      stringKeys: string[];
-    };
+type PluginSettingValueType = string | number | string[] | number[] | boolean;
 
 interface SettingOption {
   key?: string;
   label: string;
-  value?: Value;
+  value?: PluginSettingValueType;
 }
 
 interface SettingCategory {
   key: string;
   label: string;
-  description?: string;
+  description?: ReactNode;
   items: Array<PluginSetting>;
 }
 
@@ -220,20 +211,12 @@ declare global {
     description?: string;
     key: string;
     label?: string;
-    value: Value;
+    value: PluginSettingValueType;
     tags?: Array<{ text: string; link?: string }>;
     autoSave?: boolean;
     style?: CSSProperties;
     options?: Array<SettingOption>;
-    onChange?: (
-      value:
-        | Value
-        | {
-            keys: string[];
-            stringKeys: string[];
-          },
-      cancelChange?: () => void,
-    ) => void;
+    onChange?: (value: PluginSettingValueType, cancelChange?: () => void) => void;
   }
 
   interface PluginRegister {
@@ -241,7 +224,7 @@ declare global {
       pluginName: string,
       id: string,
       settings: Array<SettingCategory>,
-      icon?: any,
+      icon?: string | ReactElement,
     ): {
       dispose(): void;
     };
