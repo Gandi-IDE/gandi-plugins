@@ -7,7 +7,6 @@ import { defineMessages } from "@formatjs/intl";
 import useStorageInfo from "hooks/useStorageInfo";
 import DomHelpers from "utils/dom-helper";
 import codeHash from "lib/code-hash.json";
-import { isMac } from "lib/client-info";
 import { hotkeyIsDown, transitionHotkeysToString } from "utils/hotkey-helper";
 import XML from "utils/xml";
 import CodeFilterIcon from "assets/icon--code-filter.svg";
@@ -21,10 +20,7 @@ interface SelectOption {
 
 const DEFAULT_SETTINGS = {
   hotkeys: {
-    visible: {
-      keys: ["altKey", "F"],
-      stringKeys: [isMac ? "Option" : "Alt", "F"],
-    },
+    visible: ["altKey", "F"],
   },
 };
 
@@ -279,9 +275,9 @@ const CodeFilter: React.FC<PluginContext> = ({ workspace, intl, vm, registerSett
   }, [shortcutKey]);
 
   React.useEffect(() => {
-    if (shortcutKey.keys.length) {
+    if (shortcutKey.length) {
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (mouseInWorkspace.current && hotkeyIsDown(shortcutKey.keys, e)) {
+        if (mouseInWorkspace.current && hotkeyIsDown(shortcutKey, e)) {
           e.preventDefault();
           setContainerInfo({
             ...containerInfoRef.current,
@@ -372,13 +368,8 @@ const CodeFilter: React.FC<PluginContext> = ({ workspace, intl, vm, registerSett
             label: intl.formatMessage(messages.title),
             type: "hotkey",
             value: shortcutKey,
-            onChange: (value) => {
-              setShortcutKey(
-                value as {
-                  keys: string[];
-                  stringKeys: string[];
-                },
-              );
+            onChange: (value: Array<string>) => {
+              setShortcutKey(value);
             },
           },
         ],
@@ -415,7 +406,7 @@ const CodeFilter: React.FC<PluginContext> = ({ workspace, intl, vm, registerSett
           icon={<CodeFilterIcon />}
           onClick={handleClick}
           tipText={hoverText}
-          shortcutKey={transitionHotkeysToString(shortcutKey.keys)}
+          shortcutKey={transitionHotkeysToString(shortcutKey)}
         />,
         document.querySelector(".toolboxHeader") || document.body,
       )}
