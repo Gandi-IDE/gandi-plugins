@@ -1,6 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
   mode: "development",
@@ -102,6 +103,10 @@ module.exports = {
           to: "./",
         },
       ],
+    }),
+    new webpack.DefinePlugin({
+      "process.env.SITE_SRC":
+        process.env.SITE === "COCREA" ? '"https://cocrea.world/gandi"' : '"https://ccw.site/gandi"',
     }),
   ],
   target: ["web", "es6"],
