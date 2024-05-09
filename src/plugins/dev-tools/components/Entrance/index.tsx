@@ -6,7 +6,6 @@ import Tooltip from "components/Tooltip";
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import { hotkeyIsDown, transitionHotkeysToString } from "utils/hotkey-helper";
 import useStorageInfo from "hooks/useStorageInfo";
-import { isMac } from "lib/client-info";
 
 import DevToolsIcon from "assets/icon--dev-tools.svg";
 import styles from "./styles.less";
@@ -21,10 +20,7 @@ const messages = defineMessages({
 
 const DEFAULT_SETTINGS = {
   hotkeys: {
-    visible: {
-      keys: ["ctrlKey", "I"],
-      stringKeys: [isMac ? "Command" : "Ctrl", "I"],
-    },
+    visible: ["ctrlKey", "I"],
   },
 };
 
@@ -70,10 +66,10 @@ const DevToolsPluginEntrance: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   React.useEffect(() => {
-    if (shortcutKey.keys.length) {
+    if (shortcutKey.length) {
       const handler = (e: KeyboardEvent) => {
         if (!rootRef.current.getBoundingClientRect().x) return;
-        if (hotkeyIsDown(shortcutKey.keys, e)) {
+        if (hotkeyIsDown(shortcutKey, e)) {
           e.preventDefault();
           setContainerInfo({
             ...containerInfoRef.current,
@@ -100,13 +96,8 @@ const DevToolsPluginEntrance: React.FC<{ children: React.ReactNode }> = ({ child
             type: "hotkey",
             label: intl.formatMessage(messages.title),
             value: shortcutKey,
-            onChange: (value) => {
-              setShortcutKey(
-                value as {
-                  keys: string[];
-                  stringKeys: string[];
-                },
-              );
+            onChange: (value: Array<string>) => {
+              setShortcutKey(value);
             },
           },
         ],
@@ -138,7 +129,7 @@ const DevToolsPluginEntrance: React.FC<{ children: React.ReactNode }> = ({ child
         icon={<DevToolsIcon />}
         onClick={handleShow}
         tipText={intl.formatMessage(messages.title)}
-        shortcutKey={transitionHotkeysToString(shortcutKey.keys)}
+        shortcutKey={transitionHotkeysToString(shortcutKey)}
       />
       {visible
         ? ReactDOM.createPortal(
