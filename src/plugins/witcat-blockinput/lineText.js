@@ -1,26 +1,72 @@
 let styleElement = document.createElement("style");
 styleElement.innerHTML = `
 .blocklyHtmlInput{
-    text-align: center;
+  text-align: center;
 }
 `;
 document.head.appendChild(styleElement);
-let svgStart = true,
-  textarea = "textarea";
+let textarea = "textarea",
+  renderWidth = 20,
+  ResizeEditorAble = false;
+
+const getToolboxAndWorkspaceBlocks = (workspace) => {
+  const toolbox = workspace.getToolbox();
+  if (toolbox) {
+    return toolbox.flyout_.getWorkspace().getAllBlocks().concat(workspace.getAllBlocks());
+  }
+  return [];
+};
+
+const opcodeToSettings = {
+  text: "text",
+  argument_editor_string_number: "text",
+  math_number: "number",
+  math_integer: "number",
+  math_whole_number: "number",
+  math_positive_number: "number",
+  math_angle: "number",
+  note: "number",
+  colour_picker: "color",
+};
+
+let borderRestoration = {
+  text: false,
+  number: false,
+  color: false,
+};
 
 const lineText = {
   originShowEditorFunc: null,
   originHtmlInputKeyDown_: null,
   originalRender_: null,
-  svgstart: function (start, vm, workspace, blockly) {
-    svgStart = start;
-    this.updateAllBlocks(vm, workspace, blockly);
+  originalResizeEditor__: null,
+  svgStart: function (start, workspace, blockly, type) {
+    let needRerenderBlockTypes = new Set(["text", "number", "color"]);
+    if (type) {
+      if (borderRestoration[type] === start) {
+        return;
+      }
+      needRerenderBlockTypes = new Set([type]);
+    }
+    needRerenderBlockTypes.forEach((needRerenderBlockType) => {
+      borderRestoration[needRerenderBlockType] = start;
+    });
+    getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+      if (needRerenderBlockTypes.has(opcodeToSettings[block.type])) {
+        block.setOutputShape(
+          borderRestoration[opcodeToSettings[block.type]] === true
+            ? blockly.OUTPUT_SHAPE_SQUARE
+            : blockly.OUTPUT_SHAPE_ROUND,
+        );
+        block.render();
+      }
+    });
   },
   svg: function (Blockly) {
     const originalJsonInit = Blockly.BlockSvg.prototype.jsonInit;
 
     Blockly.BlockSvg.prototype.jsonInit = function (json) {
-      if (this.type === "text" && svgStart) {
+      if (borderRestoration[opcodeToSettings[this.type]] === true) {
         originalJsonInit.call(this, {
           ...json,
           outputShape: Blockly.OUTPUT_SHAPE_SQUARE,
@@ -34,29 +80,54 @@ const lineText = {
     if (start) {
       styleElement.innerHTML = `
 .blocklyHtmlInput{
-    text-align: left;
+  text-align: left;
 }
     `;
     } else {
       styleElement.innerHTML = `
 .blocklyHtmlInput{
-    text-align: center;
+  text-align: center;
 }
     `;
     }
   },
-  changTextarea: function (start, vm, workspace, blockly) {
+  changTextarea: function (start) {
     textarea = start ? "textarea" : "input";
-    this.updateAllBlocks(vm, workspace, blockly);
   },
-  texthide: function (num, vm, workspace, blockly) {
+  changeRenderWidth: function (width, workspace, rerender) {
+    if (renderWidth === (width > 20 ? width : 20)) return;
+    renderWidth = width > 20 ? width : 20;
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
+    }
+  },
+  texthide: function (num, workspace, blockly, rerender) {
+    if (blockly.BlockSvg.MAX_DISPLAY_LENGTH === (num > 0 ? num : Infinity)) return;
     blockly.BlockSvg.MAX_DISPLAY_LENGTH = num > 0 ? num : Infinity;
-    this.updateAllBlocks(vm, workspace, blockly);
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
+    }
   },
   dispose: function (Blockly) {
     Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditorFunc;
     Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
     Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
+    Blockly.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor__;
   },
   textarea: function (Blockly) {
     const originShowEditorFunc = Blockly.FieldTextInput.prototype.showEditor_;
@@ -68,6 +139,8 @@ const lineText = {
           tagName === "INPUT" &&
           document.getElementsByClassName("gandi_custom-procedures_workspace_1d2uW").length == 0
         ) {
+          let s = originalCreateElement.call(document, "div");
+          s.ClassName = "blocklyHtmlInputs";
           return originalCreateElement.call(document, textarea);
         } else {
           return originalCreateElement.call(document, tagName);
@@ -78,6 +151,86 @@ const lineText = {
 
       const event = new Event("startInputing");
       document.body.dispatchEvent(event);
+    };
+
+    const originalResizeEditor__ = Blockly.FieldTextInput.prototype.resizeEditor_;
+    Blockly.FieldTextInput.prototype.resizeEditor_ = function () {
+      if (!ResizeEditorAble) {
+        originalResizeEditor__.call(this);
+        if (textarea == "textarea") {
+          var scale = this.sourceBlock_.workspace.scale;
+          var div = Blockly.WidgetDiv.DIV;
+
+          var initialWidth;
+          if (this.sourceBlock_.isShadow()) {
+            initialWidth = this.sourceBlock_.getHeightWidth().width * scale;
+          } else {
+            initialWidth = this.size_.width * scale;
+          }
+
+          var width;
+          if (Blockly.BlockSvg.FIELD_TEXTINPUT_EXPAND_PAST_TRUNCATION) {
+            // Resize the box based on the measured width of the text, pre-truncation
+            var textWidth = Blockly.scratchBlocksUtils.measureText(
+              Blockly.FieldTextInput.htmlInput_.style.fontSize,
+              Blockly.FieldTextInput.htmlInput_.style.fontFamily,
+              Blockly.FieldTextInput.htmlInput_.style.fontWeight,
+              Blockly.FieldTextInput.htmlInput_.value,
+            );
+            // Size drawn in the canvas needs padding and scaling
+            textWidth += Blockly.FieldTextInput.TEXT_MEASURE_PADDING_MAGIC;
+            textWidth *= scale;
+            width = textWidth;
+          } else {
+            // Set width to (truncated) block size.
+            width = initialWidth;
+          }
+          // The width must be at least FIELD_WIDTH and at most FIELD_WIDTH_MAX_EDIT
+          width = Math.max(width, Blockly.BlockSvg.FIELD_WIDTH_MIN_EDIT * scale);
+          width = Math.min(width, Blockly.BlockSvg.FIELD_WIDTH_MAX_EDIT * scale);
+          // Add 1px to width and height to account for border (pre-scale)
+          div.style.width = width / scale + 1 + "px";
+          div.style.height = this.size_.height + "px";
+          div.style.transform = "scale(" + scale + ")";
+
+          // Use margin-left to animate repositioning of the box (value is unscaled).
+          // This is the difference between the default position and the positioning
+          // after growing the box.
+          div.style.marginLeft = -0.5 * (width - initialWidth) + "px";
+
+          // Add 0.5px to account for slight difference between SVG and CSS border
+          var borderRadius = this.getBorderRadius() + 0.5;
+          div.style.borderRadius = borderRadius + "px";
+          Blockly.FieldTextInput.htmlInput_.style.borderRadius = borderRadius + "px";
+          // Pull stroke colour from the existing shadow block
+          var strokeColour = this.sourceBlock_.getColourTertiary();
+          div.style.borderColor = strokeColour;
+
+          var xy = this.getAbsoluteXY_();
+          // Account for border width, post-scale
+          xy.x -= scale / 2;
+          xy.y -= scale / 2;
+          // In RTL mode block fields and LTR input fields the left edge moves,
+          // whereas the right edge is fixed.  Reposition the editor.
+          if (this.sourceBlock_.RTL) {
+            xy.x += width;
+            xy.x -= div.offsetWidth * scale;
+            xy.x += 1 * scale;
+          }
+          // Shift by a few pixels to line up exactly.
+          xy.y += 1 * scale;
+          if (navigator.userAgent.includes("Firefox")) {
+            xy.x += 2 * scale;
+            xy.y += 1 * scale;
+          }
+          if (navigator.userAgent.includes("WebKit")) {
+            xy.y -= 1 * scale;
+          }
+          // Finally, set the actual style
+          div.style.left = xy.x + "px";
+          div.style.top = xy.y + "px";
+        }
+      }
     };
 
     const originHtmlInputKeyDown_ = Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
@@ -109,7 +262,7 @@ const lineText = {
           while (this.textElement_.firstChild) {
             this.textElement_.removeChild(this.textElement_.firstChild);
           }
-          const texts = splitStringIntoLines(this.getDisplayText_(), 20);
+          const texts = splitStringIntoLines(this.getDisplayText_(), renderWidth);
           for (const text of texts) {
             let tspan = document.createElementNS(Blockly.SVG_NS, "tspan");
             tspan.textContent = text;
@@ -168,29 +321,8 @@ const lineText = {
       }
     };
   },
-  updateAllBlocks: function (vm, workspace, blockly) {
-    const eventsOriginallyEnabled = blockly.Events.isEnabled();
-    blockly.Events.disable(); // Clears workspace right-click→undo (see SA/SA#6691)
-
-    if (workspace) {
-      if (vm.editingTarget) {
-        vm.emitWorkspaceUpdate();
-      }
-      const flyout = workspace.getFlyout();
-      if (flyout) {
-        const flyoutWorkspace = flyout.getWorkspace();
-        window.Blockly.Xml.clearWorkspaceAndLoadFromXml(
-          window.Blockly.Xml.workspaceToDom(flyoutWorkspace),
-          flyoutWorkspace,
-        );
-        workspace.getToolbox().refreshSelection();
-        workspace.toolboxRefreshEnabled_ = true;
-      }
-    }
-
-    // There's no particular reason for checking whether events were originally enabled.
-    // Unconditionally enabling events at this point could, in theory, cause bugs in the future.
-    if (eventsOriginallyEnabled) blockly.Events.enable(); // Re-enable events
+  turnRender: function (bool) {
+    ResizeEditorAble = bool;
   },
 };
 export default lineText;
