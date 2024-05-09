@@ -11,7 +11,6 @@ import styles from "./styles.less";
 const ALL_PLUGINS = Object.keys(Plugins);
 // When the line numbers of the variables below change, plopfile.js needs to be updated.
 const DEFAULT_INJECT_PLUGINS = [
-  "witcat-blockinput",
   "custom-plugin",
   "folder",
   "statistics",

@@ -48,7 +48,7 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
   document.body.addEventListener("startInputing", listener);
   lineText.textLeft(false);
   lineText.svg(blockly);
-  lineText.svgstart(true, workspace, blockly, "");
+  lineText.svgStart(true, workspace, blockly, "text");
   lineText.changeRenderWidth(20, workspace);
   lineText.textarea(blockly);
   lineText.changTextarea(true);
@@ -283,25 +283,25 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
-              lineText.svgstart(value, workspace, blockly, "text");
+              lineText.svgStart(value, workspace, blockly, "text");
             },
           },
           {
             key: "numborder",
             label: msg("witcat.blockinput.option.numborder"),
             type: "switch",
-            value: true,
+            value: false,
             onChange: (value: boolean) => {
-              lineText.svgstart(value, workspace, blockly, "number");
+              lineText.svgStart(value, workspace, blockly, "number");
             },
           },
           {
             key: "colorborder",
             label: msg("witcat.blockinput.option.colorborder"),
             type: "switch",
-            value: true,
+            value: false,
             onChange: (value: boolean) => {
-              lineText.svgstart(value, workspace, blockly, "color");
+              lineText.svgStart(value, workspace, blockly, "color");
             },
           },
           {
@@ -358,7 +358,7 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
   return {
     dispose: () => {
       document.body.removeEventListener("startInputing", listener);
-      lineText.svgstart(false, workspace, blockly, "");
+      lineText.svgStart(false, workspace, blockly, "");
       lineText.changTextarea(false);
       lineText.textLeft(false);
       lineText.texthide(0, workspace, blockly);

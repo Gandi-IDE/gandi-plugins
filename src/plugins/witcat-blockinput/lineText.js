@@ -11,7 +11,10 @@ let textarea = "textarea",
 
 const getToolboxAndWorkspaceBlocks = (workspace) => {
   const toolbox = workspace.getToolbox();
-  return toolbox.flyout_.getWorkspace().getAllBlocks().concat(workspace.getAllBlocks());
+  if (toolbox) {
+    return toolbox.flyout_.getWorkspace().getAllBlocks().concat(workspace.getAllBlocks());
+  }
+  return [];
 };
 
 const opcodeToSettings = {
@@ -27,9 +30,9 @@ const opcodeToSettings = {
 };
 
 let borderRestoration = {
-  text: true,
-  number: true,
-  color: true,
+  text: false,
+  number: false,
+  color: false,
 };
 
 const lineText = {
@@ -37,39 +40,27 @@ const lineText = {
   originHtmlInputKeyDown_: null,
   originalRender_: null,
   originalResizeEditor__: null,
-  svgstart: function (start, workspace, blockly, type, rerender) {
-    if (type === "") {
-      borderRestoration.text = start;
-      borderRestoration.number = start;
-      borderRestoration.color = start;
-      if (rerender !== false) {
-        getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
-          if (opcodeToSettings[block.type]) {
-            block.setOutputShape(
-              borderRestoration[opcodeToSettings[block.type]] === true
-                ? blockly.OUTPUT_SHAPE_SQUARE
-                : blockly.OUTPUT_SHAPE_ROUND,
-            );
-            block.render();
-          }
-        });
+  svgStart: function (start, workspace, blockly, type) {
+    let needRerenderBlockTypes = new Set(["text", "number", "color"]);
+    if (type) {
+      if (borderRestoration[type] === start) {
+        return;
       }
-    } else {
-      if (borderRestoration[type] === start) return;
-      borderRestoration[type] = start;
-      if (rerender !== false) {
-        getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
-          if (opcodeToSettings[block.type] === type) {
-            block.setOutputShape(
-              borderRestoration[opcodeToSettings[block.type]] === true
-                ? blockly.OUTPUT_SHAPE_SQUARE
-                : blockly.OUTPUT_SHAPE_ROUND,
-            );
-            block.render();
-          }
-        });
-      }
+      needRerenderBlockTypes = new Set([type]);
     }
+    needRerenderBlockTypes.forEach((needRerenderBlockType) => {
+      borderRestoration[needRerenderBlockType] = start;
+    });
+    getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+      if (needRerenderBlockTypes.has(opcodeToSettings[block.type])) {
+        block.setOutputShape(
+          borderRestoration[opcodeToSettings[block.type]] === true
+            ? blockly.OUTPUT_SHAPE_SQUARE
+            : blockly.OUTPUT_SHAPE_ROUND,
+        );
+        block.render();
+      }
+    });
   },
   svg: function (Blockly) {
     const originalJsonInit = Blockly.BlockSvg.prototype.jsonInit;
