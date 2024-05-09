@@ -2,7 +2,9 @@ import lineText from "./lineText";
 import React from "react";
 import BlockinputaIcon from "assets/icon--witcat-blockinput.svg";
 
-let show = false;
+let show = false,
+  inshow = false,
+  textLeft = true;
 
 let checkLong = 50,
   timer = null;
@@ -11,16 +13,13 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
   lineText.originShowEditorFunc = blockly.FieldTextInput.prototype.showEditor_;
   lineText.originHtmlInputKeyDown_ = blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
   lineText.originalRender_ = blockly.FieldTextInput.prototype.render_;
-  document.body.addEventListener("startInputing", () => {
-    const s = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLElement;
-    s.style.resize = "none";
-  });
   const listener = () => {
     const input = document.getElementsByClassName("blocklyHtmlInput")[0] as
       | HTMLInputElement
       | HTMLTextAreaElement
       | undefined;
     if (input !== undefined) {
+      input.style.resize = "none";
       if (input.value.length > checkLong) {
         if (!show) {
           show = true;
@@ -29,18 +28,35 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           });
         }
       }
+      if (!inshow) {
+        setTimeout(() => {
+          if (input.scrollHeight <= input.offsetHeight) {
+            input.style.lineHeight = `${input.scrollHeight}px`;
+            if (input.scrollHeight > input.offsetHeight) {
+              input.style.lineHeight = "1.2";
+            }
+          } else {
+            input.style.lineHeight = "1.2";
+          }
+        }, 10);
+      } else {
+        input.style.lineHeight = "1.2";
+      }
     }
   };
   document.body.addEventListener("startInputing", listener);
   lineText.textLeft(true);
   lineText.svg(blockly);
-  lineText.svgstart(true, vm, workspace, blockly);
+  lineText.svgstart(true, vm, workspace, blockly, false);
+  lineText.changeRenderWidth(20, vm, workspace, blockly, false);
   lineText.textarea(blockly);
-  lineText.changTextarea(true, vm, workspace, blockly);
-  lineText.texthide(20, vm, workspace, blockly);
+  lineText.changTextarea(true, vm, workspace, blockly, false);
+  lineText.texthide(20, vm, workspace, blockly, false);
 
   const popups = (input: HTMLInputElement | HTMLTextAreaElement): Promise<void> => {
     return new Promise((resolve) => {
+      inshow = true;
+      lineText.turnRender(true);
       const div = document.createElement("div");
       div.style.position = "fixed";
       div.style.top = "0px";
@@ -122,24 +138,53 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
         </style>
         `;
       const inputstyle = () => {
-        input.parentElement.style.transition = "all 0.3s ease-out";
-        input.parentElement.style.position = "fixed";
-        input.parentElement.style.top = "calc(15vh + 30px)";
-        input.parentElement.style.left = "25vw";
-        input.parentElement.style.width = "calc(50% - 20px)";
-        input.parentElement.style.height = "calc(70vh - 60px)";
-        input.parentElement.style.margin = "20px 10px";
-        input.parentElement.style.border = "none";
-        input.parentElement.style.background = "var(--theme-color-150)";
-        input.parentElement.style.borderRadius = "10px";
-        input.parentElement.style.transform = "";
-        input.parentElement.style.padding = "10px";
-        input.parentElement.style.boxShadow = "var(--theme-scrollbar-color) 0px 0px 0px 4px";
-        input.style.background = "var(--theme-color-150)";
-        input.style.border = "none";
-        input.style.color = "var(--theme-text-primary)";
-        input.style.borderRadius = "0px";
+        try {
+          input.parentElement.style.opacity = "1.0";
+          input.parentElement.style.position = "fixed";
+          input.parentElement.style.top = "calc(15vh + 30px)";
+          input.parentElement.style.left = "25vw";
+          input.parentElement.style.width = "calc(50% - 20px)";
+          input.parentElement.style.height = "calc(70vh - 60px)";
+          input.parentElement.style.margin = "20px 10px";
+          input.parentElement.style.border = "none";
+          input.parentElement.style.background = "var(--theme-color-150)";
+          input.parentElement.style.borderRadius = "10px";
+          input.parentElement.style.transform = "";
+          input.parentElement.style.padding = "10px";
+          input.parentElement.style.boxShadow = "var(--theme-scrollbar-color) 0px 0px 0px 4px";
+          input.style.background = "var(--theme-color-150)";
+          input.style.border = "none";
+          input.style.color = "var(--theme-text-primary)";
+          input.style.borderRadius = "0px";
+          input.style.textAlign = textLeft ? "left" : "center";
+        } catch {
+          input = document.getElementsByClassName("blocklyHtmlInput")[0] as HTMLInputElement;
+          input.parentElement.style.transition = "none";
+          input.parentElement.style.opacity = "0.0";
+          input.parentElement.style.position = "fixed";
+          input.parentElement.style.top = "15vh";
+          input.parentElement.style.left = "25vw";
+          input.parentElement.style.width = "50%";
+          input.parentElement.style.height = "70vh";
+          input.parentElement.style.margin = "20px 10px";
+          input.parentElement.style.border = "none";
+          input.parentElement.style.background = "var(--theme-color-150)";
+          input.parentElement.style.borderRadius = "10px";
+          input.parentElement.style.transform = "";
+          input.parentElement.style.padding = "10px";
+          input.parentElement.style.boxShadow = "var(--theme-scrollbar-color) 0px 0px 0px 4px";
+          input.style.background = "var(--theme-color-150)";
+          input.style.border = "none";
+          input.style.color = "var(--theme-text-primary)";
+          input.style.borderRadius = "0px";
+          input.style.textAlign = textLeft ? "left" : "center";
+          setTimeout(() => {
+            input.parentElement.style.transition = "all 0.3s ease-out";
+            inputstyle();
+          }, 10);
+        }
       };
+      input.parentElement.style.transition = "all 0.3s ease-out";
       inputstyle();
 
       document.body.appendChild(div);
@@ -166,6 +211,8 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           span.style.color = "#00000000";
           (document.getElementsByClassName("modal-title")[0] as HTMLElement).style.color = "#00000000";
           setTimeout(() => {
+            inshow = false;
+            lineText.turnRender(false);
             div.remove();
             resolve();
           }, 300);
@@ -248,6 +295,15 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             },
           },
           {
+            key: "textaligns",
+            label: msg("witcat.blockinput.option.textaligns"),
+            type: "switch",
+            value: true,
+            onChange: (value: boolean) => {
+              textLeft = value;
+            },
+          },
+          {
             key: "hide",
             type: "input",
             inputProps: {
@@ -258,6 +314,20 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             onChange: (value: number) => {
               debounce(() => {
                 lineText.texthide(value, vm, workspace, blockly);
+              }, 1000);
+            },
+          },
+          {
+            key: "renderWidth",
+            type: "input",
+            inputProps: {
+              type: "number",
+            },
+            label: msg("witcat.blockinput.option.renderWidth"),
+            value: 20,
+            onChange: (value: number) => {
+              debounce(() => {
+                lineText.changeRenderWidth(value, vm, workspace, blockly);
               }, 1000);
             },
           },
