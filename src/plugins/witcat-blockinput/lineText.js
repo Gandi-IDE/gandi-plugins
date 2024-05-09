@@ -5,27 +5,77 @@ styleElement.innerHTML = `
 }
 `;
 document.head.appendChild(styleElement);
-let svgStart = true,
-  textarea = "textarea",
+let textarea = "textarea",
   renderWidth = 20,
   ResizeEditorAble = false;
+
+const getToolboxAndWorkspaceBlocks = (workspace) => {
+  const toolbox = workspace.getToolbox();
+  return toolbox.flyout_.getWorkspace().getAllBlocks().concat(workspace.getAllBlocks());
+};
+
+const opcodeToSettings = {
+  text: "text",
+  argument_editor_string_number: "text",
+  math_number: "number",
+  math_integer: "number",
+  math_whole_number: "number",
+  math_positive_number: "number",
+  math_angle: "number",
+  note: "number",
+  colour_picker: "color",
+};
+
+let borderRestoration = {
+  text: true,
+  number: true,
+  color: true,
+};
 
 const lineText = {
   originShowEditorFunc: null,
   originHtmlInputKeyDown_: null,
   originalRender_: null,
   originalResizeEditor__: null,
-  svgstart: function (start, vm, workspace, blockly, rerender) {
-    svgStart = start;
-    if (rerender === false) {
-      this.updateAllBlocks(vm, workspace, blockly);
+  svgstart: function (start, workspace, blockly, type, rerender) {
+    if (type === "") {
+      borderRestoration.text = start;
+      borderRestoration.number = start;
+      borderRestoration.color = start;
+      if (rerender !== false) {
+        getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+          if (opcodeToSettings[block.type]) {
+            block.setOutputShape(
+              borderRestoration[opcodeToSettings[block.type]] === true
+                ? blockly.OUTPUT_SHAPE_SQUARE
+                : blockly.OUTPUT_SHAPE_ROUND,
+            );
+            block.render();
+          }
+        });
+      }
+    } else {
+      if (borderRestoration[type] === start) return;
+      borderRestoration[type] = start;
+      if (rerender !== false) {
+        getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+          if (opcodeToSettings[block.type] === type) {
+            block.setOutputShape(
+              borderRestoration[opcodeToSettings[block.type]] === true
+                ? blockly.OUTPUT_SHAPE_SQUARE
+                : blockly.OUTPUT_SHAPE_ROUND,
+            );
+            block.render();
+          }
+        });
+      }
     }
   },
   svg: function (Blockly) {
     const originalJsonInit = Blockly.BlockSvg.prototype.jsonInit;
 
     Blockly.BlockSvg.prototype.jsonInit = function (json) {
-      if (this.type === "text" && svgStart) {
+      if (borderRestoration[opcodeToSettings[this.type]] === true) {
         originalJsonInit.call(this, {
           ...json,
           outputShape: Blockly.OUTPUT_SHAPE_SQUARE,
@@ -50,22 +100,36 @@ const lineText = {
     `;
     }
   },
-  changTextarea: function (start, vm, workspace, blockly, rerender) {
+  changTextarea: function (start) {
     textarea = start ? "textarea" : "input";
-    if (rerender === false) {
-      this.updateAllBlocks(vm, workspace, blockly);
+  },
+  changeRenderWidth: function (width, workspace, rerender) {
+    if (renderWidth === (width > 20 ? width : 20)) return;
+    renderWidth = width > 20 ? width : 20;
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
     }
   },
-  changeRenderWidth: function (width, vm, workspace, blockly, rerender) {
-    renderWidth = width;
-    if (rerender === false) {
-      this.updateAllBlocks(vm, workspace, blockly);
-    }
-  },
-  texthide: function (num, vm, workspace, blockly, rerender) {
+  texthide: function (num, workspace, blockly, rerender) {
+    if (blockly.BlockSvg.MAX_DISPLAY_LENGTH === (num > 0 ? num : Infinity)) return;
     blockly.BlockSvg.MAX_DISPLAY_LENGTH = num > 0 ? num : Infinity;
-    if (rerender === false) {
-      this.updateAllBlocks(vm, workspace, blockly);
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
     }
   },
   dispose: function (Blockly) {
@@ -268,30 +332,6 @@ const lineText = {
   },
   turnRender: function (bool) {
     ResizeEditorAble = bool;
-  },
-  updateAllBlocks: function (vm, workspace, blockly) {
-    const eventsOriginallyEnabled = blockly.Events.isEnabled();
-    blockly.Events.disable(); // Clears workspace right-click→undo (see SA/SA#6691)
-
-    if (workspace) {
-      if (vm.editingTarget) {
-        vm.emitWorkspaceUpdate();
-      }
-      const flyout = workspace.getFlyout();
-      if (flyout) {
-        const flyoutWorkspace = flyout.getWorkspace();
-        window.Blockly.Xml.clearWorkspaceAndLoadFromXml(
-          window.Blockly.Xml.workspaceToDom(flyoutWorkspace),
-          flyoutWorkspace,
-        );
-        workspace.getToolbox().refreshSelection();
-        workspace.toolboxRefreshEnabled_ = true;
-      }
-    }
-
-    // There's no particular reason for checking whether events were originally enabled.
-    // Unconditionally enabling events at this point could, in theory, cause bugs in the future.
-    if (eventsOriginallyEnabled) blockly.Events.enable(); // Re-enable events
   },
 };
 export default lineText;
