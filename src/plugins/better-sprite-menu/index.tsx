@@ -271,6 +271,7 @@ let currentSpriteMenuLayout = 'default'
 
 const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
   React.useEffect(() => {
+    currentSpriteMenuLayout = 'default'
     const register = registerSettings(
       msg('plugins.betterSpriteMenu.title'),
       'Better Sprite Menu',
