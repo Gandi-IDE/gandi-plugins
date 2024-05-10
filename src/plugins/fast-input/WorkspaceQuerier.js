@@ -1229,6 +1229,10 @@ export default class WorkspaceQuerier {
    */
   static MAX_TOKENS = 50000;
 
+  constructor() {
+    this._blockCache = {};
+  }
+
   /**
    * Indexes a workspace in preparation for querying it.
    * @param {BlockTypeInfo[]} blocks The list of blocks in the workspace.
@@ -1435,7 +1439,11 @@ export default class WorkspaceQuerier {
 
     for (const block of blocks) {
       // console.log("block", typeof block, block);
-      const blockTokenType = new TokenTypeBlock(this, block);
+      let blockTokenType = this._blockCache[block.id];
+      if (!blockTokenType) {
+        blockTokenType = new TokenTypeBlock(this, block);
+        this._blockCache[block.id] = blockTokenType;
+      }
       switch (block.shape) {
         case BlockShape.Round:
           this.tokenGroupRoundBlocks.pushProviders([blockTokenType]);
