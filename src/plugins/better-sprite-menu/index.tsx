@@ -1,9 +1,7 @@
 import * as React from 'react';
 import BetterSpriteMenuIcon from 'assets/icon--BetterSpriteMenu.svg';
 
-const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
-  React.useEffect(() => {
-    let currentSpriteMenuLayout = 'default'
+let currentSpriteMenuLayout = 'default'
     const menuLayoutList = ["default", "grid", "compact", "superCompact"]
     const id = "BetterSpriteMenu_";
 
@@ -28,8 +26,6 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       min-width: 4rem;
       min-height: 4rem;
       margin: calc(0.3rem / 2);
-      padding-top: 3px;
-      padding-left: 3px;
     }
     .gandi_sprite-selector_sprite_21WnR {
       display: block;
@@ -100,6 +96,47 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     .gandi_sprite-selector-item_folder_YmvKs {
       padding-bottom: 11px;
     }
+
+    .gandi_sprite-selector_items-wrapper_4bcOj {
+      padding: 3px;
+    }
+
+    .gandi_sprite-consumer_sprite-consumer_2sXOI {
+      top: 0;
+      position: absolute;
+      z-index: 100;
+      right: 0;
+      padding-right: 11px;
+      padding-top: 2px;
+    }
+    .gandi_sprite-consumer_avatar-status-tag_1evy2 {
+      display: none;
+    }
+    .gandi_sprite-consumer_sprite-editor_2cAa3 {
+      margin-right: -8px;
+    }
+    .gandi_sprite-consumer_sprite-editor_2cAa3 .gandi_avatar_avatar_3EEbM {
+      width: 16px !important;
+      height: 16px !important;
+    }
+    .gandi_stage-selector_stage-selector_3oWOr .gandi_sprite-consumer_sprite-consumer_2sXOI .gandi_sprite-consumer_sprite-editor_2cAa3 .gandi_avatar_avatar_3EEbM {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    .gandi_stage-selector_stage-selector_3oWOr .gandi_sprite-consumer_sprite-consumer_2sXOI {
+      top: 0.4rem;
+      position: absolute;
+      z-index: 1000;
+      right: 0;
+      padding-right: 11px;
+      padding-top: 2px;
+    }
+    .gandi_stage-selector_stage-selector_3oWOr .gandi_sprite-consumer_sprite-consumer_2sXOI .gandi_sprite-consumer_sprite-editor_2cAa3 .gandi_sprite-consumer_avatar-status-tag_1evy2 {
+      display: flex;
+    }
+    .gandi_stage-selector_stage-selector_3oWOr .gandi_sprite-consumer_sprite-consumer_2sXOI .gandi_sprite-consumer_sprite-editor_2cAa3 {
+      margin-right: 0;
+    }
     `
 
     const compactSpriteMenu = document.createElement('style')
@@ -130,6 +167,23 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     }
     .gandi_stage-selector_name_2s1_t, .gandi_stage-selector_title_1UlNu {
       font-size: 11px;
+    }
+
+    .gandi_sprite-consumer_sprite-consumer_2sXOI {
+      padding-right: 11px;
+    }
+    .gandi_stage-selector_stage-selector_3oWOr .gandi_sprite-consumer_sprite-consumer_2sXOI {
+      padding-right: 0;
+    }
+    .gandi_sprite-consumer_avatar-status-tag_1evy2 {
+      display: none;
+    }
+    .gandi_sprite-consumer_sprite-editor_2cAa3 {
+      margin-right: -8px;
+    }
+    .gandi_sprite-consumer_sprite-editor_2cAa3 .gandi_avatar_avatar_3EEbM {
+      width: 16px !important;
+      height: 16px !important;
     }
     `
 
@@ -163,6 +217,9 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     }
     .gandi_stage-selector_name_2s1_t, .gandi_stage-selector_title_1UlNu {
       font-size: 11px;
+    }
+    .gandi_sprite-consumer_sprite-consumer_2sXOI {
+      display: none:
     }
     `
     const removeAllStyles = () => {
@@ -211,6 +268,9 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
     let config = { attributes: true, attributeFilter: ['class'] };
     observer.observe(collapsibleBox, config);
     
+
+const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSettings}) => {
+  React.useEffect(() => {
     const register = registerSettings(
       msg('plugins.betterSpriteMenu.title'),
       'Better Sprite Menu',
@@ -241,6 +301,7 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       <BetterSpriteMenuIcon />,
     );
     return () => {
+      removeAllStyles()
       register.dispose();
     };
   }, [registerSettings, msg]);

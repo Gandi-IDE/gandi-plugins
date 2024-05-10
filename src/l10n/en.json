@@ -158,7 +158,5 @@
   "plugins.betterSpriteMenu.layouts.default": "Default",
   "plugins.betterSpriteMenu.layouts.grid": "Scratch's Grid",
   "plugins.betterSpriteMenu.layouts.compact": "Compact",
-  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact",
-  "plugins.betterSpriteMenu.tools": "Tools",
-  "plugins.betterSpriteMenu.tools.searchbar": "Enable searchbar:"
+  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact"
 }

@@ -151,5 +151,12 @@
   "plugins.fastInput.description": "借鉴自 ScratchAddons 的 InsertBlocksByName，增加了中文语言下可使用拼音缩写输入特性。\n💡使用方法：在代码区域中按住 Shift 键并点击打开积木输入窗口，输入积木名称或拼音缩写，使用方向键和回车键进行导航，使用 Tab 键进行自动补全，按住 Shift 键拖动积木可防止列表关闭。",
   "plugins.fastInput.popup_scale": "积木缩放",
   "plugins.fastInput.popup_width": "弹窗宽度",
-  "plugins.fastInput.popup_max_height": "弹窗最大高度"
+  "plugins.fastInput.popup_max_height": "弹窗最大高度",
+  "plugins.betterSpriteMenu.title": "更好的雪碧菜单",
+  "plugins.betterSpriteMenu.layouts": "布局",
+  "plugins.betterSpriteMenu.layouts.label": "精灵选择器布局：",
+  "plugins.betterSpriteMenu.layouts.default": "默认",
+  "plugins.betterSpriteMenu.layouts.grid": "Scratch 的网格",
+  "plugins.betterSpriteMenu.layouts.compact": "紧凑",
+  "plugins.betterSpriteMenu.layouts.superCompact": "超级紧凑"
 }
