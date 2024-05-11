@@ -95,7 +95,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
           ],
         },
       ],
-      <KukemcBeautifyIcon />,
+      <KukemcBeautifyIcon />, 
     );
     return () => {
       ground = false
