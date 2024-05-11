@@ -51,9 +51,9 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               onChange: (value: boolean) => {
                 isFrosted = value;
                 if (value) {
-                  groundGlass();
+                  frostedGlass();
                 } else {
-                  removeGroundGlass()
+                  removeFrostedGlass()
                 }
               },
             },
@@ -68,7 +68,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               onChange: (value: number) => {
                 transparency = value;
                 if (isFrosted) {
-                  groundGlass();
+                  frostedGlass();
                 }
               },
             },
@@ -83,7 +83,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               onChange: (value: number) => {
                 ambiguity = value;
                 if (isFrosted) {
-                  groundGlass();
+                  frostedGlass();
                 }
               },
             },
@@ -94,7 +94,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
     );
     return () => {
       isFrosted = false
-      removeGroundGlass()
+      removeFrostedGlass()
       register.dispose();
     };
   }, [registerSettings, msg]);
@@ -102,7 +102,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
   return null;
 };
 
-function groundGlass(): void {
+function frostedGlass(): void {
   const styleElements = document.head.getElementsByTagName("style");
 
   const htmlElement = document.documentElement;
@@ -146,7 +146,7 @@ function groundGlass(): void {
   }
 }
 
-function removeGroundGlass(): void {
+function removeFrostedGlass(): void {
   const styleElements = document.head.getElementsByTagName("style");
 
   const htmlElement = document.documentElement;
