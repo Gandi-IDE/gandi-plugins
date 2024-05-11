@@ -1,7 +1,7 @@
 import * as React from "react";
 import KukemcBeautifyIcon from "assets/icon--kukemcbeautify.svg";
 
-let ground = false;
+let isFrosted = false;
 let transparency = 0.29;
 let ambiguity = 10;
 const styleElement = document.createElement("style");
@@ -45,26 +45,21 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
           items: [
             {
               key: "Ground",
-              label: msg("plugins.kukemcBeautify.groundglass"),
+              label: msg("plugins.kukemcBeautify.frostedglass"),
               type: "switch",
               value: false,
               onChange: (value: boolean) => {
-                ground = value;
+                isFrosted = value;
                 if (value) {
                   groundGlass();
                 } else {
-                  const userChoice = confirm(msg("plugins.kukemcBeautify.confirm"));
-                  if (userChoice) {
-                    setTimeout(() => {
-                      location.reload();
-                    }, 500);
-                  }
+                  removeGroundGlass()
                 }
               },
             },
             {
-              key: "transparent",
-              label: msg("plugins.kukemcBeautify.transparent"),
+              key: "transparency",
+              label: msg("plugins.kukemcBeautify.transparency"),
               type: "input",
               inputProps: {
                 type: "number",
@@ -72,7 +67,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               value: 0.29,
               onChange: (value: number) => {
                 transparency = value;
-                if (ground) {
+                if (isFrosted) {
                   groundGlass();
                 }
               },
@@ -87,7 +82,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
               value: 10,
               onChange: (value: number) => {
                 ambiguity = value;
-                if (ground) {
+                if (isFrosted) {
                   groundGlass();
                 }
               },
@@ -98,7 +93,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
       <KukemcBeautifyIcon />, 
     );
     return () => {
-      ground = false
+      isFrosted = false
       removeGroundGlass()
       register.dispose();
     };
@@ -147,7 +142,7 @@ function groundGlass(): void {
     }
     styleElement.innerText = `.gandi-stage-wrapper{backdrop-filter: none;}.gandi_stage-header_stage-header-wrapper_1F4gT{backdrop-filter: blur(${ambiguity}px);}.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}`;
   } catch (error) {
-    console.error("Error applying ground glass effect:", error);
+    console.error("Error applying frosted glass effect:", error);
   }
 }
 
@@ -193,7 +188,7 @@ function removeGroundGlass(): void {
     }
     styleElement.innerText = `.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}`;
   } catch (error) {
-    console.error("Error removing ground glass effect:", error);
+    console.error("Error removing frosted glass effect:", error);
   }
 }
 
