@@ -159,5 +159,6 @@
   "plugins.betterSpriteMenu.layouts.default": "默认",
   "plugins.betterSpriteMenu.layouts.grid": "原版的Scratch布局",
   "plugins.betterSpriteMenu.layouts.compact": "紧凑",
-  "plugins.betterSpriteMenu.layouts.superCompact": "超级紧凑"
+  "plugins.betterSpriteMenu.layouts.superCompact": "超级紧凑",
+  "plugins.betterSpriteMenu.description": "给精灵选择器一个新的（更好的）外观!"
 }
