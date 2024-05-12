@@ -158,5 +158,6 @@
   "plugins.betterSpriteMenu.layouts.default": "Default",
   "plugins.betterSpriteMenu.layouts.grid": "Scratch's Grid",
   "plugins.betterSpriteMenu.layouts.compact": "Compact",
-  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact"
+  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact",
+  "plugins.betterSpriteMenu.description": "Give the sprites selector a new (and better) look!"
 }
