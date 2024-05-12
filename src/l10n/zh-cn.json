@@ -153,10 +153,11 @@
   "plugins.fastInput.popup_width": "弹窗宽度",
   "plugins.fastInput.popup_max_height": "弹窗最大高度",
   "plugins.betterSpriteMenu.title": "更好的雪碧菜单",
+  "plugins.betterSpriteMenu.title": "Better Character List Layout",
   "plugins.betterSpriteMenu.layouts": "布局",
-  "plugins.betterSpriteMenu.layouts.label": "精灵选择器布局：",
+  "plugins.betterSpriteMenu.layouts.label": "布局类型：",
   "plugins.betterSpriteMenu.layouts.default": "默认",
-  "plugins.betterSpriteMenu.layouts.grid": "Scratch 的网格",
+  "plugins.betterSpriteMenu.layouts.grid": "原版的Scratch布局",
   "plugins.betterSpriteMenu.layouts.compact": "紧凑",
   "plugins.betterSpriteMenu.layouts.superCompact": "超级紧凑"
 }
