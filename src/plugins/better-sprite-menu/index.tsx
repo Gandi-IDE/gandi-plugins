@@ -278,7 +278,8 @@ const BetterSpriteMenu: React.FC<PluginContext> = ({ redux, msg, registerSetting
       [
         {
           key: 'layouts',
-          label: msg('plugins.betterSpriteMenu.layouts'),
+          label: msg('plugins.betterSpriteMenu.title'),
+          description: msg("plugins.betterSpriteMenu.description"),
           items: [
             {
               key: 'layout',
