@@ -1,5 +1,6 @@
 import * as React from "react";
 import KukemcBeautifyIcon from "assets/icon--kukemcbeautify.svg";
+import "./styles.less";
 
 let ground = false;
 let transparency = 0.29;
@@ -12,6 +13,29 @@ interface RGBColor {
   r: number;
   g: number;
   b: number;
+}
+
+function calculateSafePosition(dom1, dom2, targetCoordinate) {
+  const dom1Rect = dom1.getBoundingClientRect();
+  const dom2Rect = dom2.getBoundingClientRect();
+
+  let newX = targetCoordinate.x;
+  let newY = targetCoordinate.y;
+
+  if (newX + dom2Rect.width > dom1Rect.right) {
+    newX = dom1Rect.right - dom2Rect.width;
+  }
+  if (newY + dom2Rect.height > dom1Rect.bottom) {
+    newY = dom1Rect.bottom - dom2Rect.height;
+  }
+  if (newX < dom1Rect.left) {
+    newX = dom1Rect.left;
+  }
+  if (newY < dom1Rect.top) {
+    newY = dom1Rect.top;
+  }
+
+  return { x: newX - dom1Rect.left, y: newY - dom1Rect.top };
 }
 
 // Helper function to convert hex color to RGB format
@@ -137,13 +161,48 @@ function groundGlass(): void {
 
           if (rule.selectorText === ".blocklyToolboxDiv") {
             applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity - 5}px)`);
+          } else if (rule.selectorText === ".gandi_context-menu_context-menu_2SJM-") {
+            rule.style.top = `var(--kuke-context-menu-top) !important`;
+            rule.style.left = `var(--kuke-context-menu-left) !important`;
           } else if (isTargetSelector) {
             applyStyleChanges(rule, `rgba(${r}, ${g}, ${b}, ${transparency})`, `blur(${ambiguity}px)`);
           }
         }
       }
     }
-    styleElement.innerText = `.gandi-stage-wrapper{backdrop-filter: none;}.gandi_stage-header_stage-header-wrapper_1F4gT{backdrop-filter: blur(${ambiguity}px);}.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}`;
+    styleElement.innerText = `.gandi-stage-wrapper{backdrop-filter: none;}.gandi_stage-header_stage-header-wrapper_1F4gT{backdrop-filter: blur(${ambiguity}px);}.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}.gandi_context-menu_context-menu_2SJM- {top: var(--kuke-context-menu-top) !important;left: var(--kuke-context-menu-left) !important;}`;
+    const handleClick = (event: MouseEvent) => {
+      if (event.button === 2) {
+        const target = event.target as HTMLElement;
+        Array.from(document.getElementsByClassName("gandi_sprite-selector_sprite_21WnR")).forEach((element) => {
+          if (element.parentElement.contains(target)) {
+            Array.from(document.getElementsByClassName("gandi_context-menu_context-menu_2SJM-")).forEach((ev) => {
+              if (element.contains(ev)) {
+                try {
+                  const p = calculateSafePosition(
+                    document.getElementsByClassName("gandi_collapsible-box_collapsible-box_1_329")[1],
+                    ev,
+                    { x: event.clientX, y: event.clientY },
+                  );
+                  document.documentElement.style.setProperty("--kuke-context-menu-top", `${p.y}px`);
+                  document.documentElement.style.setProperty("--kuke-context-menu-left", `${p.x}px`);
+                } catch (error) {
+                  return;
+                }
+                return;
+              }
+            });
+            return;
+          }
+        });
+      }
+    };
+    try {
+      document.removeEventListener("mouseup", handleClick);
+      document.addEventListener("mouseup", handleClick);
+    } catch (e) {
+      document.addEventListener("mouseup", handleClick);
+    }
   } catch (error) {
     console.error("Error applying ground glass effect:", error);
   }
