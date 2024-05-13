@@ -4,8 +4,19 @@ export default {
   description: "Quickly insert blocks",
   credits: [
     {
-      name: "ScratchAddons",
-      link: "https://github.com/ScratchAddons/ScratchAddons",
+      name: "Tacodiva@ScratchAddons",
+      link: "https://github.com/Tacodiva",
+    },
+    {
+      name: "griffpatch@ScratchAddons",
+    },
+    {
+      name: "TheColaber@ScratchAddons",
+      link: "https://scratch.mit.edu/users/TheColaber/",
+    },
+    {
+      name: "CST1229@ScratchAddons",
+      link: "https://github.com/CST1229",
     },
     {
       name: "Cappu",
