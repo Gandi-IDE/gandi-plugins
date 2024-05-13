@@ -172,8 +172,8 @@ function groundGlass(): void {
     }
     styleElement.innerText = `.gandi-stage-wrapper{backdrop-filter: none;}.gandi_stage-header_stage-header-wrapper_1F4gT{backdrop-filter: blur(${ambiguity}px);}.gandi_collapsible-box_header_dc9Es{border-top-left-radius: 7px;border-top-right-radius: 7px;}.gandi_context-menu_context-menu_2SJM- {top: var(--kuke-context-menu-top) !important;left: var(--kuke-context-menu-left) !important;}`;
     const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
       if (event.button === 2) {
-        const target = event.target as HTMLElement;
         Array.from(document.getElementsByClassName("gandi_sprite-selector_sprite_21WnR")).forEach((element) => {
           if (element.parentElement.contains(target)) {
             Array.from(document.getElementsByClassName("gandi_context-menu_context-menu_2SJM-")).forEach((ev) => {
@@ -195,6 +195,20 @@ function groundGlass(): void {
             return;
           }
         });
+      } else if (event.button === 0) {
+        if (target.classList.contains("gandi_sprite-selector-item_more_kADxQ")) {
+          try {
+            const p = calculateSafePosition(
+              document.getElementsByClassName("gandi_collapsible-box_collapsible-box_1_329")[1],
+              target.parentElement.getElementsByClassName("gandi_context-menu_context-menu_2SJM-")[0],
+              { x: event.clientX, y: event.clientY },
+            );
+            document.documentElement.style.setProperty("--kuke-context-menu-top", `${p.y}px`);
+            document.documentElement.style.setProperty("--kuke-context-menu-left", `${p.x}px`);
+          } catch (error) {
+            return;
+          }
+        }
       }
     };
     try {
