@@ -151,7 +151,7 @@ function groundGlass(): void {
             ".gandi_context-menu_context-menu_2SJM-",
             ".blocklyToolboxDiv",
             ".gandi_plugins_plugins-root_xA3t3",
-            ".gandi_collapsible-box_collapsible-box_1_329",
+            ".gandi_collapsible-box_body_9ccdv",
             ".gandi_target-pane_count_3fmUd",
             ".gandi_editor-wrapper_tabList_4HFZz",
             ".gandi_setting-modal_modal-overlay_3wJji",
@@ -180,7 +180,7 @@ function groundGlass(): void {
               if (element.contains(ev)) {
                 try {
                   const p = calculateSafePosition(
-                    document.getElementsByClassName("gandi_collapsible-box_collapsible-box_1_329")[1],
+                    document.getElementsByClassName("gandi_collapsible-box_body_9ccdv")[1],
                     ev,
                     { x: event.clientX, y: event.clientY },
                   );
@@ -199,7 +199,7 @@ function groundGlass(): void {
         if (target.classList.contains("gandi_sprite-selector-item_more_kADxQ")) {
           try {
             const p = calculateSafePosition(
-              document.getElementsByClassName("gandi_collapsible-box_collapsible-box_1_329")[1],
+              document.getElementsByClassName("gandi_collapsible-box_body_9ccdv")[1],
               target.parentElement.getElementsByClassName("gandi_context-menu_context-menu_2SJM-")[0],
               { x: event.clientX, y: event.clientY },
             );
