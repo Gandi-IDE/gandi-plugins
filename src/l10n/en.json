@@ -148,7 +148,7 @@
   "witcat.blockinput.option.renderWidth": "Render width",
   "plugins.kukemcBeautify.title": "Gandi beautification",
   "plugins.kukemcBeautify.description": "Better looking Gandi IDE!",
-  "plugins.kukemcBeautify.frostedglass": "Frosted Glass",
+  "plugins.kukemcBeautify.frostedGlass": "Frosted Glass",
   "plugins.kukemcBeautify.transparency": "UI transparency",
   "plugins.kukemcBeautify.ambiguity": "UI ambiguity",
   "plugins.fastInput.title": "Fast Input",
