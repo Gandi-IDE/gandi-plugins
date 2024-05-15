@@ -56,6 +56,7 @@ const KukemcBeautify: React.FC<PluginContext> = ({ msg, registerSettings }) => {
       <KukemcBeautifyIcon />,
     );
     return () => {
+      document.body.classList.remove(styles.frostedGlass);
       register.dispose();
     };
   }, [registerSettings, msg]);
