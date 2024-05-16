@@ -142,7 +142,7 @@ const CustomPlugin = (context: PluginContext) => {
     return () => {
       const pluginNames = Object.keys(customPlugins.current);
       pluginNames.forEach((name) => {
-        customPlugins.current[name].dispose();
+        customPlugins.current[name]();
       });
       register.dispose();
     };

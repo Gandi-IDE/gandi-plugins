@@ -8,9 +8,10 @@ interface IProps {
   blockly: any;
   clearAllBoxedElements?: (boolean) => void;
   intl: IntlShape;
+  vm: VirtualMachine;
 }
 
-const useBatchSelectRightMenu = ({ workspace, blockly, clearAllBoxedElements, intl }: IProps) => {
+const useBatchSelectRightMenu = ({ workspace, blockly, clearAllBoxedElements, intl, vm }: IProps) => {
   useEffect(() => {
     const menuItemId = window.Blockly.ContextMenu.addDynamicMenuItem(
       (items, element) => {
@@ -74,7 +75,7 @@ const useBatchSelectRightMenu = ({ workspace, blockly, clearAllBoxedElements, in
             }),
             enabled: true,
             callback: () => {
-              pasteBatchedElements(event, workspace, blockly.clipboardBatchElements);
+              pasteBatchedElements(event, workspace, blockly.clipboardBatchElements, vm);
             },
           });
         }
