@@ -5,6 +5,8 @@ import useCheeryPick from "./useCheeryPick";
 import useKeyDownOperate from "./useKeyDownOperate";
 import useRightContextMenu from "./useRightContextMenu";
 import { draggingBatchedElements } from "utils/block-helper";
+import { isMac } from "lib/client-info";
+import styles from "./styles.less";
 
 const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, intl, workspace, vm }) => {
   const [enabledAltDuplicate, setEnabledAltDuplicate] = useState<boolean>(false);
@@ -102,12 +104,23 @@ const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, i
           label: intl.formatMessage({
             id: `plugins.codeBatchSelect.title`,
           }),
+          description: intl.formatMessage({
+            id: "plugins.codeBatchSelect.description",
+          }),
           items: [
             {
               key: "altDuplicate",
               label: intl.formatMessage({
-                id: `plugins.codeBatchSelect.alt.duplicate`,
+                id: "plugins.codeBatchSelect.fastCopy",
               }),
+              description: intl.formatMessage(
+                {
+                  id: "plugins.codeBatchSelect.fastCopy.description",
+                },
+                {
+                  code: <span className={styles.code}>{isMac ? "Option" : "Alt"}</span>,
+                },
+              ),
               type: "switch",
               value: false,
               onChange: (value: boolean) => {
@@ -117,8 +130,16 @@ const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, i
             {
               key: "ctrlGrabBlock",
               label: intl.formatMessage({
-                id: `plugins.codeBatchSelect.ctrl.grab`,
+                id: "plugins.codeBatchSelect.fastSelect",
               }),
+              description: intl.formatMessage(
+                {
+                  id: "plugins.codeBatchSelect.fastSelect.description",
+                },
+                {
+                  code: <span className={styles.code}>{isMac ? "Command" : "Ctrl"}</span>,
+                },
+              ),
               type: "switch",
               value: false,
               onChange: (value: boolean) => {
@@ -128,8 +149,16 @@ const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, i
             {
               key: "batchSelect",
               label: intl.formatMessage({
-                id: `plugins.codeBatchSelect.ctrl.batch`,
+                id: "plugins.codeBatchSelect.boxSelect",
               }),
+              description: intl.formatMessage(
+                {
+                  id: "plugins.codeBatchSelect.boxSelect.description",
+                },
+                {
+                  code: <span className={styles.code}>{isMac ? "Command" : "Ctrl"}</span>,
+                },
+              ),
               type: "switch",
               value: false,
               onChange: (value: boolean) => {
