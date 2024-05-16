@@ -6,7 +6,7 @@ import useKeyDownOperate from "./useKeyDownOperate";
 import useRightContextMenu from "./useRightContextMenu";
 import { draggingBatchedElements } from "utils/block-helper";
 
-const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, intl, workspace }) => {
+const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, intl, workspace, vm }) => {
   const [enabledAltDuplicate, setEnabledAltDuplicate] = useState<boolean>(false);
   const [enabledCtrlGrabBlock, setEnabledCtrlGrabBlock] = useState<boolean>(false);
   const [enabledBatchSelect, setEnabledBatchSelect] = useState<boolean>(false);
@@ -38,9 +38,10 @@ const CodeBatchSelect: React.FC<PluginContext> = ({ blockly, registerSettings, i
     blockly,
     clearAllBoxedElements,
     intl,
+    vm,
   });
 
-  useKeyDownOperate({ blockly, workspace: workspace });
+  useKeyDownOperate({ blockly, workspace, vm });
 
   const initDraggingBlock = () => {
     const oldStartDraggingBlock = blockly.Gesture.prototype.startDraggingBlock_;
