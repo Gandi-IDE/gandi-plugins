@@ -159,5 +159,13 @@
   "plugins.fastInput.description": "Inspired by ScratchAddons' InsertBlocksByName, this plugin adds the feature of using Pinyin abbreviations for input in Chinese language. \n💡Usage: Hold down the Shift key and click to open the block input window in the code area, enter the block name or Pinyin abbreviation, use the arrow keys and Enter key to navigate, use the Tab key for auto-completion, and hold down the Shift key to drag the block to prevent the list from closing.",
   "plugins.fastInput.popup_scale": "Block scaling",
   "plugins.fastInput.popup_width": "Popup width",
-  "plugins.fastInput.popup_max_height": "Popup maximum height"
+  "plugins.fastInput.popup_max_height": "Popup maximum height",
+  "plugins.betterSpriteMenu.title": "Better Sprite Menu",
+  "plugins.betterSpriteMenu.layouts": "Layouts",
+  "plugins.betterSpriteMenu.layouts.label": "Sprite Selector layout:",
+  "plugins.betterSpriteMenu.layouts.default": "Default",
+  "plugins.betterSpriteMenu.layouts.grid": "Scratch's Grid",
+  "plugins.betterSpriteMenu.layouts.compact": "Compact",
+  "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact",
+  "plugins.betterSpriteMenu.description": "Give the sprites selector a new (and better) look!"
 }
