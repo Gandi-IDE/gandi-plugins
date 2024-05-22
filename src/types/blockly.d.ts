@@ -556,6 +556,8 @@ declare namespace Blockly {
     id_?: string;
     name: string;
     type: string;
+    isCloud?: boolean;
+    isLocal?: boolean;
     getId(): string;
     compareByName(var1: VariableModel, var2: VariableModel): number;
   }
