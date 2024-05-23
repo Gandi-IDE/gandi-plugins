@@ -23,7 +23,13 @@ import React from "react";
 import { IntlShape } from "react-intl";
 import { defineMessage } from "@formatjs/intl";
 import { Contact, Type } from "../componet/Contact";
-
+const hostname: string = window.location.hostname;
+let assetHost = "https://m.ccw.site";
+let apiHost = "https://gandi-main.ccw.site";
+if (!hostname.endsWith("ccw.site")) {
+  assetHost = "https://d3sh2pl0ajjotb.cloudfront.net";
+  apiHost = "https://gandi-main.cocrea.world";
+}
 const messages = defineMessage({
   guestName: {
     id: "plugin.inspiro.guest.name",
@@ -83,7 +89,6 @@ function createConversation(id: ConversationId, name: string): Conversation {
   });
 }
 
-const defaultAIDomain = "https://gandi-main.ccw.site";
 let guestStorage = new BasicStorage({ groupIdGenerator, messageIdGenerator });
 // Create serviceFactory
 const serviceFactory = (storage: IStorage, updateState: UpdateState) => {
@@ -100,9 +105,9 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
     type: Type.MUSIC,
     desc: intl.formatMessage(messages.audioGeneratorDesc),
     duration: 15,
-    avatar: "https://m.ccw.site/tmp/inspairo-audio-avatar.png",
+    avatar: `${assetHost}/tmp/inspairo-audio-avatar.png`,
     generator: async (text: string): Promise<string> => {
-      return message_generator(`${defaultAIDomain}/ai/hub/txt2music`, { prompt: text }, "id");
+      return message_generator(`${apiHost}/ai/hub/txt2music`, { prompt: text }, "id");
     },
   };
   const image = {
@@ -110,9 +115,9 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
     type: Type.IMAGE,
     desc: intl.formatMessage(messages.imageGeneratorDesc),
     duration: 1,
-    avatar: "https://m.ccw.site/tmp/inspairo-image-avatar.png",
+    avatar: `${assetHost}/tmp/inspairo-image-avatar.png`,
     generator: async (text: string): Promise<string> => {
-      return message_generator(`${defaultAIDomain}/ai/hub/txt2img`, { text: text }, "taskId");
+      return message_generator(`${apiHost}/ai/hub/txt2img`, { text: text }, "taskId");
     },
   };
   console.log(previewMe, guest.name);
@@ -187,7 +192,7 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
         utils={utils}
         contacts={contacts}
         ext={{
-          ai_domain: "https://gandi-main.ccw.site",
+          ai_domain: apiHost,
         }}
       />
     </ChatProvider>
