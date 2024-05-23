@@ -167,5 +167,18 @@
   "plugins.betterSpriteMenu.layouts.grid": "原版的Scratch布局",
   "plugins.betterSpriteMenu.layouts.compact": "紧凑",
   "plugins.betterSpriteMenu.layouts.superCompact": "超级紧凑",
-  "plugins.betterSpriteMenu.description": "给角色列表一个新的（更好的）外观!"
+  "plugins.betterSpriteMenu.description": "给角色列表一个新的（更好的）外观!",
+  "plugin.inspiro.generate.fail": "生成素材失败",
+  "plugin.inspiro.import.fail": "导入失败",
+  "plugin.inspiro.import.success": "导入成功",
+  "plugin.inspiro.input.placeholder": "在这里输入您的想法",
+  "plugin.inspiro.import.desc": "导入到当前角色",
+  "plugin.inspiro.typing.info": "生成中",
+  "plugin.inspiro.guest.name": "我",
+  "plugin.inspiro.audio.name": "音乐魔法师",
+  "plugin.inspiro.audio.desc": "在👇描述您的想法,我会根据该想法谱出一曲天籁🎵",
+  "plugin.inspiro.image.name": "妙笔生花",
+  "plugin.inspiro.image.desc": "在👇描述您的想法,我会将该想法绘成精美的画🎨",
+  "plugin.inspiro.title": "AI 助手",
+  "plugin.inspiro.intro": "您在 Gandi IDE 中的全能 AI 助手！无论您是想生成令人惊叹的图片、创作动听的音乐，还是需要灵感来实现您的创意梦想，创灵助手都能为您提供无尽的可能性。"
 }
