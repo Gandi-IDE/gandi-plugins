@@ -1,4 +1,47 @@
-:root {
-    --kuke-context-menu-top: 0px;
-    --kuke-context-menu-left: 0px;
+.frosted-glass section[class^="gandi_collapsible-box_collapsible-box"]::before {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: block;
+  content: "";
+  background-color: rgba(46, 54, 68, 0.29);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+}
+
+.frosted-glass section[class^="gandi_collapsible-box_collapsible-box"] {
+  background: transparent;
+}
+
+.frosted-glass header[class^="gandi_collapsible-box_header"] {
+  border-color: var(--theme-color-200);
+}
+
+.frosted-glass div[class^="gandi_collapsible-box_body"] {
+  position: relative;
+}
+
+:root[theme="dark"] .frosted-glass {
+  --bg-color: 46, 54, 68;
+}
+
+:root[theme="light"] .frosted-glass {
+  --bg-color: 247, 247, 247;
+}
+
+.frosted-glass {
+  --alpha: 0.29;
+  --radius: 10px;
+
+  :global(.blocklyWidgetDiv .goog-menu),
+  :global(.gandi_context-menu_context-menu_2SJM-),
+  :global(.blocklyToolboxDiv),
+  :global(.gandi_plugins_plugins-root_xA3t3),
+  :global(.gandi_target-pane_count_3fmUd),
+  :global(.gandi_editor-wrapper_tabList_4HFZz),
+  :global(.gandi_setting-modal_modal-overlay_3wJji),
+  :global(.gandi_bulletin-modal_modal-overlay_TBAhj) {
+    background-color: rgba(var(--bg-color), var(--alpha));
+    backdrop-filter: blur(var(--radius));
+  }
 }

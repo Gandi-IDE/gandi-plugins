@@ -208,7 +208,7 @@ declare global {
       onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
       onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
     };
-    description?: string;
+    description?: ReactNode;
     key: string;
     label?: string;
     value: PluginSettingValueType;

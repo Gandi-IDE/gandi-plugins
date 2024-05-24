@@ -20,6 +20,46 @@ const changeObscuredShadowIds = (element: Element) => {
   }
 };
 
+const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Workspace, vm: VirtualMachine) => {
+  const variables: Map<string, string> = new Map();
+  const lists: Map<string, string> = new Map();
+  const existingVariables = workspace.getAllVariables().map(({name, type, isCloud, id_}) => ({name, type,isCloud, id: id_}));
+  
+  const handleCheckVariable = (name: string, id: string, type: string, element: Element) => {
+    const existingVariable = existingVariables.find((i) => i.type === type && i.name === name);
+    if (!existingVariable) {
+      const isCloud = name.startsWith("☁ ");
+      vm.editingTarget.createVariable(id, name, type, isCloud);
+      existingVariables.push({name, type, isCloud, id})
+    } else if (existingVariable.id !== id) {
+      element.setAttribute("id", existingVariable.id);
+    }
+  };
+
+  function traverse(node: Element) {
+    const children: HTMLCollection = node.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i] as Element;
+      if (child.tagName === "FIELD") {
+        const type = child.getAttribute("name");
+        const name = child.innerHTML;
+        const id = child.getAttribute("id");
+        if (type === "VARIABLE") {
+          handleCheckVariable(name, id, "", child);
+        } else if (type === "LIST") {
+          handleCheckVariable(name, id, "list", child);
+        }
+      }
+      traverse(child);
+    }
+  }
+
+  traverse(element);
+
+  return { variables, lists };
+};
+
 /**
  * Flesh out a blocks description
  * @param block Block Object
@@ -269,6 +309,7 @@ export const pasteBatchedElements = (
   event: { clientX: number; clientY: number },
   workspace: Blockly.Workspace,
   copiedElements: CopiedElements,
+  vm: VirtualMachine,
 ) => {
   const mouseRelativePosition = window.Blockly.Utils.getMouseVectorPosition(
     {
@@ -300,6 +341,9 @@ export const pasteBatchedElements = (
 
     element.setAttribute("x", String(x + dx));
     element.setAttribute("y", String(y + dy));
+
+    resolveVariableSharingConflicts(element, workspace, vm);
+
     if (element.tagName.toLowerCase() === "custom-frame") {
       let xmlBlock = null;
       for (let i = 0; i < element.children.length; i++) {
@@ -308,6 +352,7 @@ export const pasteBatchedElements = (
         xmlBlock.setAttribute("y", String(Number(xmlBlock.getAttribute("y")) + dy));
       }
     }
+
     // Scratch-specific: Give shadow dom new IDs to prevent duplicating on paste
     changeObscuredShadowIds(element);
     const xml = `<xml xmlns="http://www.w3.org/1999/xhtml">${element.outerHTML}</xml>`;

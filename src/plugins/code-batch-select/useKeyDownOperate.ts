@@ -3,9 +3,10 @@ import { isCtrlKeyDown } from "utils/index";
 import { copyBatchedElements, pasteBatchedElements } from "utils/block-helper";
 import { SelectedElements } from "./useBatchSelect";
 
-const useKeyDownOperate: (params: { blockly: any; workspace: Blockly.WorkspaceSvg }) => null = ({
+const useKeyDownOperate: (params: { blockly: any; workspace: Blockly.WorkspaceSvg; vm: VirtualMachine }) => null = ({
   blockly,
   workspace,
+  vm,
 }) => {
   const mousemoveRef = useRef<{ clientX: number; clientY: number }>({
     clientX: 0,
@@ -38,7 +39,7 @@ const useKeyDownOperate: (params: { blockly: any; workspace: Blockly.WorkspaceSv
     if (isCtrlKeyDown(e)) {
       if (e.keyCode == 86 && blockly.clipboardBatchElements?.length > 0) {
         // 'ctrl + v'
-        pasteBatchedElements(mousemoveRef.current, workspace, blockly.clipboardBatchElements);
+        pasteBatchedElements(mousemoveRef.current, workspace, blockly.clipboardBatchElements, vm);
       } else if (selectedElements.length === 0) {
         // 没有批量选中的block，并且按键按到了ctrl c 或者ctrl v 清除已记录的值。
         if (e.keyCode === 67 || e.keyCode === 88) {
