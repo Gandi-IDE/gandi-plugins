@@ -120,7 +120,6 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
       return message_generator(`${apiHost}/ai/hub/txt2img`, { text: text }, "taskId");
     },
   };
-  console.log(previewMe, guest.name);
   if (previewMe != null && previewMe != guest.name) {
     guestStorage = new BasicStorage({ groupIdGenerator, messageIdGenerator });
   }

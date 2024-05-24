@@ -22,7 +22,6 @@ const DEFAULT_INJECT_PLUGINS = [
   "code-batch-select",
   "dropdown-searchable",
   "historical-version",
-  "inspiro",
 ];
 interface PluginsManagerProps extends PluginContext {
   plugins: Record<string, () => void>;
