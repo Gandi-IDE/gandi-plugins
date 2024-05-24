@@ -7,7 +7,8 @@ styleElement.innerHTML = `
 document.head.appendChild(styleElement);
 let textarea = "textarea",
   renderWidth = 20,
-  ResizeEditorAble = false;
+  ResizeEditorAble = false,
+  lineRender = true;
 
 const getToolboxAndWorkspaceBlocks = (workspace) => {
   const toolbox = workspace.getToolbox();
@@ -40,6 +41,48 @@ const lineText = {
   originHtmlInputKeyDown_: null,
   originalRender_: null,
   originalResizeEditor__: null,
+  originalSetAttribute: null,
+
+  linerender: function (value, workspace, rerender) {
+    lineRender = value;
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
+    }
+  },
+
+  lineTextLeft: function (value, vm, workspace, blockly) {
+    if (value) {
+      const originalSetAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function (type, content) {
+        if (
+          ((this.tagName === "text" &&
+            this.classList.contains("blocklyText") &&
+            this.parentElement &&
+            this.parentElement.children.length === 1 &&
+            this.parentElement.classList.contains("blocklyEditableText")) ||
+            (this.tagName === "tspan" && this.parentElement && this.parentElement.classList.contains("blocklyText"))) &&
+          type === "x"
+        ) {
+          originalSetAttribute.call(this, "x", "0");
+          originalSetAttribute.call(this, "text-anchor", "start");
+        } else {
+          originalSetAttribute.call(this, type, content);
+          if (this.tagName === "text") originalSetAttribute.call(this, "text-anchor", "middle");
+        }
+      };
+    } else {
+      Element.prototype.setAttribute = this.originalSetAttribute;
+    }
+    this.updateAllBlocks(vm, workspace, blockly);
+  },
+
   svgStart: function (start, workspace, blockly, type) {
     let needRerenderBlockTypes = new Set(["text", "number", "color"]);
     if (type) {
@@ -123,11 +166,27 @@ const lineText = {
       });
     }
   },
+  texthides: function (num, workspace, blockly, rerender) {
+    if (blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH === (num > 0 ? num : Infinity)) return;
+    blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH = num > 0 ? num : Infinity;
+    if (rerender !== false) {
+      getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+        if (opcodeToSettings[block.type]) {
+          const inputBlock = block.inputList[0].fieldRow[0];
+          inputBlock.maxDisplayLength = blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH;
+          inputBlock.setVisible(false);
+          inputBlock.setVisible(true);
+          block.render();
+        }
+      });
+    }
+  },
   dispose: function (Blockly) {
     Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditorFunc;
     Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
     Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
     Blockly.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor__;
+    Element.prototype.setAttribute = this.originalSetAttribute;
   },
   textarea: function (Blockly) {
     const originShowEditorFunc = Blockly.FieldTextInput.prototype.showEditor_;
@@ -248,7 +307,17 @@ const lineText = {
 
     function splitStringIntoLines(inputString, charactersPerLine) {
       const regex = new RegExp(".{1," + charactersPerLine + "}", "g");
-      return inputString.match(regex);
+      let inputStringSplit = [];
+      inputString.split("\n").forEach((line) => {
+        if (line.match(regex)) inputStringSplit.push(...line.match(regex));
+        else inputStringSplit.push("\u00A0");
+      });
+      if (inputStringSplit.length > Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH) {
+        inputStringSplit = inputStringSplit.slice(0, Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH);
+        let s = inputStringSplit[Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1];
+        inputStringSplit[Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1] = s.slice(0, charactersPerLine - 3) + "…";
+      }
+      return inputStringSplit;
     }
 
     const originalRender_ = Blockly.FieldTextInput.prototype.render_;
@@ -262,16 +331,36 @@ const lineText = {
           while (this.textElement_.firstChild) {
             this.textElement_.removeChild(this.textElement_.firstChild);
           }
-          const texts = splitStringIntoLines(this.getDisplayText_(), renderWidth);
+          let texts = this.getDisplayText_();
+          if (lineRender) {
+            if (this.getText()) {
+              if (this.getText().length > Blockly.BlockSvg.MAX_DISPLAY_LENGTH) {
+                texts = this.getText().slice(0, Blockly.BlockSvg.MAX_DISPLAY_LENGTH - 3) + "...";
+              } else {
+                texts = this.getText();
+              }
+            }
+          }
+          texts = splitStringIntoLines(texts, renderWidth);
+          let longer = 0,
+            longers = 0,
+            i = 0;
           for (const text of texts) {
             let tspan = document.createElementNS(Blockly.SVG_NS, "tspan");
+            if (text.length > longer) {
+              longer = text.length;
+              longers = i;
+            }
             tspan.textContent = text;
-            tspan.setAttribute("dy", 16);
-            tspan.setAttribute("x", 0);
+            if (i !== 0) {
+              tspan.setAttribute("dy", 16);
+            } else {
+              tspan.setAttribute("x", 0);
+            }
             this.textElement_.appendChild(tspan);
+            i++;
           }
-          const fc = this.textElement_.firstChild;
-          fc.removeAttribute("dy");
+          const fc = this.textElement_.children[longers];
 
           this.size_.height = 16 * (texts.length + 1);
           this.size_.width = fc.getComputedTextLength();
@@ -323,6 +412,30 @@ const lineText = {
   },
   turnRender: function (bool) {
     ResizeEditorAble = bool;
+  },
+  updateAllBlocks: function (vm, workspace, blockly) {
+    const eventsOriginallyEnabled = blockly.Events.isEnabled();
+    blockly.Events.disable(); // Clears workspace right-click→undo (see SA/SA#6691)
+
+    if (workspace) {
+      if (vm.editingTarget) {
+        vm.emitWorkspaceUpdate();
+      }
+      const flyout = workspace.getFlyout();
+      if (flyout) {
+        const flyoutWorkspace = flyout.getWorkspace();
+        window.Blockly.Xml.clearWorkspaceAndLoadFromXml(
+          window.Blockly.Xml.workspaceToDom(flyoutWorkspace),
+          flyoutWorkspace,
+        );
+        workspace.getToolbox().refreshSelection();
+        workspace.toolboxRefreshEnabled_ = true;
+      }
+    }
+
+    // There's no particular reason for checking whether events were originally enabled.
+    // Unconditionally enabling events at this point could, in theory, cause bugs in the future.
+    if (eventsOriginallyEnabled) blockly.Events.enable(); // Re-enable events
   },
 };
 export default lineText;
