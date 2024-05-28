@@ -38,27 +38,27 @@ import { defineMessage } from "@formatjs/intl";
 
 const messages = defineMessage({
   generateFail: {
-    id: "plugin.inspiro.generate.fail",
+    id: "plugins.inspiro.generate.fail",
     defaultMessage: "生成素材失败",
   },
   importFail: {
-    id: "plugin.inspiro.import.fail",
+    id: "plugins.inspiro.import.fail",
     defaultMessage: "导入失败",
   },
   importSuccess: {
-    id: "plugin.inspiro.import.success",
+    id: "plugins.inspiro.import.success",
     defaultMessage: "导入成功",
   },
   inputPlaceholder: {
-    id: "plugin.inspiro.input.placeholder",
+    id: "plugins.inspiro.input.placeholder",
     defaultMessage: "在这里输入您的想法",
   },
   importButtonDesc: {
-    id: "plugin.inspiro.import.desc",
+    id: "plugins.inspiro.import.desc",
     defaultMessage: "导入到当前角色",
   },
   typingInfo: {
-    id: "plugin.inspiro.typing.info",
+    id: "plugins.inspiro.typing.info",
     defaultMessage: "生成中",
   },
 });

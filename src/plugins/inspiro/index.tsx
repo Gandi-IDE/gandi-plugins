@@ -10,11 +10,11 @@ import useStorageInfo from "hooks/useStorageInfo";
 
 const messages = defineMessage({
   title: {
-    id: "plugin.inspiro.title",
+    id: "plugins.inspiro.title",
     defaultMessage: "AI 助手",
   },
   intro: {
-    id: "plugin.inspiro.intro",
+    id: "plugins.inspiro.intro",
     defaultMessage:
       "您在 Gandi IDE 中的全能 AI 助手！无论您是想生成令人惊叹的图片、创作动听的音乐，还是需要灵感来实现您的创意梦想，创灵助手都能为您提供无尽的可能性。",
   },
