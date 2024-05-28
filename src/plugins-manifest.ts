@@ -13,6 +13,7 @@ import witcatBlockinput from "src/plugins/witcat-blockinput/manifest";
 import kukemcBeautify from "src/plugins/kukemc-beautify/manifest";
 import fastInput from "src/plugins/fast-input/manifest";
 import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
+import inspiro from "plugins/inspiro/manifest";
 
 export default {
   folder,
@@ -30,4 +31,5 @@ export default {
   "kukemc-beautify": kukemcBeautify,
   "fast-input": fastInput,
   "better-sprite-menu": BetterSpriteMenu,
+  inspiro,
 };

@@ -29,13 +29,17 @@
         ]
     },
     "dependencies": {
+        "@chatscope/chat-ui-kit-react": "^2.0.3",
+        "@chatscope/chat-ui-kit-styles": "^1.4.0",
+        "@chatscope/use-chat": "^3.1.2",
         "@formatjs/intl": "^2.5.1",
         "@legendapp/state": "^0.23.3",
         "@tanstack/react-virtual": "^3.0.0-beta.45",
         "classnames": "^2.3.2",
         "deep-object-diff": "^1.1.9",
-        "gandiblocks": "^1.0.0",
+        "gandiblocks": "^1.0.1",
         "lodash-es": "^4.17.21",
+        "nanoid": "^5.0.7",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-draggable": "^4.4.5",

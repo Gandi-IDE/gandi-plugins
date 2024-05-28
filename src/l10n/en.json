@@ -170,5 +170,18 @@
   "plugins.betterSpriteMenu.layouts.grid": "Scratch's Grid",
   "plugins.betterSpriteMenu.layouts.compact": "Compact",
   "plugins.betterSpriteMenu.layouts.superCompact": "Super Compact",
-  "plugins.betterSpriteMenu.description": "Give the sprites selector a new (and better) look!"
+  "plugins.betterSpriteMenu.description": "Give the sprites selector a new (and better) look!",
+  "plugin.inspiro.generate.fail": "Failed to generate material",
+  "plugin.inspiro.import.fail": "Import failed",
+  "plugin.inspiro.import.success": "Import successful",
+  "plugin.inspiro.input.placeholder": "Enter your idea here",
+  "plugin.inspiro.import.desc": "Import to current character",
+  "plugin.inspiro.typing.info": "Generating",
+  "plugin.inspiro.guest.name": "Me",
+  "plugin.inspiro.audio.name": "Music Magician",
+  "plugin.inspiro.audio.desc": "Describe your idea below👇, and I will compose a heavenly melody based on it 🎵",
+  "plugin.inspiro.image.name": "Masterpiece Creator",
+  "plugin.inspiro.image.desc": "Describe your idea below👇, and I will turn it into a beautiful painting 🎨",
+  "plugin.inspiro.title": "AI Assistant",
+  "plugin.inspiro.intro": "Your all-in-one AI assistant in Gandi IDE! Whether you want to generate stunning images, create melodious music, or need inspiration to bring your creative dreams to life, Inspiro Assistant offers endless possibilities."
 }
