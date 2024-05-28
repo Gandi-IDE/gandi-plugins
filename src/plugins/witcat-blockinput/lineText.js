@@ -9,8 +9,8 @@ let textarea = "textarea",
   renderWidth = 20,
   ResizeEditorAble = false,
   lineRender = true;
-
-let fieldTextInputRender = null;
+// 输入框的文本的对其方式
+let inputLabelTextAnchor = "middle";
 
 const getToolboxAndWorkspaceBlocks = (workspace) => {
   const toolbox = workspace.getToolbox();
@@ -39,12 +39,16 @@ let borderRestoration = {
 };
 
 const lineText = {
-  originShowEditorFunc: null,
+  originShowEditor_: null,
   originHtmlInputKeyDown_: null,
   originalRender_: null,
-  originalResizeEditor__: null,
-  originalSetAttribute: null,
-
+  originalResizeEditor_: null,
+  init: function (Blockly) {
+    this.originShowEditor_ = Blockly.FieldTextInput.prototype.showEditor_;
+    this.originHtmlInputKeyDown_ = Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
+    this.originalRender_ = Blockly.FieldTextInput.prototype.render_;
+    this.originalResizeEditor_ = Blockly.FieldTextInput.prototype.resizeEditor_;
+  },
   linerender: function (value, workspace, rerender) {
     lineRender = value;
     if (rerender !== false) {
@@ -58,26 +62,17 @@ const lineText = {
       });
     }
   },
-
   lineTextLeft: function (value, vm, workspace, blockly) {
-    if (value) {
-      fieldTextInputRender = blockly.FieldTextInput.prototype.render_;
-      blockly.FieldTextInput.prototype.render_ = function () {
-        this.textElement_?.setAttribute("text-anchor", "start");
-        fieldTextInputRender.call(this);
-      };
-    } else {
-      blockly.FieldTextInput.prototype.render_ = fieldTextInputRender;
-    }
+    inputLabelTextAnchor = value ? "start" : "middle";
     getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
       if (opcodeToSettings[block.type]) {
         const inputBlock = block.inputList[0].fieldRow[0];
         inputBlock.setVisible(false);
         inputBlock.setVisible(true);
+        block.render();
       }
     });
   },
-
   svgStart: function (start, workspace, blockly, type) {
     let needRerenderBlockTypes = new Set(["text", "number", "color"]);
     if (type) {
@@ -176,15 +171,8 @@ const lineText = {
       });
     }
   },
-  dispose: function (Blockly) {
-    Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditorFunc;
-    Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
-    Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
-    Blockly.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor__;
-    Element.prototype.setAttribute = this.originalSetAttribute;
-  },
   textarea: function (Blockly) {
-    const originShowEditorFunc = Blockly.FieldTextInput.prototype.showEditor_;
+    const originShowEditorFunc = this.originShowEditor_;
     Blockly.FieldTextInput.prototype.showEditor_ = function (e) {
       const originalCreateElement = document.createElement;
       document.createElement = function (tagName) {
@@ -207,10 +195,10 @@ const lineText = {
       document.body.dispatchEvent(event);
     };
 
-    const originalResizeEditor__ = Blockly.FieldTextInput.prototype.resizeEditor_;
+    const originalResizeEditor = this.originalResizeEditor_;
     Blockly.FieldTextInput.prototype.resizeEditor_ = function () {
       if (!ResizeEditorAble) {
-        originalResizeEditor__.call(this);
+        originalResizeEditor.call(this);
         if (textarea == "textarea") {
           var scale = this.sourceBlock_.workspace.scale;
           var div = Blockly.WidgetDiv.DIV;
@@ -287,7 +275,7 @@ const lineText = {
       }
     };
 
-    const originHtmlInputKeyDown_ = Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
+    const originHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
     Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = function (e) {
       if (e.keyCode == 13) {
         let es = {};
@@ -315,49 +303,46 @@ const lineText = {
       return inputStringSplit;
     }
 
-    const originalRender_ = Blockly.FieldTextInput.prototype.render_;
+    const originalRender_ = this.originalRender_;
     Blockly.FieldTextInput.prototype.render_ = function () {
+      this.textElement_?.setAttribute("text-anchor", inputLabelTextAnchor);
       originalRender_.call(this);
       if (textarea == "textarea") {
         if (this.visible_ && this.textElement_) {
-          // Replace the text.
-          // this.textElement_.textContent = this.getDisplayText_();
-
           while (this.textElement_.firstChild) {
             this.textElement_.removeChild(this.textElement_.firstChild);
           }
-          let texts = this.getDisplayText_();
+          let test = this.getDisplayText_();
           if (lineRender) {
             if (this.getText()) {
               if (this.getText().length > Blockly.BlockSvg.MAX_DISPLAY_LENGTH) {
-                texts = this.getText().slice(0, Blockly.BlockSvg.MAX_DISPLAY_LENGTH - 3) + "...";
+                test = this.getText().slice(0, Blockly.BlockSvg.MAX_DISPLAY_LENGTH - 3) + "...";
               } else {
-                texts = this.getText();
+                test = this.getText();
               }
             }
           }
-          texts = splitStringIntoLines(texts, renderWidth);
-          let longer = 0,
-            longers = 0,
-            i = 0;
-          for (const text of texts) {
+          const lines = splitStringIntoLines(test, renderWidth);
+          let maxLengthLine = 0;
+          let maxLength = 0;
+          for (let index = 0; index < lines.length; index++) {
+            const lineText = lines[index];
             let tspan = document.createElementNS(Blockly.SVG_NS, "tspan");
-            if (text.length > longer) {
-              longer = text.length;
-              longers = i;
+            if (lineText.length > maxLength) {
+              maxLength = lineText.length;
+              maxLengthLine = index;
             }
-            tspan.textContent = text;
-            if (i !== 0) {
+            tspan.textContent = lineText;
+            if (index !== 0) {
               tspan.setAttribute("dy", 16);
             } else {
               tspan.setAttribute("x", 0);
             }
             this.textElement_.appendChild(tspan);
-            i++;
           }
-          const fc = this.textElement_.children[longers];
+          const fc = this.textElement_.children[maxLengthLine];
 
-          this.size_.height = 16 * (texts.length + 1);
+          this.size_.height = 16 * (lines.length + 1);
           this.size_.width = fc.getComputedTextLength();
 
           this.arrowWidth_ = 0;
@@ -370,7 +355,6 @@ const lineText = {
           if (this.sourceBlock_.RTL) {
             centerTextX += this.arrowWidth_;
           }
-
           // In a text-editing shadow block's field,
           // if half the text length is not at least center of
           // visible field (FIELD_WIDTH), center it there instead,
@@ -392,9 +376,7 @@ const lineText = {
 
           // Apply new text element x position.
           this.textElement_.setAttribute("x", centerTextX);
-          if (this.textElement_.getAttribute("text-anchor") === "start") {
-            centerTextX = 0;
-          }
+          centerTextX = inputLabelTextAnchor === "middle" ? centerTextX : 0;
           for (const iterator of this.textElement_.children) {
             iterator.setAttribute("x", centerTextX);
           }
@@ -410,6 +392,34 @@ const lineText = {
   },
   turnRender: function (bool) {
     ResizeEditorAble = bool;
+  },
+  dispose: function (workspace, Blockly) {
+    Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditor_;
+    Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
+    Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
+    Blockly.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor_;
+    Blockly.BlockSvg.MAX_DISPLAY_LENGTH = Infinity;
+
+    let needRerenderBlockTypes = new Set(["text", "number", "color"]);
+    needRerenderBlockTypes.forEach((needRerenderBlockType) => {
+      borderRestoration[needRerenderBlockType] = false;
+    });
+
+    getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+      const key = opcodeToSettings[block.type];
+      if (key) {
+        if (needRerenderBlockTypes.has(key)) {
+          block.setOutputShape(Blockly.OUTPUT_SHAPE_ROUND);
+        }
+        const inputBlock = block.inputList[0].fieldRow[0];
+        inputBlock.maxDisplayLength = Blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+        inputBlock.textElement_?.setAttribute("text-anchor", "middle");
+        inputBlock.size_.height = Blockly.BlockSvg.FIELD_HEIGHT;
+        inputBlock.setVisible(false);
+        inputBlock.setVisible(true);
+        block.render();
+      }
+    });
   },
 };
 export default lineText;

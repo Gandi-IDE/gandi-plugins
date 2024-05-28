@@ -12,11 +12,7 @@ let checkLong = 50,
   timer = null;
 
 const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
-  lineText.originShowEditorFunc = blockly.FieldTextInput.prototype.showEditor_;
-  lineText.originHtmlInputKeyDown_ = blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
-  lineText.originalRender_ = blockly.FieldTextInput.prototype.render_;
-  lineText.originalResizeEditor__ = blockly.FieldTextInput.prototype.resizeEditor_;
-  lineText.originalSetAttribute = Element.prototype.setAttribute;
+  lineText.init(blockly);
   const listener = () => {
     const input = document.getElementsByClassName("blocklyHtmlInput")[0] as
       | HTMLInputElement
@@ -406,12 +402,9 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
   return {
     dispose: () => {
       document.body.removeEventListener("startInputing", listener);
-      lineText.svgStart(false, workspace, blockly, "");
       lineText.changTextarea(false);
       lineText.textLeft(false);
-      lineText.texthide(0, workspace, blockly);
-      lineText.lineTextLeft(false, vm, workspace, blockly);
-      lineText.dispose(blockly);
+      lineText.dispose(workspace, blockly);
       register.dispose();
     },
   };
