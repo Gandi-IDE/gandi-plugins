@@ -32,23 +32,23 @@ if (!hostname.endsWith("ccw.site")) {
 }
 const messages = defineMessage({
   guestName: {
-    id: "plugin.inspiro.guest.name",
+    id: "plugins.inspiro.guest.name",
     defaultMessage: "我",
   },
   audioGeneratorName: {
-    id: "plugin.inspiro.audio.name",
+    id: "plugins.inspiro.audio.name",
     defaultMessage: "音乐魔法师",
   },
   audioGeneratorDesc: {
-    id: "plugin.inspiro.audio.desc",
+    id: "plugins.inspiro.audio.desc",
     defaultMessage: "在👇描述您的想法,我会根据该想法谱出一曲天籁🎵",
   },
   imageGeneratorName: {
-    id: "plugin.inspiro.image.name",
+    id: "plugins.inspiro.image.name",
     defaultMessage: "妙笔生花",
   },
   imageGeneratorDesc: {
-    id: "plugin.inspiro.image.desc",
+    id: "plugins.inspiro.image.desc",
     defaultMessage: "在👇描述您的想法,我会将该想法绘成精美的画🎨",
   },
 });
