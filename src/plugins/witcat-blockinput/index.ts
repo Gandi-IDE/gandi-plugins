@@ -4,16 +4,15 @@ import BlockinputaIcon from "assets/icon--witcat-blockinput.svg";
 
 let show = false,
   inshow = false,
-  textLeft = true;
+  textLeft = true,
+  // eslint-disable-next-line prefer-const
+  loaded = [];
 
 let checkLong = 50,
   timer = null;
 
-const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginContext) => {
-  lineText.originShowEditorFunc = blockly.FieldTextInput.prototype.showEditor_;
-  lineText.originHtmlInputKeyDown_ = blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
-  lineText.originalRender_ = blockly.FieldTextInput.prototype.render_;
-  lineText.originalResizeEditor__ = blockly.FieldTextInput.prototype.resizeEditor_;
+const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: PluginContext) => {
+  lineText.init(blockly);
   const listener = () => {
     const input = document.getElementsByClassName("blocklyHtmlInput")[0] as
       | HTMLInputElement
@@ -45,14 +44,16 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
       }
     }
   };
-  document.body.addEventListener("startInputing", listener);
-  lineText.textLeft(false);
-  lineText.svg(blockly);
-  lineText.svgStart(true, workspace, blockly, "text");
-  lineText.changeRenderWidth(20, workspace);
-  lineText.textarea(blockly);
-  lineText.changTextarea(true);
-  lineText.texthide(20, workspace, blockly);
+  if (loaded.indexOf("start") === -1) document.body.addEventListener("startInputing", listener);
+  if (loaded.indexOf("textLeft") === -1) lineText.textLeft(false);
+  if (loaded.indexOf("svg") === -1) lineText.svg(blockly);
+  if (loaded.indexOf("svgStart-text") === -1) lineText.svgStart(true, workspace, blockly, "text");
+  if (loaded.indexOf("changeRenderWidth") === -1) lineText.changeRenderWidth(20, workspace);
+  if (loaded.indexOf("textarea") === -1) lineText.textarea(blockly);
+  if (loaded.indexOf("changTextarea") === -1) lineText.changTextarea(true);
+  if (loaded.indexOf("linerender") === -1) lineText.linerender(true, workspace, false);
+  if (loaded.indexOf("texthide") === -1) lineText.texthide(20, workspace, blockly);
+  if (loaded.indexOf("texthides") === -1) lineText.texthides(3, workspace, blockly);
 
   const popups = (input: HTMLInputElement | HTMLTextAreaElement): Promise<void> => {
     return new Promise((resolve) => {
@@ -245,10 +246,11 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
         items: [
           {
             key: "start",
-            label: msg("witcat.blockinput.option.start"),
+            label: msg("witcat.blockinput.option.advancedInput"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
+              loaded.push("start");
               if (value) {
                 document.body.addEventListener("startInputing", listener);
               } else {
@@ -262,64 +264,89 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
             inputProps: {
               type: "number",
             },
-            label: msg("witcat.blockinput.option.show"),
+            label: msg("witcat.blockinput.option.showOnExceed"),
             value: 50,
             onChange: (value: number) => {
+              loaded.push("show");
               checkLong = value;
             },
           },
           {
             key: "linetext",
-            label: msg("witcat.blockinput.option.linetext"),
+            label: msg("witcat.blockinput.option.multiLineText"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
+              loaded.push("changTextarea");
               lineText.changTextarea(value);
             },
           },
           {
             key: "border",
-            label: msg("witcat.blockinput.option.border"),
+            label: msg("witcat.blockinput.option.roundedTextBorder"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
+              loaded.push("svgStart-text");
               lineText.svgStart(value, workspace, blockly, "text");
             },
           },
           {
             key: "numborder",
-            label: msg("witcat.blockinput.option.numborder"),
+            label: msg("witcat.blockinput.option.roundedNumberBorder"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
+              loaded.push("svgStart-number");
               lineText.svgStart(value, workspace, blockly, "number");
             },
           },
           {
             key: "colorborder",
-            label: msg("witcat.blockinput.option.colorborder"),
+            label: msg("witcat.blockinput.option.roundedColorBorder"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
+              loaded.push("svgStart-color");
               lineText.svgStart(value, workspace, blockly, "color");
             },
           },
           {
             key: "textalign",
-            label: msg("witcat.blockinput.option.textalign"),
+            label: msg("witcat.blockinput.option.leftAlignText"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
+              loaded.push("textLeft");
               lineText.textLeft(value);
             },
           },
           {
             key: "textaligns",
-            label: msg("witcat.blockinput.option.textaligns"),
+            label: msg("witcat.blockinput.option.leftAlignAdvancedText"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
               textLeft = value;
+            },
+          },
+          {
+            key: "textalignss",
+            label: msg("witcat.blockinput.option.leftAlignRenderedText"),
+            type: "switch",
+            value: false,
+            onChange: (value: boolean) => {
+              lineText.lineTextLeft(value, vm, workspace, blockly);
+            },
+          },
+          {
+            key: "linerender",
+            label: msg("witcat.blockinput.option.renderMultiLineText"),
+            type: "switch",
+            value: true,
+            onChange: (value: boolean) => {
+              loaded.push("linerender");
+              lineText.linerender(value, workspace);
             },
           },
           {
@@ -328,11 +355,27 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
             inputProps: {
               type: "number",
             },
-            label: msg("witcat.blockinput.option.hide"),
+            label: msg("witcat.blockinput.option.autoEllipsis"),
             value: 20,
             onChange: (value: number) => {
+              loaded.push("texthide");
               debounce(() => {
                 lineText.texthide(value, workspace, blockly);
+              }, 1000);
+            },
+          },
+          {
+            key: "hideline",
+            type: "input",
+            inputProps: {
+              type: "number",
+            },
+            label: msg("witcat.blockinput.option.autoEllipsisLine"),
+            value: 3,
+            onChange: (value: number) => {
+              loaded.push("texthides");
+              debounce(() => {
+                lineText.texthides(value, workspace, blockly);
               }, 1000);
             },
           },
@@ -345,6 +388,7 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
             label: msg("witcat.blockinput.option.renderWidth"),
             value: 20,
             onChange: (value: number) => {
+              loaded.push("changeRenderWidth");
               debounce(() => {
                 lineText.changeRenderWidth(value, workspace);
               }, 1000);
@@ -358,11 +402,9 @@ const WitcatBlockinput = ({ registerSettings, msg, workspace, blockly }: PluginC
   return {
     dispose: () => {
       document.body.removeEventListener("startInputing", listener);
-      lineText.svgStart(false, workspace, blockly, "");
       lineText.changTextarea(false);
       lineText.textLeft(false);
-      lineText.texthide(0, workspace, blockly);
-      lineText.dispose(blockly);
+      lineText.dispose(workspace, blockly);
       register.dispose();
     },
   };
