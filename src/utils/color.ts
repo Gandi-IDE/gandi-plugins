@@ -127,3 +127,13 @@ export const rgbToHex = (r: number, g: number, b: number) => {
 export const rgbArrayToHex = (rgb: Rgb) => {
   return rgbToHex(rgb[0], rgb[1], rgb[2]);
 };
+
+/**
+ * Converts a hex color to a darkened version and returns it as a hex string.
+ * @param color - The original hex color.
+ * @param alpha - The alpha value to darken the color.
+ * @returns The darkened hex color.
+ */
+export const createDarkenedColor = (color: string, alpha: number): string => {
+  return rgbArrayToHex(darken(hexToRgb(color), alpha));
+};

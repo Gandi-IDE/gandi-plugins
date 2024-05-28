@@ -1,38 +1,57 @@
 import { bindAll } from "lodash-es";
 import scratchblocks from "gandiblocks";
-import { darken, hexToRgb, rgbArrayToHex } from "./color";
+import { createDarkenedColor } from "./color";
 
 const extensions: Record<string, ExtensionInfo> = {};
 
-const makeColour = (color: string, alpha: number) => {
-  return rgbArrayToHex(darken(hexToRgb(color), alpha));
-};
-
-const verifyExtensionName = (extension = "") => {
+/**
+ * Verifies the extension name by removing any dots.
+ * @param {string} [extension=""] - The original extension name.
+ * @returns {string} The verified extension name.
+ */
+const sanitizeExtensionName = (extension = ""): string => {
   return extension.replace(/[.]/g, "");
 };
 
-const blocksEscape = function (unsafe: string | number): string {
+/**
+ * Escapes special characters in the given string or number for use in Scratch blocks.
+ * @param {string | number} unsafe - The string or number to escape.
+ * @returns {string} The escaped string.
+ */
+const escapeBlocks = (unsafe: string | number): string => {
   if (typeof unsafe === "number") {
     return String(unsafe);
   }
-  // 在scratchblocks中，[]()<>/ 这些字符都是有意义的
-  // eslint-disable-next-line no-useless-escape
+  // In scratchblocks, []()<>/ are meaningful characters.
   return String(unsafe.replace(/[\<\>\(\)\[\]\/]/g, (c) => `\\${c}`));
 };
 
-const isUselessElement = (element: { type: string; name: string }) => {
+/**
+ * Determines if a block element is considered "useless".
+ * @param {object} element - The block element to check.
+ * @param {string} element.type - The type of the element.
+ * @param {string} element.name - The name of the element.
+ * @returns {boolean} Whether the element is considered useless.
+ */
+const isIrrelevantElement = (element: { type: string; name: string }): boolean => {
   const { type, name } = element;
   return (
     type === "field_image" ||
     type === "field_vertical_separator" ||
-    (type === "input_statement" && name === "SUBSTACK") ||
-    (type === "input_statement" && name === "SUBSTACK2")
+    (type === "input_statement" && (name === "SUBSTACK" || name === "SUBSTACK2"))
   );
 };
 
-const addOutputTag = (info: { outputShape?: string; extension: ExtensionInfo }, content: string) => {
-  const extensionName = verifyExtensionName(info.extension.key);
+/**
+ * Adds an output tag to the provided content based on the extension information.
+ * @param {object} info - The block information.
+ * @param {string} [info.outputShape] - The shape of the block output.
+ * @param {ExtensionInfo} info.extension - The extension information.
+ * @param {string} content - The content to tag.
+ * @returns {string} The tagged content.
+ */
+const appendOutputTag = (info: { outputShape?: string; extension: ExtensionInfo }, content: string): string => {
+  const extensionName = sanitizeExtensionName(info.extension.key);
   let category = extensionName;
   switch (category) {
     case "data":
@@ -46,31 +65,43 @@ const addOutputTag = (info: { outputShape?: string; extension: ExtensionInfo }, 
   }
 
   if (category) {
-    if (info.outputShape === "boolean") {
-      return `<${content}:: ${category}>`;
-    } else if (info.outputShape === "reporter") {
-      return `(${content}:: ${category})`;
-    } else if (info.outputShape === "hat") {
-      return `${content}:: ${category} hat`;
-    } else if (info.outputShape === "end") {
-      return `${content}:: ${category} cap`;
-    } else if (info.outputShape === "stack" || info.outputShape === "command") {
-      return `${content}:: ${category}`;
+    switch (info.outputShape) {
+      case "boolean":
+        return `<${content}:: ${category}>`;
+      case "reporter":
+        return `(${content}:: ${category})`;
+      case "hat":
+        return `${content}:: ${category} hat`;
+      case "end":
+        return `${content}:: ${category} cap`;
+      case "stack":
+      case "command":
+        return `${content}:: ${category}`;
     }
   }
 
   return content;
 };
 
-const parseArguments = (code: string) =>
+/**
+ * Parses the arguments in the provided code string.
+ * @param {string} code - The code string to parse.
+ * @returns {string[]} The parsed arguments.
+ */
+const parseArgs = (code: string): string[] =>
   code
     .split(/(?=[^\\]%[nbs])/g)
     .map((i) => i.trim())
     .filter((i) => i.charAt(0) === "%")
     .map((i) => i.substring(0, 2));
 
-const appendExtension = (blockJson: BlockInitJson): [ExtensionInfo, string] => {
-  const key = verifyExtensionName(blockJson.type.split("_")[0]);
+/**
+ * Appends an extension to the block JSON.
+ * @param {BlockInitJson} blockJson - The block JSON data.
+ * @returns {[ExtensionInfo, string]} The extension information and key.
+ */
+const addExtension = (blockJson: BlockInitJson): [ExtensionInfo, string] => {
+  const key = sanitizeExtensionName(blockJson.type.split("_")[0]);
   let extension: ExtensionInfo = null;
   if (extensions[key]) {
     extension = extensions[key];
@@ -85,8 +116,8 @@ const appendExtension = (blockJson: BlockInitJson): [ExtensionInfo, string] => {
       width: "40px",
       height: "40px",
       colour: blockJson.colour,
-      colourSecondary: blockJson.colourSecondary || makeColour(blockJson.colour, 0.1),
-      colourTertiary: blockJson.colourTertiary || makeColour(blockJson.colour, 0.2),
+      colourSecondary: blockJson.colourSecondary || createDarkenedColor(blockJson.colour, 0.1),
+      colourTertiary: blockJson.colourTertiary || createDarkenedColor(blockJson.colour, 0.2),
       href: extension.iconUrl,
     });
     extensions[key] = extension;
@@ -122,22 +153,42 @@ interface ExtensionInfo {
   key: string;
 }
 
+interface BlockInfo {
+  extension: ExtensionInfo;
+  scriptTextRows: Array<Array<string>>;
+  keywordTextRows: Array<Array<string>>;
+  outputShape: string;
+}
+
+interface BlockArgObject {
+  name: string;
+  type: string;
+  text: string;
+  check?: string;
+  options?: Array<[string, string]> | (() => Array<[string, string]>);
+}
+
 export default class BlocksKeywordsParser {
   blocks: Record<string, Scratch.BlockState>;
   blockDefinitions: Record<string, { init: () => void }>;
-
   workspace: Blockly.WorkspaceSvg;
 
   constructor(workspace: Blockly.WorkspaceSvg) {
-    bindAll(this, ["interpolate", "processor", "parseBlock", "parseProceduresBlock", "parser"]);
+    bindAll(this, ["interpolateMessage", "processor", "parseSingleBlock", "parseProcedureBlock", "parser"]);
     this.workspace = workspace;
     this.blockDefinitions = this.workspace.getScratchBlocksBlocks();
     this.blocks = {};
   }
 
-  interpolate(message: string, args: string[]) {
+  /**
+   * Interpolates the given message with the provided arguments.
+   * @param message - The message to interpolate.
+   * @param args - The arguments for interpolation.
+   * @returns The interpolated message elements.
+   * @throws Will throw an error if a message index is out of range or duplicated.
+   */
+  interpolateMessage(message: string, args: BlockArgObject[]): Array<BlockArgObject | string> {
     const tokens = window.Blockly.Utils.tokenizeInterpolation(message);
-    // Interpolate the arguments.  Build a list of elements.
     let indexCount = 0;
     const indexDup = [];
     const elements = [];
@@ -166,7 +217,12 @@ export default class BlocksKeywordsParser {
     return elements;
   }
 
-  getOutputShape(json: BlockInitJson) {
+  /**
+   * Determines the output shape for the given block JSON.
+   * @param {BlockInitJson} json - The block JSON data.
+   * @returns {string | undefined} The output shape.
+   */
+  determineOutputShape(json: BlockInitJson): string | undefined {
     if (json.outputShape === 1) {
       return "boolean";
     }
@@ -183,20 +239,25 @@ export default class BlocksKeywordsParser {
       if (json.extensions.includes("shape_hat")) {
         return "hat";
       }
-      if (json.extensions.includes("shape_statement")) {
+      if (json.extensions.includes("shape_statement") || json.extensions.includes("shape_end")) {
         return "stack";
       }
-      if (json.previousStatement === void 0) {
+      if (json.previousStatement === undefined) {
         return "hat";
       }
-      if (json.nextStatement === void 0) {
+      if (json.nextStatement === undefined) {
         return "end";
       }
       return "stack";
     }
   }
 
-  parseBlock(block: Scratch.BlockState) {
+  /**
+   * Parses a single block and returns its information.
+   * @param block - The block state.
+   * @returns The parsed block information.
+   */
+  parseSingleBlock(block: Scratch.BlockState): BlockInfo | undefined {
     let blockJson: BlockInitJson = null;
     if (this.blockDefinitions[block.opcode]) {
       this.blockDefinitions[block.opcode].init.call({
@@ -204,7 +265,7 @@ export default class BlocksKeywordsParser {
       });
       let extension: ExtensionInfo = null;
       if (blockJson.type && blockJson.extensions && blockJson.extensions[0] === "scratch_extension") {
-        [extension] = appendExtension(blockJson);
+        [extension] = addExtension(blockJson);
       } else {
         let category = blockJson.category;
         if (block.opcode.startsWith("argument_reporter") || block.opcode === "ccw_hat_parameter") {
@@ -225,15 +286,15 @@ export default class BlocksKeywordsParser {
     }
   }
 
-  parseProceduresBlock(block: Scratch.BlockState) {
+  parseProcedureBlock(block: Scratch.BlockState) {
     let script = block.mutation.proccode;
     let keywordText = script;
-    const params = parseArguments(block.mutation.proccode);
+    const params = parseArgs(block.mutation.proccode);
     if (params.length) {
       if (block.mutation.argumentnames) {
         const argumentnames = JSON.parse(block.mutation.argumentnames);
         params.forEach((param, index) => {
-          const argumentName = blocksEscape(argumentnames[index]);
+          const argumentName = escapeBlocks(argumentnames[index]);
           script = script.replace(param, param === "%b" ? `<${argumentName}>` : `(${argumentName})`);
           keywordText = keywordText.replace(param, argumentName);
         });
@@ -243,7 +304,7 @@ export default class BlocksKeywordsParser {
           const inputBlock = block.inputs[argumentids[index]];
           if (inputBlock && inputBlock.block && this.blocks[inputBlock.block]) {
             const childBlock = this.blocks[inputBlock.block || inputBlock.shadow];
-            const info = this.parseBlock(childBlock);
+            const info = this.parseSingleBlock(childBlock);
             const paramStrings = info.scriptTextRows[0];
             if (paramStrings) {
               const str = paramStrings.join(" ");
@@ -253,7 +314,7 @@ export default class BlocksKeywordsParser {
                   script = script.replace(param, `<${str}>`);
                   break;
                 case "%s":
-                  script = script.replace(param, this.blocks[childBlock.id].shadow ? str : addOutputTag(info, str));
+                  script = script.replace(param, this.blocks[childBlock.id].shadow ? str : appendOutputTag(info, str));
                   break;
                 default:
                   break;
@@ -280,29 +341,35 @@ export default class BlocksKeywordsParser {
         jsonInit: (json: BlockInitJson) => (blockJson = json),
       });
       if (blockJson) {
-        const [, key] = appendExtension(blockJson);
+        const [, key] = addExtension(blockJson);
         const params = script.split(/(\[\w+\])/g);
-        params.forEach((param) => {
+        params.forEach((param, index) => {
           if (param.startsWith("[")) {
+            // Input id
             const key = param.slice(1, -1);
-            const inputBlock = block.inputs[key];
-            if (inputBlock && inputBlock.block && this.blocks[inputBlock.block]) {
-              const blockId = inputBlock.block;
-              const info = this.parseBlock(this.blocks[blockId]);
+            const input = block.inputs[key];
+            if (input && input.block && this.blocks[input.block]) {
+              const blockId = input.block;
+              const info = this.parseSingleBlock(this.blocks[blockId]);
               const paramStrings = info.scriptTextRows[0];
               if (paramStrings) {
                 const str = paramStrings.join(" ");
+                if (input.block && input.block !== input.shadow) {
+                  params[index] = `(${str})`;
+                } else {
+                  params[index] = str;
+                }
                 keywordText = keywordText.replace(param, str);
-                script = script.replace(param, str);
               } else {
                 console.warn("There was an exception in block processing, the input block parse failed.");
               }
             }
           } else {
-            script = script.replace(param, blocksEscape(param));
+            params[index] = escapeBlocks(param);
           }
         });
-        script = addOutputTag(
+        script = params.join("");
+        script = appendOutputTag(
           {
             outputShape: block.mutation.blockInfo.blockType.toLowerCase(),
             extension: {
@@ -323,21 +390,21 @@ export default class BlocksKeywordsParser {
   parser(block: Scratch.BlockState, json: BlockInitJson) {
     const scriptTextRows = [];
     const keywordTextRows = [];
-    const outputShape = this.getOutputShape(json);
+    const outputShape = this.determineOutputShape(json);
     // Interpolate the message blocks.
     let i = 0;
     while (typeof json[`message${i}`] !== "undefined") {
-      const elements = this.interpolate(json[`message${i}`], json[`args${i}`] || []);
+      const elements = this.interpolateMessage(json[`message${i}`], json[`args${i}`] || []);
       const isRounded = elements.length === 1;
       const stringElements = [];
       const optionStringElements = [];
       for (let j = 0; j < elements.length; j++) {
         const element = elements[j];
         if (typeof element === "string") {
-          stringElements.push(blocksEscape(element));
+          stringElements.push(escapeBlocks(element));
           optionStringElements.push(element);
         } else if (typeof element === "object") {
-          if (isUselessElement(element)) {
+          if (isIrrelevantElement(element)) {
             continue;
           } else if (element.type === "field_dropdown" || element.type === "field_variable") {
             const value = block.fields[element.name]?.value;
@@ -350,20 +417,20 @@ export default class BlocksKeywordsParser {
               }
               if (selectedOption) {
                 const text = selectedOption[0];
-                stringElements.push(isRounded ? `(${blocksEscape(text)} v)` : `[${blocksEscape(text)} v]`);
+                stringElements.push(isRounded ? `(${escapeBlocks(text)} v)` : `[${escapeBlocks(text)} v]`);
                 optionStringElements.push(text);
               } else {
-                stringElements.push(isRounded ? `(${blocksEscape(value)} v)` : `[${blocksEscape(value)} v]`);
+                stringElements.push(isRounded ? `(${escapeBlocks(value)} v)` : `[${escapeBlocks(value)} v]`);
                 optionStringElements.push(value);
               }
             } else {
               stringElements.push(isRounded ? `()` : `[]`);
             }
           } else if (element.type.startsWith("field_")) {
-            const str = blocksEscape(block.fields[element.name].value);
+            const str = escapeBlocks(block.fields[element.name].value);
             if (block.opcode === "ccw_hat_parameter") {
               stringElements.push(
-                addOutputTag(
+                appendOutputTag(
                   {
                     outputShape: "reporter",
                     extension: {
@@ -391,11 +458,11 @@ export default class BlocksKeywordsParser {
               const inlineBlock = this.blocks[input.block] || this.blocks[input.shadow];
               const childBlockId = inlineBlock.id;
               if (inlineBlock) {
-                const info = this.parseBlock(inlineBlock);
+                const info = this.parseSingleBlock(inlineBlock);
                 if (info && info.scriptTextRows[0]) {
                   let str = info.scriptTextRows[0].join(" ");
                   if (childBlockId !== input.shadow) {
-                    str = addOutputTag(info, str);
+                    str = appendOutputTag(info, str);
                   }
                   stringElements.push(str);
                   optionStringElements.push(str);
@@ -412,7 +479,7 @@ export default class BlocksKeywordsParser {
             }
           } else if (element.type === "input_statement" && element.name === "custom_block") {
             const input = block.inputs[element.name];
-            const [script, keywordText] = this.parseProceduresBlock(this.blocks[input.block]);
+            const [script, keywordText] = this.parseProcedureBlock(this.blocks[input.block]);
             stringElements.push(script);
             optionStringElements.push(keywordText);
           } else {
@@ -426,7 +493,7 @@ export default class BlocksKeywordsParser {
     }
     if (scriptTextRows.length === 0) {
       if (block.opcode === "procedures_call_with_return") {
-        const [script, keywordText] = this.parseProceduresBlock(block);
+        const [script, keywordText] = this.parseProcedureBlock(block);
         scriptTextRows.push([script]);
         keywordTextRows.push([keywordText]);
       }
@@ -451,13 +518,13 @@ export default class BlocksKeywordsParser {
           const script = this.workspace.parseControlStopBlock(block);
           options.push([block.id, script, script]);
         } else if (block.opcode === "procedures_call") {
-          const [script, keywordText] = this.parseProceduresBlock(block);
+          const [script, keywordText] = this.parseProcedureBlock(block);
           options.push([block.id, `${script}:: custom`, keywordText]);
         } else if (block.mutation && block.mutation.blockInfo) {
           const [script, keywordText] = this.parseDynamicBlock(block);
           options.push([block.id, script, keywordText]);
         } else if (!isShadow && (isNotParent || isParentNextBlock || isParentSubstackBlock)) {
-          const info = this.parseBlock(block);
+          const info = this.parseSingleBlock(block);
 
           if (!info || !info.scriptTextRows[0]) {
             console.warn("There was an exception in block processing");
@@ -466,7 +533,7 @@ export default class BlocksKeywordsParser {
           if (info.scriptTextRows.length > 1) {
             const script = info.scriptTextRows.reduce((acc, row, index) => {
               if (index === 0) {
-                return addOutputTag(info, row.join(" "));
+                return appendOutputTag(info, row.join(" "));
               }
               return `${acc} \n ${row.join(" ")}`;
             }, "");
@@ -478,7 +545,7 @@ export default class BlocksKeywordsParser {
             }, "");
             options.push([block.id, script, keywordText]);
           } else {
-            const script = addOutputTag(info, info.scriptTextRows[0].join(" "));
+            const script = appendOutputTag(info, info.scriptTextRows[0].join(" "));
             const keywordText = info.keywordTextRows[0].join(" ");
             options.push([block.id, script, keywordText]);
           }
