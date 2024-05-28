@@ -26,6 +26,7 @@ const DEFAULT_INJECT_PLUGINS = [
 interface PluginsManagerProps extends PluginContext {
   plugins: Record<string, () => void>;
   disabledPlugins: string[];
+  unavailablePlugins: string[];
   loadAndInjectPlugin: (name: string) => void;
 }
 
@@ -35,6 +36,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
   intl,
   plugins,
   disabledPlugins,
+  unavailablePlugins,
   loadAndInjectPlugin,
 }) => {
   const defaultInjectedPlugins = React.useMemo(
@@ -82,7 +84,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
               )}
             </>
           ),
-          items: ALL_PLUGINS.map((key) => {
+          items: ALL_PLUGINS.filter((i) => !unavailablePlugins.includes(i)).map((key) => {
             const pluginName = spinalToCamel(key);
             const title = messages[`plugins.${pluginName}.title`] ? msg(`plugins.${pluginName}.title`) : key;
             return {
