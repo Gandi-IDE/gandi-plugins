@@ -10,6 +10,8 @@ let textarea = "textarea",
   ResizeEditorAble = false,
   lineRender = true;
 
+let fieldTextInputRender = null;
+
 const getToolboxAndWorkspaceBlocks = (workspace) => {
   const toolbox = workspace.getToolbox();
   if (toolbox) {
@@ -59,28 +61,21 @@ const lineText = {
 
   lineTextLeft: function (value, vm, workspace, blockly) {
     if (value) {
-      const originalSetAttribute = Element.prototype.setAttribute;
-      Element.prototype.setAttribute = function (type, content) {
-        if (
-          ((this.tagName === "text" &&
-            this.classList.contains("blocklyText") &&
-            this.parentElement &&
-            this.parentElement.children.length === 1 &&
-            this.parentElement.classList.contains("blocklyEditableText")) ||
-            (this.tagName === "tspan" && this.parentElement && this.parentElement.classList.contains("blocklyText"))) &&
-          type === "x"
-        ) {
-          originalSetAttribute.call(this, "x", "0");
-          originalSetAttribute.call(this, "text-anchor", "start");
-        } else {
-          originalSetAttribute.call(this, type, content);
-          if (this.tagName === "text") originalSetAttribute.call(this, "text-anchor", "middle");
-        }
+      fieldTextInputRender = blockly.FieldTextInput.prototype.render_;
+      blockly.FieldTextInput.prototype.render_ = function () {
+        this.textElement_?.setAttribute("text-anchor", "start");
+        fieldTextInputRender.call(this);
       };
     } else {
-      Element.prototype.setAttribute = this.originalSetAttribute;
+      blockly.FieldTextInput.prototype.render_ = fieldTextInputRender;
     }
-    this.updateAllBlocks(vm, workspace, blockly);
+    getToolboxAndWorkspaceBlocks(workspace).forEach((block) => {
+      if (opcodeToSettings[block.type]) {
+        const inputBlock = block.inputList[0].fieldRow[0];
+        inputBlock.setVisible(false);
+        inputBlock.setVisible(true);
+      }
+    });
   },
 
   svgStart: function (start, workspace, blockly, type) {
@@ -397,6 +392,9 @@ const lineText = {
 
           // Apply new text element x position.
           this.textElement_.setAttribute("x", centerTextX);
+          if (this.textElement_.getAttribute("text-anchor") === "start") {
+            centerTextX = 0;
+          }
           for (const iterator of this.textElement_.children) {
             iterator.setAttribute("x", centerTextX);
           }
@@ -412,30 +410,6 @@ const lineText = {
   },
   turnRender: function (bool) {
     ResizeEditorAble = bool;
-  },
-  updateAllBlocks: function (vm, workspace, blockly) {
-    const eventsOriginallyEnabled = blockly.Events.isEnabled();
-    blockly.Events.disable(); // Clears workspace right-click→undo (see SA/SA#6691)
-
-    if (workspace) {
-      if (vm.editingTarget) {
-        vm.emitWorkspaceUpdate();
-      }
-      const flyout = workspace.getFlyout();
-      if (flyout) {
-        const flyoutWorkspace = flyout.getWorkspace();
-        window.Blockly.Xml.clearWorkspaceAndLoadFromXml(
-          window.Blockly.Xml.workspaceToDom(flyoutWorkspace),
-          flyoutWorkspace,
-        );
-        workspace.getToolbox().refreshSelection();
-        workspace.toolboxRefreshEnabled_ = true;
-      }
-    }
-
-    // There's no particular reason for checking whether events were originally enabled.
-    // Unconditionally enabling events at this point could, in theory, cause bugs in the future.
-    if (eventsOriginallyEnabled) blockly.Events.enable(); // Re-enable events
   },
 };
 export default lineText;

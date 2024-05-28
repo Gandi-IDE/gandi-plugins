@@ -250,7 +250,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
         items: [
           {
             key: "start",
-            label: msg("witcat.blockinput.option.start"),
+            label: msg("witcat.blockinput.option.advancedInput"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
@@ -268,7 +268,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             inputProps: {
               type: "number",
             },
-            label: msg("witcat.blockinput.option.show"),
+            label: msg("witcat.blockinput.option.showOnExceed"),
             value: 50,
             onChange: (value: number) => {
               loaded.push("show");
@@ -277,7 +277,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "linetext",
-            label: msg("witcat.blockinput.option.linetext"),
+            label: msg("witcat.blockinput.option.multiLineText"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
@@ -287,7 +287,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "border",
-            label: msg("witcat.blockinput.option.border"),
+            label: msg("witcat.blockinput.option.roundedTextBorder"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
@@ -297,7 +297,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "numborder",
-            label: msg("witcat.blockinput.option.numborder"),
+            label: msg("witcat.blockinput.option.roundedNumberBorder"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
@@ -307,7 +307,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "colorborder",
-            label: msg("witcat.blockinput.option.colorborder"),
+            label: msg("witcat.blockinput.option.roundedColorBorder"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
@@ -317,7 +317,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "textalign",
-            label: msg("witcat.blockinput.option.textalign"),
+            label: msg("witcat.blockinput.option.leftAlignText"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
@@ -327,7 +327,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "textaligns",
-            label: msg("witcat.blockinput.option.textaligns"),
+            label: msg("witcat.blockinput.option.leftAlignAdvancedText"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
@@ -336,7 +336,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "textalignss",
-            label: msg("witcat.blockinput.option.textalignss"),
+            label: msg("witcat.blockinput.option.leftAlignRenderedText"),
             type: "switch",
             value: false,
             onChange: (value: boolean) => {
@@ -345,7 +345,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
           },
           {
             key: "linerender",
-            label: msg("witcat.blockinput.option.linerender"),
+            label: msg("witcat.blockinput.option.renderMultiLineText"),
             type: "switch",
             value: true,
             onChange: (value: boolean) => {
@@ -359,7 +359,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             inputProps: {
               type: "number",
             },
-            label: msg("witcat.blockinput.option.hide"),
+            label: msg("witcat.blockinput.option.autoEllipsis"),
             value: 20,
             onChange: (value: number) => {
               loaded.push("texthide");
@@ -374,7 +374,7 @@ const WitcatBlockinput = ({ registerSettings, msg, vm, workspace, blockly }: Plu
             inputProps: {
               type: "number",
             },
-            label: msg("witcat.blockinput.option.hideline"),
+            label: msg("witcat.blockinput.option.autoEllipsisLine"),
             value: 3,
             onChange: (value: number) => {
               loaded.push("texthides");
