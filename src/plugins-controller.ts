@@ -22,13 +22,14 @@ export interface PluginFunction {
 
 export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "msg"> {
   disabledPlugins?: Array<string>;
+  unavailablePlugins?: string[];
   locale: string;
 }
 
 class PluginsController {
   context: PluginContext;
   plugins: Record<string, () => void>;
-  disabledPlugins: Array<string>;
+  options: PluginsControllerOptions;
   pluginsManager?: {
     dispose: () => void;
   };
@@ -44,7 +45,7 @@ class PluginsController {
       intl,
       msg: (id: string) => intl.formatMessage({ id }),
     });
-    this.disabledPlugins = options.disabledPlugins || [];
+    this.options = options;
     this.wrapperElement = this.initWrapper();
     this.initPluginsManager();
   }
@@ -69,7 +70,8 @@ class PluginsController {
     this.wrapperElement.appendChild(div);
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
-      disabledPlugins: this.disabledPlugins,
+      disabledPlugins: this.options.disabledPlugins,
+      unavailablePlugins: this.options.unavailablePlugins || [],
       loadAndInjectPlugin: this.loadAndInjectPlugin.bind(this),
       plugins: this.plugins,
     });
