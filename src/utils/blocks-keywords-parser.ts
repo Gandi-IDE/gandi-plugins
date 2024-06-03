@@ -428,7 +428,7 @@ export default class BlocksKeywordsParser {
                 optionStringElements.push(value);
               }
             } else {
-              stringElements.push(isRounded ? `()` : `[]`);
+              stringElements.push(isRounded ? `( v)` : `[ v]`);
             }
           } else if (element.type.startsWith("field_")) {
             const str = escapeBlocks(block.fields[element.name].value);

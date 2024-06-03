@@ -33,8 +33,8 @@ importers:
         specifier: ^1.1.9
         version: 1.1.9
       gandiblocks:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.2
+        version: 1.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -113,7 +113,7 @@ importers:
         version: 9.1.0(eslint@8.57.0)
       eslint-plugin-prettier:
         specifier: ^5.1.3
-        version: 5.1.3(@types/eslint@8.56.6)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.2.5)
+        version: 5.1.3(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.2.5)
       eslint-plugin-react:
         specifier: ^7.31.8
         version: 7.34.1(eslint@8.57.0)
@@ -1076,6 +1076,9 @@ packages:
 
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
+
+  '@types/eslint@8.56.10':
+    resolution: {integrity: sha512-Shavhk87gCtY2fhXDctcfS3e6FdxWkCx1iUZ9eEUbh7rTqlZT0/IzOkCOVt0fCjcFuZ9FPYfuezTBImfHCDBGQ==}
 
   '@types/eslint@8.56.6':
     resolution: {integrity: sha512-ymwc+qb1XkjT/gfoQwxIeHZ6ixH23A+tCT2ADSA/DPVKzAjwYkTXBMCQ/f6fe4wEa85Lhp26VPeUxI7wMhAi7A==}
@@ -2202,8 +2205,8 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  gandiblocks@1.0.1:
-    resolution: {integrity: sha512-gbFzmLHCYzvs1vSFTMbGrAMXjO7y4sSQ9Cz86HloSqeVK3MSJyluUjkxz2pqTUAlWdDj2R4y2MrRIOyRt2XykQ==}
+  gandiblocks@1.0.2:
+    resolution: {integrity: sha512-6kNBhtI0K2nIuIMkIlX0dfo6GEK7RPDIAqLxWtG4yrfcCdfVXrTZF0qwhBoMGEvmPqXPwAfxAP4h3HB8qaYZNA==}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha1-MqbudsPX9S1GsrGuXZP+qFgKJeA=}
@@ -5057,6 +5060,12 @@ snapshots:
       '@types/eslint': 8.56.6
       '@types/estree': 1.0.5
 
+  '@types/eslint@8.56.10':
+    dependencies:
+      '@types/estree': 1.0.5
+      '@types/json-schema': 7.0.15
+    optional: true
+
   '@types/eslint@8.56.6':
     dependencies:
       '@types/estree': 1.0.5
@@ -6178,14 +6187,14 @@ snapshots:
     dependencies:
       eslint: 8.57.0
 
-  eslint-plugin-prettier@5.1.3(@types/eslint@8.56.6)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.2.5):
+  eslint-plugin-prettier@5.1.3(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.2.5):
     dependencies:
       eslint: 8.57.0
       prettier: 3.2.5
       prettier-linter-helpers: 1.0.0
       synckit: 0.8.8
     optionalDependencies:
-      '@types/eslint': 8.56.6
+      '@types/eslint': 8.56.10
       eslint-config-prettier: 9.1.0(eslint@8.57.0)
 
   eslint-plugin-react@7.34.1(eslint@8.57.0):
@@ -6480,7 +6489,7 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  gandiblocks@1.0.1: {}
+  gandiblocks@1.0.2: {}
 
   gensync@1.0.0-beta.2: {}
 
