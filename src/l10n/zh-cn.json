@@ -188,5 +188,9 @@
   "plugins.customCss.title":"自定义CSS",
   "plugins.customCss.description":"加载自己的CSS文件！自定义你的Gandi样式！",
   "plugins.customCss.load":"从URL加载",
-  "plugins.customCss.load.description":"为了防止堆积，仅支持加载一个文件，如需加载多个，请合并"
+  "plugins.customCss.load.description":"为了防止堆积，仅支持加载一个文件，如需加载多个，请合并",
+  "plugins.hideCode.title":"积木块隐藏",
+  "plugins.hideCode.description":"隐藏你的积木块！",
+  "plugins.hideCode.addRightButton":"添加隐藏积木块的右键菜单项"
+
 }
