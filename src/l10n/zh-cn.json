@@ -110,7 +110,7 @@
   "plugins.codeSwitching.sound_seteffectto": "将音效设为",
   "plugins.codeSwitching.sound_setvolumeto": "将音量设为",
   "plugins.codeBatchSelect.title": "选择特定积木",
-  "plugins.codeBatchSelect.description": "一些更加便捷地操作积木的方法。不仅支持操作积木，还支持操作代码框，不支持评论。",
+  "plugins.codeBatchSelect.description": "一些更加便捷地操作积木的方法。不仅支持操作积木，还支持操作代码框，不支持注释。",
   "plugins.codeBatchSelect.fastCopy": "快捷复制积木",
   "plugins.codeBatchSelect.fastCopy.description": "按住 {code} 键，选择你要复制的积木，移动鼠标，然后当前鼠标上拖动的就是复制的积木。",
   "plugins.codeBatchSelect.fastSelect": "快捷选中积木",
