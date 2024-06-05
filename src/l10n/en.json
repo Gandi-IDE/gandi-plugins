@@ -183,5 +183,11 @@
   "plugins.inspiro.image.name": "Masterpiece Creator",
   "plugins.inspiro.image.desc": "Describe your idea below👇, and I will turn it into a beautiful painting 🎨",
   "plugins.inspiro.title": "AI Assistant",
-  "plugins.inspiro.intro": "Your all-in-one AI assistant in Gandi IDE! Whether you want to generate stunning images, create melodious music, or need inspiration to bring your creative dreams to life, Inspiro Assistant offers endless possibilities."
+  "plugins.inspiro.intro": "Your all-in-one AI assistant in Gandi IDE! Whether you want to generate stunning images, create melodious music, or need inspiration to bring your creative dreams to life, Inspiro Assistant offers endless possibilities.",
+  "plugins.customCss.name":"Custom CSS",
+  "plugins.customCss.title": "Customized CSS",
+  "plugins.customCss.description": "Load your own CSS file! Customize your Gandi styles!" ,
+  "plugins.customCss.load": "Load from URL",
+  "plugins.customCss.load.description": "To prevent stacking, only one file is supported for loading, if you need to load more than one, please merge"
+
 }

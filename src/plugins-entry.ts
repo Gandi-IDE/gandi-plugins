@@ -18,4 +18,5 @@ export default {
   "fast-input": () => import(/* webpackChunkName: "plugin-fast-input" */ "src/plugins/fast-input"),
   "better-sprite-menu": () => import(/* webpackChunkName: "plugin-better-sprite-menu" */ "plugins/better-sprite-menu"),
   inspiro: () => import(/* webpackChunkName: "plugin-inspiro" */ "src/plugins/inspiro"),
+  "custom-css": () => import(/* webpackChunkName: "plugin-custom-css" */ "src/plugins/custom-css"),
 } as const;
