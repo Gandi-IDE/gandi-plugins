@@ -19,4 +19,5 @@ export default {
   "better-sprite-menu": () => import(/* webpackChunkName: "plugin-better-sprite-menu" */ "plugins/better-sprite-menu"),
   inspiro: () => import(/* webpackChunkName: "plugin-inspiro" */ "src/plugins/inspiro"),
   "custom-css": () => import(/* webpackChunkName: "plugin-custom-css" */ "src/plugins/custom-css"),
+  "extension-manager": () => import(/* webpackChunkName: "plugin-extension-manager" */ "src/plugins/extension-manager"),
 } as const;

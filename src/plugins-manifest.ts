@@ -15,6 +15,7 @@ import fastInput from "src/plugins/fast-input/manifest";
 import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
 import inspiro from "plugins/inspiro/manifest";
 import customCss from "src/plugins/custom-css/manifest";
+import extensionManager from "src/plugins/extension-manager/manifest";
 
 export default {
   folder,
@@ -34,4 +35,5 @@ export default {
   "better-sprite-menu": BetterSpriteMenu,
   inspiro,
   "custom-css": customCss,
+  "extension-manager": extensionManager,
 };

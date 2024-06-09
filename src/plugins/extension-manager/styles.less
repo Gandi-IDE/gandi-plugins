@@ -1,0 +1,75 @@
+:global(.addons_tip-icon_oy8QS).extensionManagerTooltip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.extensionManager-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+  position: relative;
+  font-size: 14px;
+  color: var(--theme-text-primary);
+  -webkit-user-select: none;
+  user-select: none;
+  border-bottom: 1px solid var(--theme-color-200);
+}
+
+.extensionManager-item_info {
+  flex: auto;
+  font-size: 14px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.extensionManager-item_delete {
+  background-color: transparent; 
+  border-radius: 5px;
+  padding: 3px;
+  padding-bottom: 1px;
+}
+
+.extensionManager-item_delete:hover {
+  background-color: var(--theme-error-color-p3);
+}
+
+.extensionManager_item-container {
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.extensionManager-item_drag {
+  background-color: transparent; 
+  cursor: grab;
+  padding-right: 5px;
+}
+
+.extensionManager-item_closest {
+  border-bottom: 1px solid var(--theme-brand-color);
+  border-top: 1px solid var(--theme-brand-color);
+}
+
+.shakeAnimation {
+  animation: shakeKeyframes 0.5s linear;
+}
+
+@keyframes shakeKeyframes {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+  20% { transform: translate(-3px, 0px) rotate(0.5deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(0.5deg); }
+  50% { transform: translate(-1px, 2px) rotate(-0.5deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-0.5deg); }
+  80% { transform: translate(-1px, -1px) rotate(0.5deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-0.5deg); }
+}
