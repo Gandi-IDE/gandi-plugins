@@ -23,14 +23,16 @@ const changeObscuredShadowIds = (element: Element) => {
 const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Workspace, vm: VirtualMachine) => {
   const variables: Map<string, string> = new Map();
   const lists: Map<string, string> = new Map();
-  const existingVariables = workspace.getAllVariables().map(({name, type, isCloud, id_}) => ({name, type,isCloud, id: id_}));
-  
+  const existingVariables = workspace
+    .getAllVariables()
+    .map(({ name, type, isCloud, id_ }) => ({ name, type, isCloud, id: id_ }));
+
   const handleCheckVariable = (name: string, id: string, type: string, element: Element) => {
     const existingVariable = existingVariables.find((i) => i.type === type && i.name === name);
     if (!existingVariable) {
       const isCloud = name.startsWith("☁ ");
       vm.editingTarget.createVariable(id, name, type, isCloud);
-      existingVariables.push({name, type, isCloud, id})
+      existingVariables.push({ name, type, isCloud, id });
     } else if (existingVariable.id !== id) {
       element.setAttribute("id", existingVariable.id);
     }

@@ -192,6 +192,31 @@ declare global {
       removeCostumeContextMenuItems(itemKeyList: Array<string>): void;
       // Removes options from the sound context menu.
       removeSoundContextMenuItems(itemKeyList: Array<string>): void;
+      /**
+       * Retrieves all extension information, both built-in and external (official and custom).
+       * @returns {Object} An object containing all extension information keyed by their extension IDs.
+       */
+      getAllExtensionInfo(): Record<
+        string,
+        {
+          name: string;
+          extensionId: string;
+          collaborator?: string;
+          connectingMessage?: string;
+          connectionIconURL?: string;
+          connectionSmallIconURL?: string;
+          collaboratorList?: Array<{
+            collaborator: string;
+            collaboratorURL?: string;
+          }>;
+          collaboratorURL?: string;
+          disabled?: boolean;
+          doc?: string;
+          featured: boolean;
+          iconURL?: string;
+          insetIconURL?: string;
+        }
+      >;
     };
     msg: (id: string) => string;
     registerSettings: PluginRegister;
