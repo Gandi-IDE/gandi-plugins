@@ -23,6 +23,7 @@ const escapeBlocks = (unsafe: string | number): string => {
     return String(unsafe);
   }
   // In scratchblocks, []()<>/ are meaningful characters.
+  // eslint-disable-next-line no-useless-escape
   return String(unsafe.replace(/[\<\>\(\)\[\]\/]/g, (c) => `\\${c}`));
 };
 
