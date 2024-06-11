@@ -22,9 +22,7 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
             value: "https://m.ccw.site/gandi/default.css",
             description: msg("plugins.customCss.load.description"),
             onChange: (value: string) => {
-              // var允许重复定义，这里方便一些直接使用
-              let pd = value.substring(0, 3);
-              if ((pd = "http")) {
+              if (value.startsWith("http")) {
                 linkDom.href = value;
               }
             },
