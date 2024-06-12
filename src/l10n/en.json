@@ -189,5 +189,4 @@
   "plugins.customCss.description": "Load your own CSS file! Customize your Gandi styles!" ,
   "plugins.customCss.load": "Load from URL",
   "plugins.customCss.load.description": "To prevent stacking, only one file is supported for loading, if you need to load more than one, please merge"
-
 }

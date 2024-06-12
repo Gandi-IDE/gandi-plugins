@@ -91,6 +91,10 @@ class PluginsController {
    * @returns {IntlShape} The internationalization instance.
    */
   createIntl(locale: string): IntlShape {
+    // If the language is not supported yet, it will default to displaying English.
+    if (!pluginsL10n[locale]) {
+      locale = "en";
+    }
     return createIntl(
       {
         locale,
