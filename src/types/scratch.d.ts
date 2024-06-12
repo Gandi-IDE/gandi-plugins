@@ -1,3 +1,45 @@
+type L10n = "en" | "zh-cn" | string;
+
+interface LogSystem {
+  log(message?: unknown, ...optionalParams: unknown[]): void;
+  info(message?: unknown, ...optionalParams: unknown[]): void;
+  warn(message?: unknown, ...optionalParams: unknown[]): void;
+  error(message?: unknown, ...optionalParams: unknown[]): void;
+  clear(): void;
+  show(): void;
+  hide(): void;
+  setColor(color: string): void;
+}
+
+interface Extension {
+  info: {
+    name: string;
+    extensionId: string;
+    collaborator?: string;
+    connectingMessage?: string;
+    connectionIconURL?: string;
+    connectionSmallIconURL?: string;
+    collaboratorList?: Array<{
+      collaborator: string;
+      collaboratorURL?: string;
+    }>;
+    collaboratorURL?: string;
+    disabled?: boolean;
+    doc?: string;
+    featured: boolean;
+    iconURL?: string;
+    insetIconURL?: string;
+  };
+  l10n?: {
+    [key in L10n]: Record<string, string>;
+  };
+}
+
+interface ExtensionBlockMetadata {
+  json: Record<string, unknown>;
+  xml: string;
+}
+
 declare namespace Scratch {
   export type RenderTarget = {
     originalTargetId: string;
@@ -192,14 +234,158 @@ declare namespace Scratch {
     soundPlayers: unknown;
   }
 
-  export type Runtime = {
+  export interface Runtime extends NodeJS.EventEmitter {
     addCloudVariable: () => void;
-    pluginBlocks: () => void;
-  };
+    addonBlocks: Record<
+      string,
+      {
+        procedureCode: string;
+        callback: (...args: unknown[]) => unknown;
+        arguments: string[];
+        color: string;
+        secondaryColor: string;
+      }
+    >;
+
+    audioEngine: unknown;
+    canAddCloudVariable: () => boolean;
+    ccwAPI: unknown;
+    cloudOptions: {
+      limit: number;
+    };
+    compilerOptions: {
+      enabled: boolean;
+      warpTimer: boolean;
+    };
+    currentMSecs: number;
+    currentStepTime: number;
+    debug: boolean;
+    framerate: number;
+    gandi: {
+      assets: Array<unknown>;
+      configs: Record<string, unknown>;
+      dynamicMenuItems: Record<string, unknown>;
+      runtime: Runtime;
+      spine: Record<
+        string,
+        {
+          atlas: string;
+          json: string;
+        }
+      >;
+      wildExtensions: Record<
+        string,
+        {
+          id: string;
+          url: string;
+        }
+      >;
+      _supportedAssetTypes: Array<{
+        contentType: string;
+        immutable: boolean;
+        name: string;
+        runtimeFormat: string;
+      }>;
+    };
+    greenFlag(): void;
+    hasCloudData(): boolean;
+    interpolationEnabled: boolean;
+    ioDevices: unknown;
+    isLoadProjectAssetsNonBlocking: boolean;
+    logSystem: LogSystem;
+    storage: any;
+    threads: Array<Scratch.Thread>;
+    monitorBlocks: Scratch.Blocks;
+    targets: Array<Scratch.RenderTarget>;
+    allAssetsIsUploading?: boolean;
+    getTargetById: (targetId: string) => Scratch.RenderTarget;
+    requestAddMonitor(monitorId: string, isRemoteOperation?: boolean): void;
+    requestUpdateMonitor: (monitor: Map<unknown, unknown>) => boolean;
+    requestRemoveMonitor(monitorId: string, isRemoteOperation?: boolean): boolean;
+    _pushMonitors: () => void;
+    _pushThread: (
+      id: string,
+      target: Scratch.RenderTarget,
+      object?: {
+        stackClick?: boolean;
+        updateMonitor?: boolean;
+        hatParam?: unknown;
+      },
+    ) => void;
+  }
 
   export type Thread = {
     topBlock: string;
     status: number;
     updateMonitor: boolean;
   };
+
+  export interface ExtensionManager {
+    asyncExtensionsLoadedCallbacks: Array<(...args: unknown[]) => unknown>;
+    loadingAsyncExtensions: number;
+    nextExtensionWorker: number;
+    pendingExtensions: Array<{
+      extensionURL: string;
+      resolve: (...args: unknown[]) => void;
+      reject: (...args: unknown[]) => void;
+    }>;
+    pendingWorkers: Array<{
+      extensionURL: string;
+      resolve: (...args: unknown[]) => void;
+      reject: (...args: unknown[]) => void;
+    }>;
+    runtime: Runtime;
+    showCompatibilityWarning: boolean;
+    vm: VirtualMachine;
+    workerMode: string;
+    _customExtensionInfo: Record<string, Extension>;
+    _loadedExtensions: Map<string, string>;
+    _officialExtensionInfo: Record<string, Extension>;
+    addCustomExtensionInfo(obj: unknown, url: string): void;
+    addOfficialExtensionInfo(obj: unknown): void;
+    allAsyncExtensionsLoaded(): Promise<unknown>;
+    allocateWorker(): [number, string];
+    clearLoadedExtensions(): void;
+    createExtensionWorker(): Promise<unknown>;
+    deleteExtensionById(extensionId: string): void;
+    disposeExtensionServices(): void;
+    getExtensionInfoById(extensionId: string): Extension | undefined;
+    getExternalExtensionConstructor(extensionId: string): Promise<unknown>;
+    getLoadedExtensionURLs(): Array<Record<string, string>>;
+    getReplaceableExtensionInfo(): Extension[];
+    injectExtension(extensionId: string, extension: Extension): void;
+    isBuiltinExtension(extensionId: string): boolean;
+    isExtensionIdReserved(extensionId: string): boolean;
+    isExtensionLoaded(extensionID: string): boolean;
+    isExternalExtension(extensionId: string): boolean;
+    isValidExtensionURL(extensionURL: string): boolean;
+    loadExtensionIdSync(extensionId: string): string;
+    loadExtensionURL(extensionURL: string, shouldReplace?: boolean): Promise<unknown>;
+    loadExtensionURLInWorker(extensionURL: string): Promise<unknown>;
+    loadExternalExtensionById(extensionId: string, shouldReplace?: boolean): Promise<unknown> | undefined;
+    loadExternalExtensionToLibrary(
+      url: string,
+      shouldReplace?: boolean | undefined,
+      disallowIIFERegister?: boolean | undefined,
+    ): Promise<{
+      onlyAdded: string[];
+      addedAndLoaded: string[];
+    }>;
+    onWorkerInit(id: string, e: unknown): void;
+    refreshBlocks(targetServiceName: string): Promise<string>;
+    registerExtension(extensionId: string, extension: Extension, shouldReplace?: boolean): string | undefined;
+    registerExtensionService(serviceName: string): void;
+    registerExtensionServiceSync(serviceName: string): void;
+    replaceExtensionWithId(newId: string, oldId: string): void;
+    saveWildExtensionsURL(id: string, url: string): void;
+    setLoadedExtension(extensionId: string, value: Extension): void;
+    updateExternalExtensionConstructor(extensionId: string, func: unknown): void;
+    _getExtensionMenuItems(extensionObject: object, menuItemFunctionName: string): unknown[];
+    _prepareBlockInfo(serviceName: string, blockInfo: ExtensionBlockMetadata): ExtensionBlockMetadata;
+    _prepareExtensionInfo(serviceName: string, extensionInfo: unknown): unknown;
+    _prepareMenuInfo(serviceName: string, menus: Array<unknown>): Array<unknown>;
+    _registerExtensionInfo(serviceName: string, extensionInfo: unknown): void;
+    _registerInternalExtension(extensionObject: unknown): string;
+    _sanitizeID(text: string): string;
+  }
 }

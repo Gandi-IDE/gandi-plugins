@@ -246,6 +246,29 @@
        * @returns {void}
       */
       removeSoundContextMenuItems(itemKeyList: Array<string>): void;
+
+      /**
+       * 获取所有扩展的信息。
+       * @returns {Object} 一个包含所有扩展信息的对象，Key是拓展的ID。
+       */
+      getAllExtensionInfo(): Record<string, {
+        name: string;
+        extensionId: string;
+        collaborator?: string;
+        connectingMessage?: string;
+        connectionIconURL?: string;
+        connectionSmallIconURL?: string;
+        collaboratorList?: Array<{
+          collaborator: string;
+          collaboratorURL?: string;
+        }>;
+        collaboratorURL?: string;
+        disabled?: boolean;
+        doc?: string;
+        featured: boolean;
+        iconURL?: string;
+        insetIconURL?: string;
+      }>;
     };
   }
   ```

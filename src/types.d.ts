@@ -134,41 +134,18 @@ interface RuntimeBlocksData {
 }
 
 declare interface VirtualMachine extends NodeJS.EventEmitter {
-  runtime: {
-    storage: any;
-    threads: Array<Scratch.Thread>;
-    monitorBlocks: Scratch.Blocks;
-    targets: Array<Scratch.RenderTarget>;
-    allAssetsIsUploading?: boolean;
-    logSystem: {
-      log(message?: unknown, ...optionalParams: unknown[]): void;
-      info(message?: unknown, ...optionalParams: unknown[]): void;
-      warn(message?: unknown, ...optionalParams: unknown[]): void;
-      error(message?: unknown, ...optionalParams: unknown[]): void;
-      clear(): void;
-      show(): void;
-      hide(): void;
-      setColor(color: string): void;
-    };
-    getTargetById: (targetId: string) => Scratch.RenderTarget;
-    requestAddMonitor(monitorId: string, isRemoteOperation?: boolean): void;
-    requestUpdateMonitor: (monitor: Map<unknown, unknown>) => boolean;
-    requestRemoveMonitor(monitorId: string, isRemoteOperation?: boolean): boolean;
-    _pushMonitors: () => void;
-    _pushThread: (
-      id: string,
-      target: Scratch.RenderTarget,
-      object?: {
-        stackClick?: boolean;
-        updateMonitor?: boolean;
-        hatParam?: unknown;
-      },
-    ) => void;
-  };
+  runtime: Scratch.Runtime;
   editingTarget: Scratch.RenderTarget;
+  extensionManager: Scratch.ExtensionManager;
   assets: Scratch.Asset[];
-  addCostumeFromLibrary: any;
-  addCostume: any;
+  addCostume(
+    md5ext: string,
+    costumeObject: object,
+    optTargetId: string,
+    optVersion: string,
+    isRemoteOperation: boolean,
+  ): Promise<void> | null;
+  addCostumeFromLibrary(md5ext: string, costumeObject: object): Promise<void> | null;
   toJSON: () => string;
   setEditingTarget: (targetId: string) => void;
   saveProjectSb3: () => Promise<Blob>;

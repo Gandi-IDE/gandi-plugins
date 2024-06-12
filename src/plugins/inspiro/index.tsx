@@ -22,7 +22,7 @@ const messages = defineMessage({
 
 const DEFAULT_CONTAINER_INFO = {
   width: 724,
-  height: 600,
+  height: 543,
   translateX: 0,
   translateY: 0,
 };
@@ -36,15 +36,31 @@ const Inspiro: React.FC<PluginContext> = ({ intl, utils, vm, registerSettings, t
   );
   const containerInfoRef = React.useRef(containerInfo);
   const getContainerPosition = React.useCallback(() => {
-    const { x, y } = containerRef.current.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const x = (windowWidth - containerInfoRef.current.width) / 2;
+    const y = (windowHeight - containerInfoRef.current.height) / 2;
     return {
-      translateX: x - containerInfoRef.current.width,
-      translateY: y - 40,
+      translateX: x,
+      translateY: y,
     };
   }, []);
   const handleShow = React.useCallback(() => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    const aspectRatio = DEFAULT_CONTAINER_INFO.width / DEFAULT_CONTAINER_INFO.height;
+    let newWidth = windowWidth * 0.8;
+    let newHeight = newWidth / aspectRatio;
+
+    if (newHeight > windowHeight * 0.8) {
+      newHeight = windowHeight * 0.8;
+      newWidth = newHeight * aspectRatio;
+    }
     setContainerInfo({
       ...containerInfoRef.current,
+      width: newWidth,
+      height: newHeight,
       ...getContainerPosition(),
     });
     setVisible(true);

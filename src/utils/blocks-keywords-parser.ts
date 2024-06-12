@@ -23,6 +23,7 @@ const escapeBlocks = (unsafe: string | number): string => {
     return String(unsafe);
   }
   // In scratchblocks, []()<>/ are meaningful characters.
+  // eslint-disable-next-line no-useless-escape
   return String(unsafe.replace(/[\<\>\(\)\[\]\/]/g, (c) => `\\${c}`));
 };
 
@@ -262,6 +263,23 @@ export default class BlocksKeywordsParser {
     if (this.blockDefinitions[block.opcode]) {
       this.blockDefinitions[block.opcode].init.call({
         jsonInit: (json: BlockInitJson) => (blockJson = json),
+        appendDummyInput() {
+          return this;
+        },
+        appendField() {
+          return this;
+        },
+        setOutput: () => null,
+        setColour: () => null,
+        setCategory: (category: string) => {
+          blockJson.category = category;
+        },
+        setPreviousStatement: () => {
+          blockJson.previousStatement = null;
+        },
+        setNextStatement: () => {
+          blockJson.nextStatement = null;
+        },
       });
       let extension: ExtensionInfo = null;
       if (blockJson.type && blockJson.extensions && blockJson.extensions[0] === "scratch_extension") {
