@@ -24,7 +24,7 @@ const CustomCss = ({ registerSettings,msg }: PluginContext) => {
             onChange: (value: string) => {
               // var允许重复定义，这里方便一些直接使用
               var pd = value.substring(0,3)
-              if (pd = "http"){
+              if (pd === "http"){
                 linkDom.href = value;
               }
           }
