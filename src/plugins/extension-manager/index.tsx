@@ -32,42 +32,42 @@ const DEFAULT_CONTAINER_INFO = {
 };
 
 const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm }) => {
-  const [visible, setVisible] = React.useState(false);
-  const [loadedExtensions, setLoadedExtensions] = React.useState([]);
-  const [selectedExtensions, setSelectedExtensions] = React.useState({});
+  const [visible, setVisible] = React.useState(false)
+  const [loadedExtensions, setLoadedExtensions] = React.useState([])
+  const [selectedExtensions, setSelectedExtensions] = React.useState({})
 
   //Container stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  const containerRef = React.useRef(null);
+  const containerRef = React.useRef(null)
   const [containerInfo, setContainerInfo] = useStorageInfo<ExpansionRect>(
     "EXTENSION_MANAGER_CONTAINER_INFO",
     DEFAULT_CONTAINER_INFO,
   );
 
-  const containerInfoRef = React.useRef(containerInfo);
+  const containerInfoRef = React.useRef(containerInfo)
   const getContainerPosition = React.useCallback(() => {
-    const { x, y } = containerRef.current.getBoundingClientRect();
+    const { x, y } = containerRef.current.getBoundingClientRect()
     return {
       translateX: x - containerInfoRef.current.width - 10,
       translateY: y - 6,
-    };
-  }, []);
+    }
+  }, [])
 
   const handleShow = React.useCallback(() => {
     setContainerInfo({
       ...containerInfoRef.current,
       ...getContainerPosition(),
     });
-    setVisible(true);
-  }, []);
+    setVisible(true)
+  }, [])
 
   const handleClose = () => {
     setSelectedExtensions({})
-    setVisible(false);
+    setVisible(false)
   };
 
   const handleSizeChange = React.useCallback((value: ExpansionRect) => {
-    containerInfoRef.current = value;
-  }, []);
+    containerInfoRef.current = value
+  }, [])
   //Container stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   //Extension list stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -76,7 +76,7 @@ const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm })
     let infos: any = utils.getAllExtensionInfo()
 
     for (let i in infos) {
-      if (infos[i].extensionId === id) return infos[i].name 
+      if (infos[i].extensionId === id) return infos[i].name
     }
   }
 
@@ -88,18 +88,16 @@ const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm })
           vm.extensionManager.deleteExtensionById(i)
         }
       } else {
-        vm.extensionManager.deleteExtensionById(key);
+        vm.extensionManager.deleteExtensionById(key)
       }
     }
     catch {
-      // Apply the shake animation to the body
-      document.body.classList.add(styles.shakeAnimation);
-      // Remove the animation after it completes
+      document.body.classList.add(styles.shakeAnimation)
       setTimeout(() => {
-        document.body.classList.remove(styles.shakeAnimation);
-      }, 1000);
+        document.body.classList.remove(styles.shakeAnimation)
+      }, 1000)
     }
-    
+
     getLoadedExtensions();
     console.log(selectedExtensions)
   }, [selectedExtensions])
@@ -109,39 +107,39 @@ const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm })
       ...prevState,
       [key]: !prevState[key]
     }));
-    let parent = document.querySelector(`.extensionManager-item-${key}`);
+    let parent = document.querySelector(`.extensionManager-item-${key}`)
     if (parent.classList.contains(styles.lift)) {
-      parent.classList.remove(styles.lift);
+      parent.classList.remove(styles.lift)
     } else {
-      parent.classList.add(styles.lift);
+      parent.classList.add(styles.lift)
     }
   };
-  
+
   const getLoadedExtensions = () => {
     const extensions = Array.from(vm.extensionManager._loadedExtensions as Map<string, string>).map(([key, value]) => (
       <div className={[styles.extensionManagerItem, `extensionManager-item-${key}`].join(" ")} key={key}>
-        <button 
-          className={selectedExtensions[key] ? styles.extensionManagerItemSelected : styles.extensionManagerItemNotSelected} 
-          onClick={ () => handleMultiselect(key) }
+        <button
+          className={selectedExtensions[key] ? styles.extensionManagerItemSelected : styles.extensionManagerItemNotSelected}
+          onClick={() => handleMultiselect(key)}
         >
           <MultiselectBoxIcon />
         </button>
-        <span className={styles.extensionManagerItemInfo}>{ getExtensionNameById(key) }</span>
-        <button className={styles.extensionManagerItemDelete} onClick={ () => handleDelete(key) }><TrashcanIcon /></button>
+        <span className={styles.extensionManagerItemInfo}>{getExtensionNameById(key)}</span>
+        <button className={styles.extensionManagerItemDelete} onClick={() => handleDelete(key)}><TrashcanIcon /></button>
       </div>
     ));
-    setLoadedExtensions(extensions);
+    setLoadedExtensions(extensions)
   };
-  
+
   //Extension list stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  
+
 
   React.useEffect(() => {
     if (visible) {
-      getLoadedExtensions();
+      getLoadedExtensions()
     }
     console.log(selectedExtensions)
-  }, [visible, selectedExtensions]);
+  }, [visible, selectedExtensions])
 
   return ReactDOM.createPortal(
     <section className={"extensionManager"} ref={containerRef}>
@@ -172,6 +170,6 @@ const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm })
   );
 };
 
-ExtensionManager.displayName = "ExtensionManager";
+ExtensionManager.displayName = "Extension Manager";
 
 export default ExtensionManager;

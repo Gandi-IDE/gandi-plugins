@@ -1,5 +1,5 @@
 export default {
-  name: "extension-manager",
+  name: "Extension Manager",
   type: "component",
   description: "An extension manager to make extensions, less annoying, for YOU.",
   credits: [
