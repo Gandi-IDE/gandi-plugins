@@ -5,8 +5,9 @@ import Tooltip from "components/Tooltip";
 
 import ExtensionManagerIcon from "assets/icon--extension-manager.svg";
 import TrashcanIcon from "assets/icon--trashcan.svg";
+import MultiselectBoxIcon from "assets/icon--multiselect-box.svg";
+
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
-import DraggableIcon from "assets/icon--draggable.svg";
 
 import { defineMessage } from "@formatjs/intl";
 import useStorageInfo from "hooks/useStorageInfo";
@@ -30,51 +31,12 @@ const DEFAULT_CONTAINER_INFO = {
   translateY: 60,
 };
 
-interface ExtensionManager {
-  _loadedExtensions: Map<string, string>;
-  deleteExtensionById: (id: string) => void;
-}
-
-interface VirtualMachineWithExtensions extends VirtualMachine {
-  extensionManager: ExtensionManager;
-}
-
-const ExtensionManager: React.FC<PluginContext & { vm: VirtualMachineWithExtensions }> = ({ intl, utils, vm, redux }) => {
-  //console.log(vm)
-  //console.log(redux)
-
-  const locale = (redux.state.locales as any).locale
-
-  //patch the built-in getExtensionInfoByID
-  const getExtensionInfoById = (id: string) => {
-    let info = (vm as any).extensionManager.getExtensionInfoById(id);
-
-    if (!info) {
-      info = {info: {extensionId: id, name: id}}
-    }
-
-    //check if its the full extension info
-    if (!info.hasOwnProperty("name")) {
-      info.info.name = id
-    };
-
-    return info
-  }
-
-  const getExtensionNameByPatchedInfo = (info) => {
-    let name;
-    if (info.l10n) {
-      name = Object.values(info.l10n[locale])[0]
-    }
-    if (!name) {
-      name = info.info.name
-    }
-
-    return name as any
-  }
-
-  //Container stuff-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm }) => {
   const [visible, setVisible] = React.useState(false);
+  const [loadedExtensions, setLoadedExtensions] = React.useState([]);
+  const [selectedExtensions, setSelectedExtensions] = React.useState({});
+
+  //Container stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   const containerRef = React.useRef(null);
   const [containerInfo, setContainerInfo] = useStorageInfo<ExpansionRect>(
     "EXTENSION_MANAGER_CONTAINER_INFO",
@@ -99,19 +61,35 @@ const ExtensionManager: React.FC<PluginContext & { vm: VirtualMachineWithExtensi
   }, []);
 
   const handleClose = () => {
+    setSelectedExtensions({})
     setVisible(false);
   };
 
   const handleSizeChange = React.useCallback((value: ExpansionRect) => {
     containerInfoRef.current = value;
   }, []);
-  //Container stuff-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Container stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  const [loadedExtensions, setLoadedExtensions] = React.useState([]);
+  //Extension list stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+  const getExtensionNameById = (id: string) => {
+    let infos: any = utils.getAllExtensionInfo()
+
+    for (let i in infos) {
+      if (infos[i].extensionId === id) return infos[i].name 
+    }
+  }
 
   const handleDelete = React.useCallback((key: string) => {
     try {
-      vm.extensionManager.deleteExtensionById(key);
+      if (selectedExtensions[key]) {
+        for (let i in selectedExtensions) {
+          delete selectedExtensions[i]
+          vm.extensionManager.deleteExtensionById(i)
+        }
+      } else {
+        vm.extensionManager.deleteExtensionById(key);
+      }
     }
     catch {
       // Apply the shake animation to the body
@@ -123,71 +101,47 @@ const ExtensionManager: React.FC<PluginContext & { vm: VirtualMachineWithExtensi
     }
     
     getLoadedExtensions();
-  }, [])
+    console.log(selectedExtensions)
+  }, [selectedExtensions])
 
-  const handleDragStart = (event, key) => {
-    event.dataTransfer.setData('text/plain', key);
-  };
-  
-  const handleDragEnter = (event, key) => {
-    const dropTarget = event.target.closest(`.${styles.extensionManagerItem}`);
-    dropTarget.classList.add(styles.extensionManagerItemClosest);
-  };
-  
-  const handleDragLeave = (event, key) => {
-    const dropTarget = event.target.closest(`.${styles.extensionManagerItem}`);
-    dropTarget.classList.remove(styles.extensionManagerItemClosest);
-  };
-
-  const handleDrop = (event, key) => {
-    event.preventDefault();
-    const draggedId = event.dataTransfer.getData('text');
-    const draggedElement = document.getElementById(draggedId);
-    const dropTarget = event.target.closest(`.${styles.extensionManagerItem}`);
-  
-    // Determine the position of the mouse relative to the drop target
-    const rect = dropTarget.getBoundingClientRect();
-    const offset = (event.clientY - rect.top) / (rect.bottom - rect.top);
-  
-    // If the mouse is in the top half of the drop target, insert the dragged element before the drop target.
-    // Otherwise, insert it after.
-    if (offset < 0.5) {
-      dropTarget.parentNode.insertBefore(draggedElement, dropTarget);
+  const handleMultiselect = (key) => {
+    setSelectedExtensions(prevState => ({
+      ...prevState,
+      [key]: !prevState[key]
+    }));
+    let parent = document.querySelector(`.extensionManager-item-${key}`);
+    if (parent.classList.contains(styles.lift)) {
+      parent.classList.remove(styles.lift);
     } else {
-      if (dropTarget.nextSibling) {
-        dropTarget.parentNode.insertBefore(draggedElement, dropTarget.nextSibling);
-      } else {
-        dropTarget.parentNode.appendChild(draggedElement);
-      }
+      parent.classList.add(styles.lift);
     }
-  };  
+  };
   
   const getLoadedExtensions = () => {
     const extensions = Array.from(vm.extensionManager._loadedExtensions as Map<string, string>).map(([key, value]) => (
-      <div 
-        className={styles.extensionManagerItem} 
-        key={key}
-        //draggable
-        //onDragStart={(event) => handleDragStart(event, key)}
-        //onDragEnter={(event) => handleDragEnter(event, key)}
-        //onDragLeave={(event) => handleDragLeave(event, key)}
-        //onDrop={(event) => handleDrop(event, key)}
-        //onDragOver={(event) => event.preventDefault()}
-      >
-        {/* <div className={styles.extensionManagerItemDrag}><DraggableIcon /></div> */}
-        <span className={styles.extensionManagerItemInfo}>{ getExtensionNameByPatchedInfo(getExtensionInfoById(key)) }</span>
+      <div className={[styles.extensionManagerItem, `extensionManager-item-${key}`].join(" ")} key={key}>
+        <button 
+          className={selectedExtensions[key] ? styles.extensionManagerItemSelected : styles.extensionManagerItemNotSelected} 
+          onClick={ () => handleMultiselect(key) }
+        >
+          <MultiselectBoxIcon />
+        </button>
+        <span className={styles.extensionManagerItemInfo}>{ getExtensionNameById(key) }</span>
         <button className={styles.extensionManagerItemDelete} onClick={ () => handleDelete(key) }><TrashcanIcon /></button>
       </div>
     ));
     setLoadedExtensions(extensions);
   };
   
+  //Extension list stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
 
   React.useEffect(() => {
     if (visible) {
       getLoadedExtensions();
     }
-  }, [visible]);
+    console.log(selectedExtensions)
+  }, [visible, selectedExtensions]);
 
   return ReactDOM.createPortal(
     <section className={"extensionManager"} ref={containerRef}>
