@@ -188,5 +188,7 @@
   "plugins.customCss.title": "CSS Personalizado",
   "plugins.customCss.description": "¡Carga tu propio archivo CSS! ¡Personaliza los estilos de Gandi!",
   "plugins.customCss.load": "Cargar desde URL",
-  "plugins.customCss.load.description": "Para evitar el apilamiento, solo se admite un archivo para cargar. Si necesitas cargar más de uno, por favor, fusiónalos."
+  "plugins.customCss.load.description": "Para evitar el apilamiento, solo se admite un archivo para cargar. Si necesitas cargar más de uno, por favor, fusiónalos.",
+  "plugins.ExtensionManager.title": "Administrador de Extensiones",
+  "plugins.ExtensionManager.intro": "Administra tus extensiones."
 }
