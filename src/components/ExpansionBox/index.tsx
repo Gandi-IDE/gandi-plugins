@@ -222,7 +222,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
     }, 1000);
     window.addEventListener("resize", handleResize);
     return () => {
-      window.addEventListener("resize", handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [handleDragStop]);
 
