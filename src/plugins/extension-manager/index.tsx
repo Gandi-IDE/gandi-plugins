@@ -14,11 +14,11 @@ import useStorageInfo from "hooks/useStorageInfo";
 
 const messages = defineMessage({
   title: {
-    id: "plugins.ExtensionManager.title",
+    id: "plugins.extensionManager.title",
     defaultMessage: "Extension Manager",
   },
   intro: {
-    id: "plugins.ExtensionManager.intro",
+    id: "plugins.extensionManager.intro",
     defaultMessage: "Manage your extensions",
   },
 });

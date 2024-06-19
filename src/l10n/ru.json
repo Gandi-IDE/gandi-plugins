@@ -189,6 +189,6 @@
   "plugins.customCss.description": "Загрузите свой собственный CSS файл! Настройте свои стили Gandi!",
   "plugins.customCss.load": "Загрузить с URL",
   "plugins.customCss.load.description": "Чтобы предотвратить наложение, поддерживается загрузка только одного файла, если вам нужно загрузить более одного, пожалуйста, объедините их",
-  "plugins.ExtensionManager.title": "Менеджер Расширений",
-  "plugins.ExtensionManager.intro": "Управляйте вашими расширениями."
+  "plugins.extensionManager.title": "Менеджер Расширений",
+  "plugins.extensionManager.intro": "Управляйте вашими расширениями."
 }
