@@ -98,7 +98,6 @@ const ExtensionManager: React.FC<PluginContext> = ({ intl, utils, vm }) => {
       }
 
       getLoadedExtensions();
-      console.log(selectedExtensions);
     },
     [selectedExtensions],
   );
@@ -142,7 +141,6 @@ const ExtensionManager: React.FC<PluginContext> = ({ intl, utils, vm }) => {
     if (visible) {
       getLoadedExtensions();
     }
-    console.log(selectedExtensions);
   }, [visible, selectedExtensions]);
 
   return ReactDOM.createPortal(
