@@ -19,8 +19,7 @@ const messages = defineMessage({
   },
   intro: {
     id: "plugins.ExtensionManager.intro",
-    defaultMessage:
-      "Manage your extensions",
+    defaultMessage: "Manage your extensions",
   },
 });
 
@@ -31,87 +30,89 @@ const DEFAULT_CONTAINER_INFO = {
   translateY: 60,
 };
 
-const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm }) => {
-  const [visible, setVisible] = React.useState(false)
-  const [loadedExtensions, setLoadedExtensions] = React.useState([])
-  const [selectedExtensions, setSelectedExtensions] = React.useState({})
+const ExtensionManager: React.FC<PluginContext> = ({ intl, utils, vm }) => {
+  const [visible, setVisible] = React.useState(false);
+  const [loadedExtensions, setLoadedExtensions] = React.useState([]);
+  const [selectedExtensions, setSelectedExtensions] = React.useState({});
 
   //Container stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  const containerRef = React.useRef(null)
+  const containerRef = React.useRef(null);
   const [containerInfo, setContainerInfo] = useStorageInfo<ExpansionRect>(
     "EXTENSION_MANAGER_CONTAINER_INFO",
     DEFAULT_CONTAINER_INFO,
   );
 
-  const containerInfoRef = React.useRef(containerInfo)
+  const containerInfoRef = React.useRef(containerInfo);
   const getContainerPosition = React.useCallback(() => {
-    const { x, y } = containerRef.current.getBoundingClientRect()
+    const { x, y } = containerRef.current.getBoundingClientRect();
     return {
       translateX: x - containerInfoRef.current.width - 10,
       translateY: y - 6,
-    }
-  }, [])
+    };
+  }, []);
 
   const handleShow = React.useCallback(() => {
     setContainerInfo({
       ...containerInfoRef.current,
       ...getContainerPosition(),
     });
-    setVisible(true)
-  }, [])
+    setVisible(true);
+  }, []);
 
   const handleClose = () => {
-    setSelectedExtensions({})
-    setVisible(false)
+    setSelectedExtensions({});
+    setVisible(false);
   };
 
   const handleSizeChange = React.useCallback((value: ExpansionRect) => {
-    containerInfoRef.current = value
-  }, [])
+    containerInfoRef.current = value;
+  }, []);
   //Container stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   //Extension list stuff vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
   const getExtensionNameById = (id: string) => {
-    let infos: any = utils.getAllExtensionInfo()
+    const infos = utils.getAllExtensionInfo();
 
-    for (let i in infos) {
-      if (infos[i].extensionId === id) return infos[i].name
+    for (const i in infos) {
+      if (infos[i].extensionId === id) return infos[i].name;
     }
-  }
+  };
 
-  const handleDelete = React.useCallback((key: string) => {
-    try {
-      if (selectedExtensions[key]) {
-        for (let i in selectedExtensions) {
-          delete selectedExtensions[i]
-          vm.extensionManager.deleteExtensionById(i)
+  const handleDelete = React.useCallback(
+    (key: string) => {
+      try {
+        if (selectedExtensions[key]) {
+          for (const i in selectedExtensions) {
+            delete selectedExtensions[i];
+            vm.extensionManager.deleteExtensionById(i);
+          }
+        } else {
+          vm.extensionManager.deleteExtensionById(key);
         }
-      } else {
-        vm.extensionManager.deleteExtensionById(key)
+      } catch {
+        document.body.classList.add(styles.shakeAnimation);
+        setTimeout(() => {
+          document.body.classList.remove(styles.shakeAnimation);
+        }, 1000);
       }
-    }
-    catch {
-      document.body.classList.add(styles.shakeAnimation)
-      setTimeout(() => {
-        document.body.classList.remove(styles.shakeAnimation)
-      }, 1000)
-    }
 
-    getLoadedExtensions();
-    console.log(selectedExtensions)
-  }, [selectedExtensions])
+      getLoadedExtensions();
+      console.log(selectedExtensions);
+    },
+    [selectedExtensions],
+  );
 
   const handleMultiselect = (key) => {
-    setSelectedExtensions(prevState => ({
+    setSelectedExtensions((prevState) => ({
       ...prevState,
-      [key]: !prevState[key]
+      [key]: !prevState[key],
     }));
-    let parent = document.querySelector(`.extensionManager-item-${key}`)
+    const parent = document.querySelector(`.extensionManager-item-${key}`);
     if (parent.classList.contains(styles.lift)) {
-      parent.classList.remove(styles.lift)
+      parent.classList.remove(styles.lift);
     } else {
-      parent.classList.add(styles.lift)
+      parent.classList.add(styles.lift);
     }
   };
 
@@ -119,27 +120,30 @@ const ExtensionManager: React.FC<PluginContext & { vm }> = ({ intl, utils, vm })
     const extensions = Array.from(vm.extensionManager._loadedExtensions as Map<string, string>).map(([key, value]) => (
       <div className={[styles.extensionManagerItem, `extensionManager-item-${key}`].join(" ")} key={key}>
         <button
-          className={selectedExtensions[key] ? styles.extensionManagerItemSelected : styles.extensionManagerItemNotSelected}
+          className={
+            selectedExtensions[key] ? styles.extensionManagerItemSelected : styles.extensionManagerItemNotSelected
+          }
           onClick={() => handleMultiselect(key)}
         >
           <MultiselectBoxIcon />
         </button>
         <span className={styles.extensionManagerItemInfo}>{getExtensionNameById(key)}</span>
-        <button className={styles.extensionManagerItemDelete} onClick={() => handleDelete(key)}><TrashcanIcon /></button>
+        <button className={styles.extensionManagerItemDelete} onClick={() => handleDelete(key)}>
+          <TrashcanIcon />
+        </button>
       </div>
     ));
-    setLoadedExtensions(extensions)
+    setLoadedExtensions(extensions);
   };
 
   //Extension list stuff ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
   React.useEffect(() => {
     if (visible) {
-      getLoadedExtensions()
+      getLoadedExtensions();
     }
-    console.log(selectedExtensions)
-  }, [visible, selectedExtensions])
+    console.log(selectedExtensions);
+  }, [visible, selectedExtensions]);
 
   return ReactDOM.createPortal(
     <section className={"extensionManager"} ref={containerRef}>
