@@ -304,7 +304,9 @@
   ```javascript
   const register = registerSettings(
     // 这是插件的名称，这里需要支持国际化
-    msg("plugins.testPlugin.title"),
+    msg("plugins.testPlugin.title"),\
+    // 插件的ID，要求命名用 plugin-aaa-bbb 的形式
+    "plugin-test-plugin",
     [
       {
         // 这是每一组配置的key

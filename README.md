@@ -298,6 +298,8 @@
     const register = registerSettings(
       // This is the name of the plugin, which needs to support internationalization.
       msg("plugins.testPlugin.title"),
+      // The plugin ID should be named using the format plugin-aaa-bbb.
+      "plugin-test-plugin",
       [
         {
           // This is the key for each group of configurations.
