@@ -38,7 +38,7 @@
 
 .extensionManager-item {
   .extensionManager-item_delete {
-    display: block;
+    display: flex;
   }
 }
 
@@ -49,7 +49,7 @@
 
   &:hover {
     .extensionManager-item_delete {
-      display: block;
+      display: flex;
     }
   }
 }
@@ -58,16 +58,11 @@
   background-color: var(--theme-error-color-p3);
 }
 
-.extensionManager-item_notSelected {
+.extensionManager-item_notSelected, .extensionManager-item_selected {
   background-color: transparent;
   border-radius: 5px;
   padding: 3px;
-}
-
-.extensionManager-item_selected {
-  background-color: transparent;
-  border-radius: 5px;
-  padding: 3px;
+  display: flex;
 }
 
 .extensionManager-item_selected svg rect {
