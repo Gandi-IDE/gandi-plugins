@@ -188,5 +188,7 @@
   "plugins.customCss.title": "CSS Dikustom",
   "plugins.customCss.description": "Muatkan fail CSS anda sendiri! Sesuaikan gaya Gandi anda!" ,
   "plugins.customCss.load": "Muatkan dari URL",
-  "plugins.customCss.load.description": "Untuk mengelakkan tumpukan, hanya satu fail yang disokong untuk dimuatkan, jika anda perlu memuatkan lebih dari satu, sila gabungkan"
+  "plugins.customCss.load.description": "Untuk mengelakkan tumpukan, hanya satu fail yang disokong untuk dimuatkan, jika anda perlu memuatkan lebih dari satu, sila gabungkan",
+  "plugins.extensionManager.title": "Pengurus blok tambahan",
+  "plugins.extensionManager.intro": "Uruskan set blok tambahan anda."
 }
