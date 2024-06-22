@@ -58,7 +58,7 @@
 
 .extensionManager-item {
   .extensionManager-item_delete {
-    display: block;
+    display: flex;
   }
 }
 
@@ -69,7 +69,7 @@
 
   &:hover {
     .extensionManager-item_delete {
-      display: block;
+      display: flex;
     }
   }
 }
@@ -92,6 +92,13 @@
   padding: 3px;
   border-style: none;
   cursor: pointer;
+}
+
+.extensionManager-item_notSelected, .extensionManager-item_selected {
+  background-color: transparent;
+  border-radius: 5px;
+  padding: 3px;
+  display: flex;
 }
 
 .extensionManager-item_selected svg rect {
