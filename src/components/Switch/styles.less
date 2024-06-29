@@ -1,0 +1,27 @@
+.switch {
+  width: 51px;
+  height: 13px;
+  background: var(--theme-color-g500);
+  border-radius: 13px;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.switch.checked {
+  background: var(--theme-brand-color);
+  .handler {
+    left: 24px;
+  }
+}
+
+.handler {
+  width: 27px;
+  height: 27px;
+  border-radius: 27px;
+  position: absolute;
+  left: 0;
+  top: -7px;
+  background: var(--theme-color-g300);
+  transition: all 0.2s ease-in-out;
+}
