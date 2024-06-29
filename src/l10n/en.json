@@ -190,5 +190,8 @@
   "plugins.customCss.load": "Load from URL",
   "plugins.customCss.load.description": "To prevent stacking, only one file is supported for loading, if you need to load more than one, please merge",
   "plugins.extensionManager.title": "Extension Manager",
-  "plugins.extensionManager.intro": "Manage your extensions."
+  "plugins.extensionManager.intro": "Manage your extensions.",
+  "plugins.terminalManager.title": "Terminal Manager",
+  "plugins.terminalManager.intro": "Manage your terminal.",
+  "plugins.terminalManager.type": "Select a mod, On: included, Off: excepted, closed the box to take effect"
 }

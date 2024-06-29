@@ -190,5 +190,8 @@
   "plugins.customCss.load":"从URL加载",
   "plugins.customCss.load.description":"为了防止堆积，仅支持加载一个文件，如需加载多个，请合并",
   "plugins.extensionManager.title": "拓展管理",
-  "plugins.extensionManager.intro": "管理你所有已安装的拓展。"
+  "plugins.extensionManager.intro": "管理你所有已安装的拓展。",
+  "plugins.terminalManager.title": "终端管理",
+  "plugins.terminalManager.intro": "管理你的终端。",
+  "plugins.terminalManager.type": "选择一个模式，开：包括，关：排除，关闭窗口生效"
 }
