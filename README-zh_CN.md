@@ -50,228 +50,20 @@
    * 插件上下文接口，用于定义插件的上下文信息。
    */
   interface PluginContext {
-    workspace: Blockly.WorkspaceSvg;
-    vm: VirtualMachine;
+   vm: VirtualMachine;
     blockly: any;
     intl: IntlShape;
     trackEvents: TrackEvents;
+    redux: PluginsRedux;
+    utils: PluginsUtils;
+    teamworkManager: [TeamworkManager](./src/types/teamwork.d.ts);
+    workspace: Blockly.WorkspaceSvg;
+    msg: (id: string) => string;
     registerSettings: PluginRegister;
-    msg: msg: (id: string) => string;
-    utils: {
-      /**
-      * 向指定角色添加服装。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {ArrayBuffer | string} buffer - 服装数据，可以是 ArrayBuffer 或字符串。
-      * @param {string} fileName - 服装文件名。
-      * @param {string} fileType - 服装文件类型。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-      addCostumeToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
-
-      /**
-      * 根据角色的 ID 删除指定服装。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {number} costumeIndex - 服装索引。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-      deleteCostumeByTargetId: (costumeIndex: number, targetId?: string) => void;
-
-      /**
-      * 从指定角色获取服装。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {number} costumeIndex - 服装索引。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-      getCostumeFromTarget: (costumeIndex: number, targetId?: string) => void;
-
-      /**
-       * 更新指定角色的造型。
-       * @param {object} costumeData - 造型数据。
-       * @param {string} [costumeData.costumeId] - 造型的唯一标识符（可选，优先使用），默认当前选中的造型。
-       * @param {string} [costumeData.costumeId] - 造型的的索引（可选），默认当前选中的造型。
-       * @param {boolean} costumeData.isVector - 是否为矢量图像。
-       * @param {ArrayBufferLike | string} costumeData.bitmap - 造型位图或其数据。
-       * @param {number} costumeData.rotationCenterX - 造型旋转中心的 X 坐标。
-       * @param {number} costumeData.rotationCenterY - 造型旋转中心的 Y 坐标。
-       * @param {number} costumeData.width - 造型宽度。
-       * @param {number} costumeData.height - 造型高度。
-       * @param {string} [targetId] - 目标的唯一标识符（可选），默认当前选中的角色。
-       * @returns {void}
-       */
-      updateCostumeByTargetId: (
-        costumeData: {
-          isVector?: boolean,
-          costumeId?: string;
-          bitmap: ArrayBufferLike | string;
-          rotationCenterX: number;
-          rotationCenterY: number;
-          width: number;
-          height: number;
-        },
-        targetId?: string,
-      ) => void;
-
-      /**
-      * 向指定角色添加声音。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {ArrayBuffer | string} buffer - 声音数据，可以是 ArrayBuffer 或字符串。
-      * @param {string} fileName - 声音文件名。
-      * @param {string} fileType - 声音文件类型。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-      addSoundToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
-
-      /**
-      * 根据角色的 ID 删除指定声音。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {number} soundIndex - 声音索引。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-      deleteSoundFromTarget: (soundIndex: number, targetId?: string) => void;
-
-      /**
-      * 从指定角色获取声音。
-      * 如果未提供 targetId，则操作当前选中的角色。
-      * @param {number} soundIndex - 声音索引。
-      * @param {string} [targetId] - 角色的 ID（可选）。
-      * @returns {void}
-      */
-       getSoundFromTarget: (soundIndex: number, targetId?: string) => void;
-
-      /**
-       * 根据指定的角色的ID更新声音缓冲区。
-       * 如果未提供targetId，则操作当前选中的角色。
-       * @param {Object} soundData - 包含声音数据的对象。
-       * @param {string} [soundData.soundId] - 声音的ID。
-       * @param {number} [soundData.soundIndex] - 声音的索引。
-       * @param {AudioBuffer} soundData.newBuffer - 新的声音缓冲区。
-       * @param {ArrayBuffer} soundData.soundEncoding - 声音的编码。
-       * @param {string} [targetId] - 所属角色的ID（可选）。
-       * @returns {void}
-       */
-      updateSoundBufferByTargetId: (
-        soundData: {
-          soundId?: string;
-          soundIndex?: number;
-          soundEncoding: ArrayBuffer;
-        },
-        targetId?: string,
-      ) => void;
-
-      /**
-       * 拓展角色列表底部”加号“上的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandTargetMenuItems(items: Array<ActionMenuItem>): void;
-  
-      /**
-       * 拓展造型列表底部”加号“上的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandCostumeMenuItems(items: Array<ActionMenuItem>): void;
-
-      /**
-       * 拓展声音列表底部”加号“上的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandSoundMenuItems(items: Array<ActionMenuItem>): void;
-
-      /**
-       * 移除某些角色列表底部”加号“上的菜单项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeTargetMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * 移除某些造型列表底部”加号“上的菜单项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeCostumeMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * 移除某些声音列表底部”加号“上的菜单项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeSoundMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * 拓展右键点击角色时的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandTargetContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * 拓展右键点击造型时的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandCostumeContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * 拓展右键点击声音时的菜单项。
-       * @param {Array<ActionMenuItem>} items - 要插入的的菜单选项。
-       * @returns {void}
-      */
-      expandSoundContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * 移除某些右键点击角色时的菜单选项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeTargetContextMenuItems(itemKeyList: Array<string>): void;
-
-      /**
-       * 移除某些右键点击造型时的菜单选项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeCostumeContextMenuItems(itemKeyList: Array<string>): void;
-      
-      /**
-       * 移除某些右键点击声音时的菜单选项。
-       * @param {Array<string>} itemIdList - 要移除的菜单项的 ID 的数组。
-       * @returns {void}
-      */
-      removeSoundContextMenuItems(itemKeyList: Array<string>): void;
-
-      /**
-       * 获取所有扩展的信息。
-       * @returns {Object} 一个包含所有扩展信息的对象，Key是拓展的ID。
-       */
-      getAllExtensionInfo(): Record<string, {
-        name: string;
-        extensionId: string;
-        collaborator?: string;
-        connectingMessage?: string;
-        connectionIconURL?: string;
-        connectionSmallIconURL?: string;
-        collaboratorList?: Array<{
-          collaborator: string;
-          collaboratorURL?: string;
-        }>;
-        collaboratorURL?: string;
-        disabled?: boolean;
-        doc?: string;
-        featured: boolean;
-        iconURL?: string;
-        insetIconURL?: string;
-      }>;
-    };
   }
   ```
+
+  
 
   ### 🧐 F&Q
 
@@ -388,17 +180,32 @@
 │   │   ├──block-media.ts          // 块媒体库
 │   │   ├──client-info.ts          // 客户端信息库
 │   ├──plugins                     // 插件目录
-│   │   ├──code-batch-select       // 代码批量选择插件目录
-│   │   ├──code-filter             // 代码过滤插件目录
-│   │   ├──code-find               // 代码查找插件目录
-│   │   ├──code-switch             // 代码切换插件目录
-│   │   ├──dev-tools               // 开发工具插件目录
-│   │   ├──jump-to-def             // 跳转到定义插件目录
-│   │   └──terminal                // 终端插件目录
+│   │   ├──better-sprite-menu      // 更好的角色列表插件
+│   │   ├──code-batch-select       // 代码批量选择插件
+│   │   ├──code-filter             // 快速添加代码插件
+│   │   ├──code-find               // 代码查找插件
+│   │   ├──code-switch             // 代码块切换插件
+│   │   ├──custom-css              // 自定义CSS插件
+│   │   ├──custom-plugin           // 自定义插件插件
+│   │   ├──dev-tools               // 开发工具插件
+│   │   ├──dropdown-searchable     // 下拉搜索插件
+│   │   ├──extension-manager       // 拓展管理插件
+│   │   ├──fast-input              // F快捷输入插件
+│   │   ├──folder                  // 文件夹插件
+│   │   ├──historical-version      // 历史版本插件
+│   │   ├──inspiro                 // AI 助手插件
+│   │   ├──kukemc-beautify         // Gandi美化插件
+│   │   ├──plugins-manager         // 插件管理插件
+│   │   ├──statistics              // 统计栏插件
+│   │   ├──terminal                // 终端插件
+│   │   └──witcat-blockinput       // 积木输入插件
+│   ├──types                       // Type definitions directory
 │   ├──types                       // 类型定义目录
 │   │   ├──blockly.d.ts            // Blockly 类型定义
+│   │   ├──teamwork.d.ts           // 协作API相关的类型定义
 │   │   ├──interface.d.ts          // 接口类型定义
-│   │   └──scratch.d.ts            // Scratch 类型定义
+│   │   ├──scratch.d.ts            // Scratch 类型定义
+│   │   └──utils.d.ts              // 系统提供的辅助函数的类型定义
 │   ├──utils                       // 工具函数目录
 │   │   ├──block-flasher.ts        // 块闪烁工具
 │   │   ├──block-helper.ts         // 块助手工具

@@ -50,221 +50,16 @@
    * Plugin context interface used to define the context information for plugins.
   */
   interface PluginContext {
-    workspace: Blockly.WorkspaceSvg;
-    vm: VirtualMachine;
+   vm: VirtualMachine;
     blockly: any;
     intl: IntlShape;
     trackEvents: TrackEvents;
+    redux: PluginsRedux;
+    utils: PluginsUtils;
+    teamworkManager: [TeamworkManager](./src/types/teamwork.d.ts);
+    workspace: Blockly.WorkspaceSvg;
+    msg: (id: string) => string;
     registerSettings: PluginRegister;
-    msg: msg: (id: string) => string;
-    utils: {
-      /**
-       * Adds a costume to the specified target.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {ArrayBuffer | string} buffer - Costume data, can be an ArrayBuffer or a string.
-       * @param {string} fileName - Costume file name.
-       * @param {string} fileType - Costume file type.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      addCostumeToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
-      /**
-       * Deletes the specified costume by costumeIndex from the target sprite.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {number} costumeIndex - Costume index.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      deleteCostumeByTargetId: (costumeIndex: number, targetId?: string) => void;
-      /**
-       * Retrieves the costume at the specified index from the target sprite.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {number} costumeIndex - Costume index.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      getCostumeFromTarget: (costumeIndex: number, targetId?: string) => void;
-      /**
-       * Update the costume of the specified target.
-       * @param {object} costumeData - Costume data.
-       * @param {string} [costumeData.costumeId] - Unique identifier of the costume (optional).
-       * @param {number} [costumeData.costumeIndex] - The index of the costume (optional).
-       * @param {ArrayBufferLike | string} costumeData.bitmap - Bitmap or data of the costume.
-       * @param {boolean} costumeData.isVector - Whether the costume is a vector image.
-       * @param {number} costumeData.rotationCenterX - X coordinate of the rotation center of the costume.
-       * @param {number} costumeData.rotationCenterY - Y coordinate of the rotation center of the costume.
-       * @param {number} costumeData.width - Width of the costume.
-       * @param {number} costumeData.height - Height of the costume.
-       * @param {string} [targetId] - Unique identifier of the target (optional).
-       * @returns {void}
-       */
-      updateCostumeByTargetId: (
-        costumeData: {
-          isVector?: boolean,
-          costumeId?: string;
-          bitmap: ArrayBufferLike | string;
-          rotationCenterX: number;
-          rotationCenterY: number;
-          width: number;
-          height: number;
-        },
-        targetId?: string,
-      ) => void;
-      /**
-       * Adds a sound to the specified target.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {ArrayBuffer | string} buffer - Sound data, can be an ArrayBuffer or a string.
-       * @param {string} fileName - Sound file name.
-       * @param {string} fileType - Sound file type.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      addSoundToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
-      
-      /**
-       * Deletes the specified sound by soundIndex from the target sprite.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {number} soundIndex - Sound index.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      deleteSoundFromTarget: (soundIndex: number, targetId?: string) => void;
-
-      /**
-       * Retrieves the sound at the specified index from the target sprite.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {number} soundIndex - Sound index.
-       * @param {string} [targetId] - ID of the target sprite (optional).
-       * @returns {void}
-       */
-      getSoundFromTarget: (soundIndex: number, targetId?: string) => void;
-
-      /**
-       * Updates the sound buffer of the target sprite specified by targetId.
-       * If targetId is not provided, operates on the currently selected sprite.
-       * @param {Object} soundData - Object containing sound data.
-       * @param {string} [soundData.soundId] - The ID of the sound.
-       * @param {number} [soundData.soundIndex] - The index of the sound.
-       * @param {AudioBuffer} soundData.newBuffer - The new sound buffer.
-       * @param {ArrayBuffer} soundData.soundEncoding - The encoding of the sound.
-       * @param {string} [targetId] - The ID of the target sprite (optional).
-       * @returns {void}
-       */
-      updateSoundBufferByTargetId: (
-        soundData: {
-          soundId?: string;
-          soundIndex?: number;
-          soundEncoding: ArrayBuffer;
-        },
-        targetId?: string,
-      ) => void;
-
-      /**
-       * Expands the menu items at the bottom "+" icon in the target list.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandTargetMenuItems(items: Array<ActionMenuItem>): void;
-
-      /**
-       * Expands the menu items at the bottom "+" icon in the costume list.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandCostumeMenuItems(items: Array<ActionMenuItem>): void;
-
-      /**
-       * Expands the menu items at the bottom "+" icon in the sound list.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandSoundMenuItems(items: Array<ActionMenuItem>): void;
-
-      /**
-       * Removes certain menu items at the bottom "+" icon in the target list.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeTargetMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * Removes certain menu items at the bottom "+" icon in the costume list.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeCostumeMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * Removes certain menu items at the bottom "+" icon in the sound list.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeSoundMenuItems(itemIdList: Array<string>): void;
-
-      /**
-       * Expands the menu items when right-clicking on a target.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandTargetContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * Expands the menu items when right-clicking on a costume.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandCostumeContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * Expands the menu items when right-clicking on a sound.
-       * @param {Array<ActionMenuItem>} items - Menu items to be inserted.
-       * @returns {void}
-       */
-      expandSoundContextMenuItems(items: Array<ContextMenuItem>): void;
-
-      /**
-       * Removes certain menu items when right-clicking on a target.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeTargetContextMenuItems(itemKeyList: Array<string>): void;
-
-      /**
-       * Removes certain menu items when right-clicking on a costume.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeCostumeContextMenuItems(itemKeyList: Array<string>): void;
-
-      /**
-       * Removes certain menu items when right-clicking on a sound.
-       * @param {Array<string>} itemIdList - Array of IDs of menu items to be removed.
-       * @returns {void}
-       */
-      removeSoundContextMenuItems(itemKeyList: Array<string>): void;
-      /**
-       * Retrieves all extension information, both built-in and external (official and custom).
-       * @returns {Object} An object containing all extension information keyed by their extension IDs.
-       */
-      getAllExtensionInfo(): Record<string, {
-        name: string;
-        extensionId: string;
-        collaborator?: string;
-        connectingMessage?: string;
-        connectionIconURL?: string;
-        connectionSmallIconURL?: string;
-        collaboratorList?: Array<{
-          collaborator: string;
-          collaboratorURL?: string;
-        }>;
-        collaboratorURL?: string;
-        disabled?: boolean;
-        doc?: string;
-        featured: boolean;
-        iconURL?: string;
-        insetIconURL?: string;
-      }>;
-    };
   }
   ```
   ### 🧐 F&Q
@@ -383,17 +178,31 @@
   │   │   ├──client-info.ts          // Client information library
   │   │   └──code-hash.json          // Code hash library
   │   ├──plugins                     // Plugins directory
+  │   │   ├──better-sprite-menu      // Better sprite menu plugin directory
   │   │   ├──code-batch-select       // Code batch select plugin directory
   │   │   ├──code-filter             // Code filter plugin directory
   │   │   ├──code-find               // Code find plugin directory
   │   │   ├──code-switch             // Code switch plugin directory
+  │   │   ├──custom-css              // Custom css plugin directory
+  │   │   ├──custom-plugin           // Custom-plugin plugin directory
   │   │   ├──dev-tools               // Development tools plugin directory
-  │   │   ├──jump-to-def             // Jump to definition plugin directory
-  │   │   └──terminal                // Terminal plugin directory
+  │   │   ├──dropdown-searchable     // Dropdown searchable plugin directory
+  │   │   ├──extension-manager       // Extension manager plugin directory
+  │   │   ├──fast-input              // Fast input plugin directory
+  │   │   ├──folder                  // Folder version plugin directory
+  │   │   ├──historical-version      // Historical version plugin directory
+  │   │   ├──inspiro                 // Inspiro plugin directory
+  │   │   ├──kukemc-beautify         // Kukemc beautify plugin directory
+  │   │   ├──plugins-manager         // Plugins manager plugin directory
+  │   │   ├──statistics              // Statistics plugin directory
+  │   │   ├──terminal                // Terminal plugin directory
+  │   │   └──witcat-blockinput       // Witcat blockinput plugin directory
   │   ├──types                       // Type definitions directory
   │   │   ├──blockly.d.ts            // Blockly type definitions
+  │   │   ├──teamwork.d.ts           // Type definitions related to the collaboration API
   │   │   ├──interface.d.ts          // Interface type definitions
-  │   │   └──scratch.d.ts            // Scratch type definitions
+  │   │   ├──scratch.d.ts            // Scratch type definitions
+  │   │   └──utils.d.ts              // Utility methods for plugins
   │   ├──utils                       // Utility functions directory
   │   │   ├──block-flasher.ts        // Block flasher utility
   │   │   ├──block-helper.ts         // Block helper utility
