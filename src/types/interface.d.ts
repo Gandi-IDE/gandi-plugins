@@ -53,7 +53,8 @@ declare global {
     trackEvents: TrackEvents;
     redux: PluginsRedux;
     utils: PluginsUtils;
-    teamworkManager: TeamworkManager;
+    // It will only be available in collaboration mode; otherwise, it will be null.
+    teamworkManager: TeamworkManager | null;
     registerSettings: PluginRegister;
     workspace: Blockly.WorkspaceSvg;
     /**
