@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
+const WebpackDevServer = require("webpack-dev-server");
 const handlebars = require("handlebars");
 const argv = require("yargs").argv;
 
@@ -150,25 +151,36 @@ function buildPlugin(onComplete) {
   };
 
   const compiler = webpack(webpackConfig);
-
-  compiler.run((err, stats) => {
-    if (err) {
-      console.error(err.stack || err);
-      if (err.details) {
-        console.error(err.details);
+  compiler.watch(
+    {
+      aggregateTimeout: 200,
+      poll: 1000,
+    },
+    (err, stats) => {
+      if (err) {
+        console.error(err.stack || err);
+        if (err.details) {
+          console.error(err.details);
+        }
+        return;
       }
-      return;
-    }
-    if (stats.hasErrors()) {
-      const errors = stats.compilation.errors;
-      errors.forEach((error) => {
-        console.error(error.message || error);
-      });
-      console.error("Plug-in build failed.");
-    } else {
-      console.log(`Plug-in(${pluginName}) built successfully.`);
-    }
-    if (onComplete) onComplete();
+      if (stats.hasErrors()) {
+        const errors = stats.compilation.errors;
+        errors.forEach((error) => {
+          console.error(error.message || error);
+        });
+        console.error("Plug-in build failed.");
+      } else {
+        console.log(`Plug-in(${pluginName}) built successfully.`);
+      }
+      if (onComplete) onComplete();
+    },
+  );
+
+  const server = new WebpackDevServer({}, compiler);
+
+  server.startCallback(() => {
+    console.log("Successfully started server on http://localhost:8081");
   });
 }
 
@@ -205,14 +217,7 @@ fs.readFile(path.join(__dirname, wrapperFilePath), "utf8", (err, data) => {
     console.log(`Target file added: ${targetFile}`);
     // Build the plugin after writing the target file
     buildPlugin(() => {
-      // Delete the added file after building the plugin
-      fs.unlink(targetFile, (err) => {
-        if (err) {
-          console.error("Error deleting file:", err);
-          return;
-        }
-        console.log("Added file deleted.");
-      });
+      console.log("Build success");
     });
   });
 });

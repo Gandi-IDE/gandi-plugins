@@ -14,3 +14,5 @@
 
 # style types
 *.less.d.ts
+
+temp-wrapper.jsx
