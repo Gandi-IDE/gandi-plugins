@@ -50,12 +50,60 @@ interface OnlineUsers {
 }
 
 /**
+ * Interface representing user information.
+ */
+interface IUserInfo {
+  /** Unique identifier for the user(oid) */
+  id: string;
+  /** Client identifier associated with the user */
+  clientId: string;
+  /** Name of the user */
+  name: string;
+  /** URL or path to the user's avatar */
+  avatar: string;
+  /** Indicates if the user is a new member */
+  isNewMember: boolean;
+  /** Optional authority level of the user, can be "ADMIN", "MEMBER", or "OBSERVER" */
+  authority?: "ADMIN" | "MEMBER" | "OBSERVER";
+  /** Optional ID of the target currently being edited by the user */
+  editingTargetId?: string;
+  /** Optional array of scopes associated with the user */
+  scope?: Array<string>;
+}
+
+/**
+ * Interface representing creation information.
+ */
+interface ICreationInfo {
+  /** Unique identifier for the creation */
+  id: string;
+  /** Optional timestamp of when the creation was last updated */
+  updatedAt?: string;
+  /**
+   * Optional callback function to handle updates to the creation.
+   *
+   * @param {Object} params - Parameters for updating the creation.
+   * @param {string} [params.title] - New title for the creation.
+   * @param {"LANDSCAPE" | "PORTRAIT" | "STANDARD"} [params.screenMode] - New screen mode for the creation.
+   */
+  handleUpdate?: (params: { title?: string; screenMode?: "LANDSCAPE" | "PORTRAIT" | "STANDARD" }) => void;
+}
+
+/**
  * Manages team collaboration features within the application.
  * @interface TeamworkManager
- * @property {Readonly<Array<TeamMember>>} teamMembers - Readonly array of TeamMember objects representing the team members.
- * @property {Readonly<Map<string, OnlineUsers>>} onlineUsers - Readonly map of OnlineUsers objects representing the online users.
  */
 declare interface TeamworkManager {
+  /**
+   * Read-only information about the user
+   */
+  userInfo: Readonly<IUserInfo>;
+
+  /**
+   * Read-only information about the creation
+   */
+  creationInfo: Readonly<ICreationInfo>;
+
   /**
    * Readonly array of TeamMember objects representing the team members.
    * @type {Readonly<Array<TeamMember>>}
