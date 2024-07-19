@@ -28,3 +28,12 @@ export const hotkeyIsDown = (keys: string[], event: KeyboardEvent) => {
     return event.code === `Key${key}`;
   });
 };
+
+export const hotkeyIsUp = (keys: string[], event: KeyboardEvent) => {
+  return keys.every((key) => {
+    if (FUNCTION_KEYS[key]) {
+      return !event[FUNCTION_KEYS[key]];
+    }
+    return event.code !== `Key${key}`;
+  });
+}

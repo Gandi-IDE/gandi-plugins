@@ -16,6 +16,7 @@ import BetterSpriteMenu from "plugins/better-sprite-menu/manifest";
 import inspiro from "plugins/inspiro/manifest";
 import customCss from "src/plugins/custom-css/manifest";
 import extensionManager from "src/plugins/extension-manager/manifest";
+import voiceCooperation from "src/plugins/voice-cooperation/manifest";
 
 export default {
   folder,
@@ -36,4 +37,5 @@ export default {
   inspiro,
   "custom-css": customCss,
   "extension-manager": extensionManager,
+  "voice-cooperation": voiceCooperation,
 };
