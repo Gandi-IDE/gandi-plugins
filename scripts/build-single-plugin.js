@@ -63,8 +63,9 @@ const wrapperFileName = `temp-wrapper.${manifest.type === "component" ? "jsx" : 
 /**
  * Build the plugin using webpack.
  * @param {Function} onComplete - Callback function to execute on completion.
+ * @param {boolean} noDevServer - Whether to start the dev server or not.
  */
-function buildPlugin(onComplete) {
+function buildPlugin(onComplete, noDevServer) {
   console.log("Start building plugin...");
   const pluginName = spinalToPascal(argv.name);
   const entryFilePath = `./src/plugins/${argv.name}/${wrapperFileName}`;
@@ -151,6 +152,28 @@ function buildPlugin(onComplete) {
   };
 
   const compiler = webpack(webpackConfig);
+  if (noDevServer) {
+    compiler.run((err, stats) => {
+      if (err) {
+        console.error(err.stack || err);
+        if (err.details) {
+          console.error(err.details);
+        }
+        return;
+      }
+      if (stats.hasErrors()) {
+        const errors = stats.compilation.errors;
+        errors.forEach((error) => {
+          console.error(error.message || error);
+        });
+        console.error("Plug-in build failed.");
+      } else {
+        console.log(`Plug-in(${pluginName}) built successfully.`);
+      }
+      if (onComplete) onComplete();
+    });
+    return;
+  }
   compiler.watch(
     {
       aggregateTimeout: 200,
@@ -218,6 +241,6 @@ fs.readFile(path.join(__dirname, wrapperFilePath), "utf8", (err, data) => {
     // Build the plugin after writing the target file
     buildPlugin(() => {
       console.log("Build success");
-    });
+    }, argv.single);
   });
 });
