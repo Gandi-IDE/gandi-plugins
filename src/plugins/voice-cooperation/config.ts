@@ -4,6 +4,5 @@
 // }
 
 export default {
-  BASE_URL: "http://gandi-main-qa.xiguacity.cn/",
   SERVER_URL: "wss://webrtc-test.ccw.site",
 };
