@@ -1,0 +1,62 @@
+.voice-button {
+    max-width: 130px !important;
+    transition: all 0.2s !important;
+    height: 36px !important;
+    flex-shrink: 0;
+    border-radius: 56px !important;
+    background: var(--green--, #39C66C) !important;
+    padding: 8px 6px;
+    margin-left: 8px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.voice-button-connected {
+    background: var(--green--, #39C66C) !important;
+    transition: all 0.2s !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 56px;
+    padding: 6px;
+    margin-left: 8px;
+}
+
+.voice-icon {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.voice-root {
+    position: relative;
+}
+
+.join {
+    color: var(--Text-Text500, #FFF);
+    text-align: center;
+    font-family: "PingFang SC";
+    font-size: 14px;
+    font-style: normal;
+    line-height: normal;
+    padding-right: 6px;
+}
+
+.voice-popover {
+    background-color: var(--theme-color-300);
+}

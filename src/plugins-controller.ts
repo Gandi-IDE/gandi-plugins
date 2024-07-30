@@ -1,12 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
+import { noop } from "lodash-es";
 import PluginsManager from "plugins/plugins-manager";
 import pluginsManifest from "./plugins-manifest";
 import pluginsEntry from "./plugins-entry";
 import pluginsL10n from "./plugins-l10n";
 import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
-import { noop } from "lodash-es";
 
 export const LoadingPlugins = {};
 
