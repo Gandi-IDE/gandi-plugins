@@ -1,4 +1,5 @@
 import type { IntlShape } from "react-intl";
+import type { AxiosRequestConfig, AxiosResponse } from "axios";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 
 interface Action<T = any> {
@@ -12,6 +13,12 @@ interface AnyAction extends Action {
 
 interface Dispatch<A extends Action = AnyAction> {
   <T extends A>(action: T): T;
+}
+
+interface RequestExtraConfig {
+  skipErrorHandler?: boolean;
+  skipErrorCodes?: string[];
+  skipTransformResponse?: boolean;
 }
 
 type PluginSettingValueType = string | number | string[] | number[] | boolean;
@@ -42,30 +49,38 @@ interface PluginsRedux extends EventTarget {
   dispatch: Dispatch<AnyAction>;
 }
 
-declare global {
-  /**
-   * Plugin context interface used to define the context information for plugins.
-   */
-  interface PluginContext {
-    vm: VirtualMachine;
-    blockly: any;
-    intl: IntlShape;
-    trackEvents: TrackEvents;
-    redux: PluginsRedux;
-    utils: PluginsUtils;
-    // It will only be available in collaboration mode; otherwise, it will be null.
-    teamworkManager: TeamworkManager | null;
-    registerSettings: PluginRegister;
-    workspace: Blockly.WorkspaceSvg;
-    /**
-     * A shortcut method to replace intl.formatMessage.
-     *
-     * @param descriptor - The message descriptor.
-     * @returns The formatted message.
-     */
-    msg: (descriptor: string) => string;
-  }
+interface PluginsServer {
+  axios: {
+    post<T = unknown, R = AxiosResponse<T>, D = unknown>(
+      url: string,
+      data?: D,
+      config?: AxiosRequestConfig<D> & RequestExtraConfig,
+    ): Promise<R>;
+    get<T = unknown, R = AxiosResponse<T>, D = unknown>(
+      url: string,
+      config?: AxiosRequestConfig<D> & RequestExtraConfig,
+    ): Promise<R>;
+    patch<T = unknown, R = AxiosResponse<T>, D = unknown>(
+      url: string,
+      data?: D,
+      config?: AxiosRequestConfig<D> & RequestExtraConfig,
+    ): Promise<R>;
+    put<T = unknown, R = AxiosResponse<T>, D = unknown>(
+      url: string,
+      data?: D,
+      config?: AxiosRequestConfig<D> & RequestExtraConfig,
+    ): Promise<R>;
+    remove<T = unknown, R = AxiosResponse<T>, D = unknown>(
+      url: string,
+      config?: AxiosRequestConfig<D> & RequestExtraConfig,
+    ): Promise<R>;
+  };
+  hosts: Readonly<{
+    GANDI_MAIN: string;
+  }>;
+}
 
+declare global {
   interface PluginSetting {
     type: "input" | "select" | "switch" | "hotkey" | "checkBoxGroup";
     disabled?: boolean;
@@ -123,5 +138,29 @@ declare global {
     ) => {
       dispose: () => void;
     };
+  }
+
+  /**
+   * Plugin context interface used to define the context information for plugins.
+   */
+  interface PluginContext {
+    vm: VirtualMachine;
+    blockly: any;
+    intl: IntlShape;
+    server: PluginsServer;
+    trackEvents: TrackEvents;
+    redux: PluginsRedux;
+    utils: PluginsUtils;
+    // It will only be available in collaboration mode; otherwise, it will be null.
+    teamworkManager: TeamworkManager | null;
+    registerSettings: PluginRegister;
+    workspace: Blockly.WorkspaceSvg;
+    /**
+     * A shortcut method to replace intl.formatMessage.
+     *
+     * @param descriptor - The message descriptor.
+     * @returns The formatted message.
+     */
+    msg: (descriptor: string) => string;
   }
 }
