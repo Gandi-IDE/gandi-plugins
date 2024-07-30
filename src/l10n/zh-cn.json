@@ -215,5 +215,10 @@
   "plugins.voiceCooperation.settings.shortkey": "快捷键",
   "plugins.voiceCooperation.noOne": "无人发言",
   "plugins.voiceCooperation.speakingOne": "{name} 正在发言",
-  "plugins.voiceCooperation.speaking": "{names} 和其他 {count} 人正在发言"
+  "plugins.voiceCooperation.speaking": "{names} 和其他 {count} 人正在发言",
+  "plugins.voiceCooperation.microphone": "麦克风",
+  "plugins.voiceCooperation.mic.on": "开启麦克风",
+  "plugins.voiceCooperation.mic.off": "关闭麦克风",
+  "plugins.voiceCooperation.expand": "成员列表",
+  "plugins.voiceCooperation.kick": "踢出"
 }

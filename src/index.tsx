@@ -40,7 +40,7 @@ const App = () => {
     setTimeout(handleInit, 1000);
   }, [handleInit]);
 
-  return <iframe ref={iframeRef} id="gandi-wrapper" src="https://stable.fe-community-hub.nt.qa.xiguacity.cn/gandi"></iframe>;
+  return <iframe ref={iframeRef} id="gandi-wrapper" src={process.env.SITE_SRC}></iframe>;
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

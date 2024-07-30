@@ -215,5 +215,10 @@
   "plugins.voiceCooperation.settings.shortkey": "Shortcuts",
   "plugins.voiceCooperation.noOne": "Nobody speaking",
   "plugins.voiceCooperation.speakingOne": "{name} is speaking",
-  "plugins.voiceCooperation.speaking": "{names} and {count} others are speaking"
+  "plugins.voiceCooperation.speaking": "{names} and {count} others are speaking",
+  "plugins.voiceCooperation.microphone": "Microphone",
+  "plugins.voiceCooperation.mic.on": "Turn on the microphone",
+  "plugins.voiceCooperation.mic.off": "Turn off the microphone",
+  "plugins.voiceCooperation.expand": "Member List",
+  "plugins.voiceCooperation.kick": "Kick"
 }

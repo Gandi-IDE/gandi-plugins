@@ -131,7 +131,12 @@ function buildPlugin(onComplete, noDevServer) {
         },
       ],
     },
-    plugins: [new webpack.ProgressPlugin()],
+    plugins: [
+      new webpack.ProgressPlugin(),
+      new webpack.DefinePlugin({
+        __WEBPACK_ENV: JSON.stringify(process.env.NODE_ENV),
+      }),
+    ],
     resolve: {
       extensions: [".tsx", ".ts", ".js"],
       alias: {

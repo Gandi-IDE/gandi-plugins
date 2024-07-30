@@ -1,12 +1,9 @@
 import * as LiveKit from "livekit-client";
+import config from "../config";
 
-const VoiceServer = "ws://localhost:7880"; // localhost debug
+const VoiceServer = config.SERVER_URL; // localhost debug
 
-async function connectToRoom(
-  pluginContext: PluginContext,
-  token: string,
-  callback: (status: boolean, room?: LiveKit.Room) => void,
-) {
+async function connectToRoom(token: string, callback: (status: boolean, room?: LiveKit.Room) => void) {
   const room = new LiveKit.Room({
     dynacast: true, // optimize publish bandwidth and CPU for published tracks
     publishDefaults: {
@@ -25,12 +22,22 @@ async function connectToRoom(
     return null;
   }
 
-  room.on(LiveKit.RoomEvent.Disconnected, () => {
+  let globalReason = 0;
+
+  room.on(LiveKit.RoomEvent.Disconnected, (reason) => {
     console.log("disconnected from room");
+
+    if (reason === LiveKit.DisconnectReason.PARTICIPANT_REMOVED) {
+      room.disconnect(true);
+      globalReason = reason;
+    }
+    document.querySelectorAll(".voiceAudio").forEach((audio) => {
+      audio.remove();
+    });
     callback(false);
   });
-  room.on(LiveKit.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-    console.log(`subscribed to track ${track.sid} from ${participant.identity}`);
+  room.on(LiveKit.RoomEvent.Reconnecting, () => {
+    globalReason == LiveKit.DisconnectReason.PARTICIPANT_REMOVED && room.disconnect(true);
   });
   return room;
 }

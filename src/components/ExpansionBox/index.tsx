@@ -25,9 +25,10 @@ interface ExpansionBoxProps {
    * Whether the container should stay on top when active.
    */
   stayOnTop?: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onClickContainer?: (e: React.MouseEvent) => void;
-  onSizeChange: (rect: ExpansionRect) => void;
+  canResize?: boolean;
+  onSizeChange?: (rect: ExpansionRect) => void;
 }
 
 interface ExpansionBoxRef {
@@ -64,6 +65,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
     onClose,
     onSizeChange,
     onClickContainer,
+    canResize,
     children,
   } = props;
   const [position, setPosition] = React.useState({
@@ -106,7 +108,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
     // 防止触发拖拽事件
     e.stopPropagation();
     direction.current = dire;
-    resizable.current = true;
+    resizable.current = true && canResize;
     client.current.x = e.clientX;
     client.current.y = e.clientY;
     container.current.style.cursor = `${dire}-resize`;
@@ -243,16 +245,18 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
         onClick={handleClickContainer}
       >
         <div className={classNames(styles.containerHeader, id)}>
-          <span className={styles.closeButton} onClick={onClose} onTouchStart={onClose}>
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M6.82843 1.05597L1.17157 6.71282M1.17157 1.05597L6.82843 6.71282"
-                stroke="var(--theme-color-g500)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+          {onClose && (
+            <span className={styles.closeButton} onClick={onClose} onTouchStart={onClose}>
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6.82843 1.05597L1.17157 6.71282M1.17157 1.05597L6.82843 6.71282"
+                  stroke="var(--theme-color-g500)"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          )}
           <h3 className={styles.title}>{title}</h3>
         </div>
         {children}
@@ -274,6 +278,7 @@ ExpansionBox.defaultProps = {
   minWidth: 0,
   minHeight: 0,
   borderRadius: 4,
+  canResize: true,
   onSizeChange: () => {
     /** noop */
   },
