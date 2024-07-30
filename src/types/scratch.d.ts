@@ -60,6 +60,7 @@ declare namespace Scratch {
       pixelate: number;
       whirl: number;
     };
+    frames: Frames;
     id: string;
     interpolationData: null;
     isModule: boolean;
@@ -147,6 +148,26 @@ declare namespace Scratch {
     _scripts: Array<string>;
   };
 
+  export type FrameState = {
+    blocks: string[];
+    collapsed: boolean;
+    color: string;
+    height: number;
+    id: string;
+    locked: boolean;
+    title: string;
+    width: number;
+    x: number;
+    y: number;
+  };
+
+  export type Frames = {
+    runtime: Runtime;
+    createFrame(e: FrameState): boolean;
+    deleteFrame(id: string): boolean;
+    toXML(id: string): string;
+  };
+
   export type Comment = {
     blockId: string | null;
     id: string;
@@ -162,6 +183,7 @@ declare namespace Scratch {
     blocks: Blocks;
     clones: Array<RenderTarget>;
     costumes_: Array<Costume>;
+    frames: Frames;
     name: string;
     runtime: Runtime;
     soundBank: SoundBank;

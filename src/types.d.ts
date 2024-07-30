@@ -150,4 +150,15 @@ declare interface VirtualMachine extends NodeJS.EventEmitter {
   setEditingTarget: (targetId: string) => void;
   saveProjectSb3: () => Promise<Blob>;
   saveProjectSb3DontZip: () => Record<string, Uint8Array>;
+  xmlAdapter: (xml: Element) => Array<Scratch.BlockState> | null;
+  shareFrameToTarget: (
+    frame: Scratch.FrameState & { blockElements: Array<Scratch.BlockState> },
+    targetId: string,
+    optFromTargetId?: string,
+  ) => Promise<void>;
+  shareBlocksToTarget: (
+    blocks: Array<Scratch.BlockState>,
+    targetId: string,
+    optFromTargetId?: string,
+  ) => Promise<Record<string, string>>;
 }
