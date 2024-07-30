@@ -25,8 +25,6 @@ async function connectToRoom(token: string, callback: (status: boolean, room?: L
   let globalReason = 0;
 
   room.on(LiveKit.RoomEvent.Disconnected, (reason) => {
-    console.log("disconnected from room");
-
     if (reason === LiveKit.DisconnectReason.PARTICIPANT_REMOVED) {
       room.disconnect(true);
       globalReason = reason;

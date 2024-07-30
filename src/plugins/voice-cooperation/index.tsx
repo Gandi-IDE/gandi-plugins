@@ -11,19 +11,11 @@ import classNames from "classnames";
 import VoiceFloating from "./components/VoiceFloating/VoiceFloating";
 import LeaveCallIcon from "assets/icon--voice--off-white.svg";
 import { IntlShape } from "react-intl";
-import { AxiosResponse } from "axios";
 
 interface ITokenRequest {
   clientId: string;
   creationId: string;
   authority: string;
-}
-
-interface IResponse<T> {
-  body: T;
-  code: string;
-  msg: string | null;
-  status: number;
 }
 
 interface IToken {
@@ -56,7 +48,6 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       toast.error(msg("plugins.voiceCooperation.errorNotInCooperation"));
       return;
     }
-    console.log("connecting to server");
     if (room !== null) {
       room.disconnect();
       return;
@@ -164,7 +155,6 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   };
 
   const handleNewTrack = (track: LiveKit.RemoteAudioTrack) => {
-    console.log("new track", track);
     const element = track.attach();
     const parentElement = document.body;
     element.id = track.sid;
@@ -172,7 +162,6 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     parentElement.appendChild(element);
   };
   const handleTrackUnsubscribed = (track: LiveKit.RemoteAudioTrack) => {
-    console.log("track removed", track);
     const element = track.detach();
     element.forEach((e) => {
       document.getElementById(e.id).remove();
