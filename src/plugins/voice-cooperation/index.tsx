@@ -3,10 +3,9 @@ import * as LiveKit from "livekit-client";
 import styles from "./styles.less";
 import ReactDOM from "react-dom";
 import VoiceIcon from "assets/icon--voice.svg";
-import { Button, GandiProvider } from "@gandi-ide/gandi-ui";
+import { Button, GandiProvider, useMessage } from "@gandi-ide/gandi-ui";
 import { connectToRoom } from "./lib/livekit";
 import { Member } from "./components/MemberList/MemberListItem";
-import toast from "react-hot-toast";
 import classNames from "classnames";
 import VoiceFloating from "./components/VoiceFloating/VoiceFloating";
 import LeaveCallIcon from "assets/icon--voice--off-white.svg";
@@ -33,6 +32,7 @@ const LocalizationContext = React.createContext<IntlShape>(null);
 const RoomContext = React.createContext<LiveKit.Room>(null);
 const VoiceContext = React.createContext<PluginContext>(null);
 const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
+  const toast = useMessage({ followCursor: true });
   const { msg } = PluginContext;
   const [room, setRoom] = React.useState<LiveKit.Room>(null);
   const [voiceMemberList, setVoiceMemberList] = React.useState<Array<Member>>([]);
@@ -45,7 +45,10 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   const handleClick = async () => {
     setIsMuted(false);
     if (PluginContext.teamworkManager === null) {
-      toast.error(msg("plugins.voiceCooperation.errorNotInCooperation"));
+      toast(msg("plugins.voiceCooperation.errorNotInCooperation"), {
+        status: "error",
+        duration: 5000,
+      });
       return;
     }
     if (room !== null) {
@@ -102,14 +105,24 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       setVoiceMemberList([]);
       setRoom(null);
       if (error instanceof LiveKit.PublishDataError) {
-        toast.error(msg("plugins.voiceCooperation.errorMsgPermission"));
+        toast(msg("plugins.voiceCooperation.errorMsgPermission"), {
+          status: "error",
+          duration: 5000,
+        });
       }
-      toast.error(msg("plugins.voiceCooperation.error"));
+      toast(msg("plugins.voiceCooperation.error"), {
+        status: "error",
+        duration: 5000,
+      });
       console.error("Failed to obtain token", error);
     }
     return;
   };
-
+  const handleParticipantChanged = React.useCallback(() => {
+    if (room) {
+      fetchCurrentUserList(room);
+    }
+  }, [room]);
   const fetchCurrentUserList = (room: LiveKit.Room) => {
     if (!room) return;
     if (room.state !== LiveKit.ConnectionState.Connected) return;
@@ -144,7 +157,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
 
   const roomEventRegister = (room: LiveKit.Room) => {
     room
-      .on(LiveKit.RoomEvent.TrackSubscribed, handleNewTrack)
+      ?.on(LiveKit.RoomEvent.TrackSubscribed, handleNewTrack)
       .on(LiveKit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
       .on(LiveKit.RoomEvent.TrackSubscribed, handleNewTrack)
       .on(LiveKit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
@@ -186,13 +199,13 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     };
     room
       ?.on(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
-      .on(LiveKit.RoomEvent.ParticipantConnected, () => fetchCurrentUserList(room))
-      .on(LiveKit.RoomEvent.ParticipantDisconnected, () => fetchCurrentUserList(room));
+      .on(LiveKit.RoomEvent.ParticipantConnected, handleParticipantChanged)
+      .on(LiveKit.RoomEvent.ParticipantDisconnected, handleParticipantChanged);
     return () => {
       roomRef.current
         ?.off(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
-        .off(LiveKit.RoomEvent.ParticipantConnected, () => fetchCurrentUserList(room))
-        .off(LiveKit.RoomEvent.ParticipantDisconnected, () => fetchCurrentUserList(room));
+        .off(LiveKit.RoomEvent.ParticipantConnected, handleParticipantChanged)
+        .off(LiveKit.RoomEvent.ParticipantDisconnected, handleParticipantChanged);
     };
   }, [room, voiceMemberList]);
 
@@ -205,7 +218,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   React.useEffect(() => {
     return () => {
       const cleanup = async () => {
-        await roomRef.current.disconnect();
+        await roomRef.current?.disconnect();
       };
       cleanup();
       setRoom(null);
