@@ -118,7 +118,11 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     }
     return;
   };
-
+  const handlePariticipantChanged = React.useCallback(() => {
+    if (room) {
+      fetchCurrentUserList(room);
+    }
+  }, [room]);
   const fetchCurrentUserList = (room: LiveKit.Room) => {
     if (!room) return;
     if (room.state !== LiveKit.ConnectionState.Connected) return;
@@ -195,13 +199,13 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     };
     room
       ?.on(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
-      .on(LiveKit.RoomEvent.ParticipantConnected, () => fetchCurrentUserList(room))
-      .on(LiveKit.RoomEvent.ParticipantDisconnected, () => fetchCurrentUserList(room));
+      .on(LiveKit.RoomEvent.ParticipantConnected, handlePariticipantChanged)
+      .on(LiveKit.RoomEvent.ParticipantDisconnected, handlePariticipantChanged);
     return () => {
       roomRef.current
         ?.off(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
-        .off(LiveKit.RoomEvent.ParticipantConnected, () => fetchCurrentUserList(room))
-        .off(LiveKit.RoomEvent.ParticipantDisconnected, () => fetchCurrentUserList(room));
+        .off(LiveKit.RoomEvent.ParticipantConnected, handlePariticipantChanged)
+        .off(LiveKit.RoomEvent.ParticipantDisconnected, handlePariticipantChanged);
     };
   }, [room, voiceMemberList]);
 

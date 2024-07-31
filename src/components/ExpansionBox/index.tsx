@@ -260,15 +260,25 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
           <h3 className={styles.title}>{title}</h3>
         </div>
         {children}
-        <div className={classNames(styles.anchor, styles.top)} onMouseDown={(e) => handleMouseDown(e, "n")} />
-        <div className={classNames(styles.anchor, styles.right)} onMouseDown={(e) => handleMouseDown(e, "e")} />
-        <div className={classNames(styles.anchor, styles.bottom)} onMouseDown={(e) => handleMouseDown(e, "s")} />
-        <div className={classNames(styles.anchor, styles.left)} onMouseDown={(e) => handleMouseDown(e, "w")} />
-        <div className={classNames(styles.anchor, styles.topLeft)} onMouseDown={(e) => handleMouseDown(e, "nw")} />
-        <div className={classNames(styles.anchor, styles.topRight)} onMouseDown={(e) => handleMouseDown(e, "ne")} />
+        {canResize && (
+          <>
+            <div className={classNames(styles.anchor, styles.top)} onMouseDown={(e) => handleMouseDown(e, "n")} />
+            <div className={classNames(styles.anchor, styles.right)} onMouseDown={(e) => handleMouseDown(e, "e")} />
+            <div className={classNames(styles.anchor, styles.bottom)} onMouseDown={(e) => handleMouseDown(e, "s")} />
+            <div className={classNames(styles.anchor, styles.left)} onMouseDown={(e) => handleMouseDown(e, "w")} />
+            <div className={classNames(styles.anchor, styles.topLeft)} onMouseDown={(e) => handleMouseDown(e, "nw")} />
+            <div className={classNames(styles.anchor, styles.topRight)} onMouseDown={(e) => handleMouseDown(e, "ne")} />
 
-        <div className={classNames(styles.anchor, styles.bottomRight)} onMouseDown={(e) => handleMouseDown(e, "se")} />
-        <div className={classNames(styles.anchor, styles.bottomLeft)} onMouseDown={(e) => handleMouseDown(e, "sw")} />
+            <div
+              className={classNames(styles.anchor, styles.bottomRight)}
+              onMouseDown={(e) => handleMouseDown(e, "se")}
+            />
+            <div
+              className={classNames(styles.anchor, styles.bottomLeft)}
+              onMouseDown={(e) => handleMouseDown(e, "sw")}
+            />
+          </>
+        )}
       </div>
     </Draggable>
   );
