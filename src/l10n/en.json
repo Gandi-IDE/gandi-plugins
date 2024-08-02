@@ -224,6 +224,6 @@
   "plugins.voiceCooperation.expand": "Member list",
   "plugins.voiceCooperation.kick": "Kick out",
   "plugins.costumePiskel.title": "Piskel Costume Editor",
-  "plugins.costumePiskel.description": "Create pixel-style materials will become easier.",
+  "plugins.costumePiskel.description": "Create pixel-style sprites will become easier.",
   "plugins.costumePiskel.openCostume": "Open with Piskel"
 }

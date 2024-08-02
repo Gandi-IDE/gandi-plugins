@@ -224,6 +224,6 @@
   "plugins.voiceCooperation.expand": "Lista de miembros",
   "plugins.voiceCooperation.kick": "Expulsar",
   "plugins.costumePiskel.title": "Editor de Disfraces Piskel",
-  "plugins.costumePiskel.description": "Crear materiales de estilo pixel será más fácil.",
+  "plugins.costumePiskel.description": "Crear sprites de estilo píxel será más fácil.",
   "plugins.costumePiskel.openCostume": "Abrir con Piskel"
 }

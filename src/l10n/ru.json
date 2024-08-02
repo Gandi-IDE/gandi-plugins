@@ -224,6 +224,6 @@
   "plugins.voiceCooperation.expand": "Список участников",
   "plugins.voiceCooperation.kick": "Выгнать",
   "plugins.costumePiskel.title": "Редактор костюмов Piskel",
-  "plugins.costumePiskel.description": "Создание материалов в пиксельном стиле станет проще.",
+  "plugins.costumePiskel.description": "Создание пиксельных спрайтов станет проще.",
   "plugins.costumePiskel.openCostume": "Открыть в Piskel"
 }
