@@ -416,7 +416,7 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
             </Box>
             <div className={styles.divider}></div>
             <Button className={styles.leaveButton} variant="ghost" onClick={onLeave}>
-              退出语音协作
+              {voicePlugin.msg("plugins.voiceCooperation.leave")}
             </Button>
           </div>
         )}
