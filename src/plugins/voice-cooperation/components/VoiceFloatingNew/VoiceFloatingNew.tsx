@@ -5,13 +5,11 @@ import styles from "./VoiceFloatingNew.less";
 import { ExpansionRect } from "components/ExpansionBox";
 import MemberListItem, { Member } from "../MemberList/MemberListItem";
 import { IntlShape } from "react-intl";
-
-import MicrophoneIcon from "../../../../assets/icon--voice--microphone.svg";
-import MutedMicrophoneIcon from "../../../../assets/icon--voice--muted-microphone.svg";
 import UparrowIcon from "../../../../assets/icon--voice--uparrow.svg";
 import DownarrowIcon from "../../../../assets/icon--voice--downarrow.svg";
 import Draggable from "react-draggable";
 import { VoiceContext } from "plugins/voice-cooperation";
+import { MicrophoneSlashIcon, MicrophoneIcon } from "@gandi-ide/gandi-ui/dist/Icon";
 
 interface VoiceFloatingProps {
   intl: IntlShape;
@@ -367,7 +365,7 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
                   height: 24,
                 }}
               >
-                {isMicrophoneMuted ? <MutedMicrophoneIcon /> : <MicrophoneIcon />}
+                {isMicrophoneMuted ? <MicrophoneSlashIcon color="red" /> : <MicrophoneIcon />}
               </span>
             </Button>
             <Button

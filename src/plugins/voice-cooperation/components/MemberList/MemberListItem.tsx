@@ -3,10 +3,10 @@ import * as React from "react";
 
 import styles from "./MemberListItem.less";
 import { LocalizationContext, RoomContext, VoiceContext } from "../../index";
-import MicrophoneIcon from "../../../../assets/icon--voice--microphone.svg";
 import MutedMicrophoneIcon from "../../../../assets/icon--voice--muted-microphone.svg";
 import VoiceSettingIcon from "../../../../assets/icon--voice--setting.svg";
 import IF from "components/IF";
+import { MicrophoneSlashIcon, MicrophoneIcon } from "@gandi-ide/gandi-ui/dist/Icon";
 interface Member extends OnlineUsers {
   isMuted: boolean;
   isSpeaking: boolean;
@@ -72,9 +72,30 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
               }}
               name={member.userInfo.name}
               src={getFormattedAvatarUrl(member.userInfo.avatar)}
-              showBorder={member.isSpeaking}
-              borderColor="#39c66c"
               style={{ borderStyle: "solid" }}
+              badgeIcon={
+                member.isSpeaking ? (
+                  <MicrophoneIcon
+                    viewBox="0 0 24 24"
+                    color="green"
+                    style={{
+                      width: 12,
+                      height: 12,
+                    }}
+                  />
+                ) : (
+                  member.isMuted && (
+                    <MicrophoneSlashIcon
+                      viewBox="0 0 24 24"
+                      color="red"
+                      style={{
+                        width: 12,
+                        height: 12,
+                      }}
+                    />
+                  )
+                )
+              }
             />
           </Box>
 
@@ -87,7 +108,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
 
           <IF condition={member.isLocal}>
             <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
-              {!member.isMuted ? <MicrophoneIcon /> : <MutedMicrophoneIcon />}
+              {!member.isMuted ? <MicrophoneIcon /> : <MicrophoneSlashIcon color="red" />}
             </Box>
           </IF>
           <IF condition={!member.isLocal && voicePlugin.teamworkManager.userInfo.authority === "ADMIN"}>
