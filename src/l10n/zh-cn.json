@@ -184,11 +184,11 @@
   "plugins.inspiro.image.desc": "在👇描述您的想法,我会将该想法绘成精美的画🎨",
   "plugins.inspiro.title": "AI 助手",
   "plugins.inspiro.intro": "您在 Gandi IDE 中的全能 AI 助手！无论您是想生成令人惊叹的图片、创作动听的音乐，还是需要灵感来实现您的创意梦想，创灵助手都能为您提供无尽的可能性。",
-  "plugins.customCss.name":"自定义CSS",
-  "plugins.customCss.title":"自定义CSS",
-  "plugins.customCss.description":"加载自己的CSS文件！自定义你的Gandi样式！",
-  "plugins.customCss.load":"从URL加载",
-  "plugins.customCss.load.description":"为了防止堆积，仅支持加载一个文件，如需加载多个，请合并",
+  "plugins.customCss.name": "自定义CSS",
+  "plugins.customCss.title": "自定义CSS",
+  "plugins.customCss.description": "加载自己的CSS文件！自定义你的Gandi样式！",
+  "plugins.customCss.load": "从URL加载",
+  "plugins.customCss.load.description": "为了防止堆积，仅支持加载一个文件，如需加载多个，请合并",
   "plugins.extensionManager.title": "拓展管理",
   "plugins.extensionManager.intro": "管理你所有已安装的拓展。",
   "plugins.voiceCooperation.title": "语音协作",
@@ -222,5 +222,8 @@
   "plugins.voiceCooperation.mic.on": "开启麦克风",
   "plugins.voiceCooperation.mic.off": "关闭麦克风",
   "plugins.voiceCooperation.expand": "成员列表",
-  "plugins.voiceCooperation.kick": "踢出"
+  "plugins.voiceCooperation.kick": "踢出",
+  "plugins.costumePiskel.title": "Piskel 造型编辑器",
+  "plugins.costumePiskel.description": "制作像素风格的素材将变得更加简单。",
+  "plugins.costumePiskel.openCostume": "使用 Piskel 打开"
 }

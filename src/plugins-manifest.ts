@@ -17,6 +17,7 @@ import inspiro from "plugins/inspiro/manifest";
 import customCss from "src/plugins/custom-css/manifest";
 import extensionManager from "src/plugins/extension-manager/manifest";
 import voiceCooperation from "src/plugins/voice-cooperation/manifest";
+import costumePiskel from "src/plugins/costume-piskel/manifest";
 
 export default {
   folder,
@@ -38,4 +39,5 @@ export default {
   "custom-css": customCss,
   "extension-manager": extensionManager,
   "voice-cooperation": voiceCooperation,
+  "costume-piskel": costumePiskel,
 };

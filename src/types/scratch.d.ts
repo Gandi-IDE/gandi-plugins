@@ -83,6 +83,7 @@ declare namespace Scratch {
     deleteVariable(id: string, isRemoteOperation?: boolean): void;
     getCostumes(): Array<Costume>;
     getCostumeById(id: string): Scratch.Costume;
+    getName(): string;
   };
 
   export type BlockState = {
