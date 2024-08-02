@@ -4,11 +4,11 @@
     height: 48px;
     cursor: pointer;
     transition: background-color 0.3s;
-    width: 100%;
+    width: 280px;
 }
 
 .member-list-item:hover {
-    background-color: rgba(45, 140, 255, .3);
+    background-color: rgba(45, 140, 255, 1);
 }
 
 .member-list-item-info {
@@ -16,13 +16,34 @@
     display: flex;
     align-items: center;
     padding-left: 16px;
+    padding-right: 16px;
+    gap: 13px;
 }
 
 .member-list-item-name {
     font-size: 12px;
-    margin-left: 10px;
     color: var(--theme-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 18px; /* 150% */
+    font-weight: 400;
+    width: 170px;
+}
+
+.member-list-item-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.local {
+    color: var(---text-gray-500, #6B7280);
+    font-feature-settings: 'rclt' off;
+    font-family: "PingFang SC";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
 }

@@ -1,14 +1,18 @@
-import { Avatar, Box, Menu } from "@gandi-ide/gandi-ui";
+import { Avatar, Box, Menu, MenuButton } from "@gandi-ide/gandi-ui";
 import * as React from "react";
 
 import styles from "./MemberListItem.less";
 import { LocalizationContext, RoomContext, VoiceContext } from "../../index";
-
+import MicrophoneIcon from "../../../../assets/icon--voice--microphone.svg";
+import MutedMicrophoneIcon from "../../../../assets/icon--voice--muted-microphone.svg";
+import VoiceSettingIcon from "../../../../assets/icon--voice--setting.svg";
+import IF from "components/IF";
 interface Member extends OnlineUsers {
   isMuted: boolean;
   isSpeaking: boolean;
   isLocal: boolean;
   isMutedByAdmin: boolean;
+  onToggleMicrophone?: () => void;
 }
 
 const MemberListItem: React.FC<Member> = (member: Member) => {
@@ -46,28 +50,26 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
     }
   };
 
+  const handleActionButtonClick = React.useCallback(() => {
+    if (member.clientId === voicePlugin.teamworkManager.userInfo.clientId) {
+      if (member.onToggleMicrophone) {
+        member.onToggleMicrophone();
+      }
+    } else if (voicePlugin.teamworkManager.userInfo.authority === "ADMIN") {
+      // TODO: 打开menu
+    }
+  }, [member.onToggleMicrophone]);
+
   return (
-    <Menu
-      items={items}
-      key={member.userInfo.id}
-      sx={{
-        "--menu-color-bg": "var(--theme-color-300)",
-        "--menu-color-disabled-bg": "var(--theme-color-300)",
-        "--menu-color-text": "var(--theme-text-primary)",
-        "--menu-color-disabled-text": "var(--theme-color-g400)",
-        button: {
-          _hover: {
-            background: "var(--theme-brand-color)",
-          },
-        },
-      }}
-      contextMenu
-    >
+    <>
       <Box as="li" className={styles.memberListItem}>
         <Box as="div" className={styles.memberListItemInfo}>
           <Box as="div">
             <Avatar
-              size="sm"
+              sx={{
+                width: "28px",
+                height: "28px",
+              }}
               name={member.userInfo.name}
               src={getFormattedAvatarUrl(member.userInfo.avatar)}
               showBorder={member.isSpeaking}
@@ -78,10 +80,52 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
 
           <Box as="div" className={styles.memberListItemName}>
             {member.userInfo.name}
+            {member.clientId === voicePlugin.teamworkManager.userInfo.clientId && (
+              <span className={styles.local}>&nbsp;(You)</span>
+            )}
+          </Box>
+
+          <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
+            <IF condition={member.clientId === voicePlugin.teamworkManager.userInfo.clientId}>
+              {!member.isMuted ? <MicrophoneIcon /> : <MutedMicrophoneIcon />}
+            </IF>
+            <IF
+              condition={
+                member.clientId !== voicePlugin.teamworkManager.userInfo.clientId &&
+                voicePlugin.teamworkManager.userInfo.authority === "ADMIN"
+              }
+            >
+              <Menu
+                items={items}
+                key={member.userInfo.id}
+                sx={{
+                  "--menu-color-bg": "var(--theme-color-300)",
+                  "--menu-color-disabled-bg": "var(--theme-color-300)",
+                  "--menu-color-text": "var(--theme-text-primary)",
+                  "--menu-color-disabled-text": "var(--theme-color-g400)",
+                  width: "104px",
+                  button: {
+                    _hover: {
+                      background: "var(--theme-brand-color)",
+                    },
+                  },
+                }}
+              >
+                <MenuButton
+                  as="div"
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                  }}
+                >
+                  <VoiceSettingIcon />
+                </MenuButton>
+              </Menu>
+            </IF>
           </Box>
         </Box>
       </Box>
-    </Menu>
+    </>
   );
 };
 

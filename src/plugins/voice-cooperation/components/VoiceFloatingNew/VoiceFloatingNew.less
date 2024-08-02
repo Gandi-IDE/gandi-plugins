@@ -1,0 +1,126 @@
+.title {
+  color: var(--Text-Text500, #FFF);
+  font-family: "PingFang SC";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+  /* 157.143% */
+}
+
+.control-button {
+  display: flex;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  padding: 7px !important;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0) !important;
+  background-color: rgba(0, 0, 0, 0) !important;
+  border: none !important;
+}
+
+.control-button:hover {
+  border-radius: 4px !important;
+  background: var(---Dark-50, rgba(156, 163, 175, 0.15)) !important;
+}
+
+.titleBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #3E495B;
+}
+
+.leave-button {
+  color: var(---text-gray-400, #9CA3AF) !important;
+  font-family: "PingFang SC";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  border: none !important;
+  // 居右
+  float: right;
+}
+
+.leave-button:hover {
+  color: var(--red--, #FA594C) !important;
+  background-color: transparent !important;
+  transition: all 0.2s !important;
+}
+
+.container {
+  position: fixed;
+  top: 0;
+  font-size: 12px;
+  background: var(--theme-color-300);
+  border: 1px solid var(--theme-color-200);
+  border-radius: 8px;
+  color: var(--theme-text-primary);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 26px 52px 0px rgba(0, 0, 0, 0.15), 0px 6px 30px 0px rgba(0, 0, 0, 0.50);
+  z-index: 101;
+  width: 279px;
+}
+
+.member-container {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.minimal-container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-group {
+  height: 24px !important;
+}
+
+.username {
+  color: var(--theme-text-primary, #FFF);
+  font-feature-settings: 'rclt' off;
+  font-family: "PingFang SC";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px; /* 150% */
+  max-width: 89px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tip {
+  color: var(---text-gray-400, #9CA3AF);
+  font-feature-settings: 'rclt' off;
+  font-family: "PingFang SC";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px; /* 150% */
+}
+
+.speaking-tips-container {
+  display: flex;
+  align-items: center;
+  gap: var(--Base-4, 4px);
+}
+
+.button-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
