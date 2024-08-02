@@ -312,7 +312,7 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
     >
       <div className={styles.container} ref={container}>
         <Box className={styles.titleBox}>
-          {isExpanded && <span className={styles.title}>语音协作</span>}
+          {isExpanded && <span className={styles.title}>{voicePlugin.msg("plugins.voiceCooperation.title")}</span>}
           {!isExpanded && (
             <div className={styles.minimalContainer}>
               <AvatarGroup className={styles.avatarGroup} max={5} size="xs">
@@ -340,12 +340,12 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
                       {members.filter((member) => member.isSpeaking)[0].clientId ===
                         voicePlugin.teamworkManager.userInfo.clientId && <span>&nbsp;(You)</span>}
                     </span>
-                    <span className={styles.tip}>正在说话....</span>
+                    <span className={styles.tip}>{voicePlugin.msg("plugins.voiceCooperation.speakingOnly")}</span>
                   </div>
                 )}
                 {members.filter((member) => member.isSpeaking).length > 1 && (
                   <div className={styles.speakingTipsContainer}>
-                    <span className={styles.tip}>正在说话...</span>
+                    <span className={styles.tip}>{voicePlugin.msg("plugins.voiceCooperation.speakingOnly")}</span>
                   </div>
                 )}
               </div>

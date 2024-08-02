@@ -81,7 +81,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
           <Box as="div" className={styles.memberListItemName}>
             {member.userInfo.name}
             {member.clientId === voicePlugin.teamworkManager.userInfo.clientId && (
-              <span className={styles.local}>&nbsp;(You)</span>
+              <span className={styles.local}>&nbsp;({voicePlugin.msg("plugins.voiceCooperation.you")})</span>
             )}
           </Box>
 
