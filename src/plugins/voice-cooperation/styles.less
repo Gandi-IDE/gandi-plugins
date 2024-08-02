@@ -14,16 +14,17 @@
     align-items: center;
     gap: 4px;
     border-radius: 6px;
-    background: var(--dark-200, #3E495B) !important;
+    background: var(--theme-color-200) !important;
     margin-left: 12px;
-    //border: 1px solid rgba(0, 0, 0, 0) !important;
+    border: 1px solid rgba(0, 0, 0, 0) !important;
+    box-sizing: border-box !important;
     transition: all 0.2s !important;
 }
 
 .voice-button:hover {
     transition: all 0.2s !important;
-    border: 1px solid var(---Dark-100, #566276) !important;
-    background: var(--dark-200, #3E495B) !important;
+    border: 1px solid var(--theme-color-100, #566276) !important;
+    background: var(--theme-color-200) !important;
 }
 
 .overlay {
@@ -49,7 +50,7 @@
 }
 
 .voice-button-loading {
-    background: var(--dark-200, #3E495B) !important;
+    background: var(--theme-color-200) !important;
     width: 42px !important;
 }
 
@@ -72,7 +73,7 @@
 }
 
 .join {
-    color: var(--Text-Text500, #FFF);
+    color: var(--theme-text-primary);
     text-align: center;
     font-family: "PingFang SC";
     font-size: 14px;

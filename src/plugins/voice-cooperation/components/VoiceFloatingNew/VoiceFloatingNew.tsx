@@ -61,7 +61,7 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
   {
@@ -82,7 +82,7 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
   {
@@ -103,7 +103,7 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
   {
@@ -124,7 +124,7 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
   {
@@ -145,7 +145,7 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
   {
@@ -166,19 +166,19 @@ const mockMembers: Array<Member> = [
     editingTargetId: "gP4@WLB8/..sng-]CKcb",
     isMuted: false,
     isSpeaking: true,
-    isLocal: true,
+    isLocal: false,
     isMutedByAdmin: false,
   },
 ];
 
 const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
   intl,
-  members,
+  // members,
   onToggleMicrophone,
   isMicrophoneMuted,
   onLeave,
 }) => {
-  // const members = mockMembers;
+  const members = mockMembers;
   const [displayText, setDisplayText] = React.useState("");
   const [isExpanded, setExpanded] = React.useState(false);
   const voicePlugin = React.useContext(VoiceContext);

@@ -254,6 +254,9 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   }, []);
 
   const [isMuted, setIsMuted] = React.useState(false);
+  if (!PluginContext.teamworkManager) {
+    return null;
+  }
   return ReactDOM.createPortal(
     <VoiceContext.Provider value={PluginContext}>
       <RoomContext.Provider value={room}>

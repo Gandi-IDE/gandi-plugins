@@ -85,16 +85,13 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
             )}
           </Box>
 
-          <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
-            <IF condition={member.clientId === voicePlugin.teamworkManager.userInfo.clientId}>
+          <IF condition={member.isLocal}>
+            <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
               {!member.isMuted ? <MicrophoneIcon /> : <MutedMicrophoneIcon />}
-            </IF>
-            <IF
-              condition={
-                member.clientId !== voicePlugin.teamworkManager.userInfo.clientId &&
-                voicePlugin.teamworkManager.userInfo.authority === "ADMIN"
-              }
-            >
+            </Box>
+          </IF>
+          <IF condition={!member.isLocal && voicePlugin.teamworkManager.userInfo.authority === "ADMIN"}>
+            <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
               <Menu
                 items={items}
                 key={member.userInfo.id}
@@ -121,8 +118,8 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
                   <VoiceSettingIcon />
                 </MenuButton>
               </Menu>
-            </IF>
-          </Box>
+            </Box>
+          </IF>
         </Box>
       </Box>
     </>
