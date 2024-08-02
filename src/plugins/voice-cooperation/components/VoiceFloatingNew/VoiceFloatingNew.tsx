@@ -173,12 +173,12 @@ const mockMembers: Array<Member> = [
 
 const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
   intl,
-  // members,
+  members,
   onToggleMicrophone,
   isMicrophoneMuted,
   onLeave,
 }) => {
-  const members = mockMembers;
+  // const members = mockMembers;
   const [displayText, setDisplayText] = React.useState("");
   const [isExpanded, setExpanded] = React.useState(false);
   const voicePlugin = React.useContext(VoiceContext);
