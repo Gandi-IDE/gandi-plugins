@@ -365,7 +365,15 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
                   height: 24,
                 }}
               >
-                {isMicrophoneMuted ? <MicrophoneSlashIcon color="red" /> : <MicrophoneIcon />}
+                {isMicrophoneMuted ? (
+                  <MicrophoneSlashIcon color="red" />
+                ) : (
+                  <MicrophoneIcon
+                    sx={{
+                      color: "var(--theme-color-g300)",
+                    }}
+                  />
+                )}
               </span>
             </Button>
             <Button

@@ -69,10 +69,15 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
               sx={{
                 width: "28px",
                 height: "28px",
+                "--gandi-colors-bg-module": "var(--theme-color-300)",
               }}
               name={member.userInfo.name}
               src={getFormattedAvatarUrl(member.userInfo.avatar)}
               style={{ borderStyle: "solid" }}
+              badgeSx={{
+                width: "12px",
+                height: "12px",
+              }}
               badgeIcon={
                 member.isSpeaking ? (
                   <MicrophoneIcon
@@ -108,7 +113,15 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
 
           <IF condition={member.isLocal}>
             <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
-              {!member.isMuted ? <MicrophoneIcon /> : <MicrophoneSlashIcon color="red" />}
+              {!member.isMuted ? (
+                <MicrophoneIcon
+                  sx={{
+                    color: "var(--theme-color-g300)",
+                  }}
+                />
+              ) : (
+                <MicrophoneSlashIcon color="red" />
+              )}
             </Box>
           </IF>
           <IF condition={!member.isLocal && voicePlugin.teamworkManager.userInfo.authority === "ADMIN"}>
