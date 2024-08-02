@@ -1,12 +1,30 @@
+// .dot(18px, 18px, 9px, var(--Text-Text500, #FFF), var(--Text-Text500, #FFF));
+
 .voice-button {
-    max-width: 130px !important;
+    // max-width: 130px !important;
+    // transition: all 0.2s !important;
+    // height: 36px !important;
+    // flex-shrink: 0;
+    // border-radius: 56px !important;
+    // background: var(--green--, #39C66C) !important;
+    // padding: 8px 6px;
+    // margin-left: 8px;
+    display: flex;
+    padding: 8px 12px !important;
+    align-items: center;
+    gap: 4px;
+    border-radius: 6px;
+    background: var(--theme-color-200) !important;
+    margin-left: 12px;
+    border: 1px solid rgba(0, 0, 0, 0) !important;
+    box-sizing: border-box !important;
     transition: all 0.2s !important;
-    height: 36px !important;
-    flex-shrink: 0;
-    border-radius: 56px !important;
-    background: var(--green--, #39C66C) !important;
-    padding: 8px 6px;
-    margin-left: 8px;
+}
+
+.voice-button:hover {
+    transition: all 0.2s !important;
+    border: 1px solid var(--theme-color-100, #566276) !important;
+    background: var(--theme-color-200) !important;
 }
 
 .overlay {
@@ -24,37 +42,44 @@
     z-index: 1000;
 }
 
-.voice-button-connected {
-    background: var(--green--, #39C66C) !important;
-    transition: all 0.2s !important;
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 56px;
-    padding: 6px;
-    margin-left: 8px;
+.button-icon {
+    display: flex;
+    align-items: center;
+    width: 18px;
+    height: 18px;
 }
 
-.voice-icon {
-    display: flex;
-    width: 32px;
-    height: 32px;
-    padding: 6px;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
+.voice-button-loading {
+    background: var(--theme-color-200) !important;
+    width: 42px !important;
 }
+
+.voice-button-connected {
+    border-radius: 6px;
+    background: var(--red--, #FA594C) !important;
+    transition: all 0.2s !important;
+    display: flex;
+    padding: 9px 12px !important;
+    align-items: center;
+    gap: 4px;
+}
+
+.voice-button-connected:hover {
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.20)0%, rgba(0, 0, 0, 0.20)100%), #FA594C !important;
+}
+
 .voice-root {
     position: relative;
 }
 
 .join {
-    color: var(--Text-Text500, #FFF);
+    color: var(--theme-text-primary);
     text-align: center;
     font-family: "PingFang SC";
     font-size: 14px;
     font-style: normal;
+    font-weight: 500;
     line-height: normal;
-    padding-right: 6px;
 }
 
 .voice-popover {

@@ -3,13 +3,14 @@ import * as LiveKit from "livekit-client";
 import styles from "./styles.less";
 import ReactDOM from "react-dom";
 import VoiceIcon from "assets/icon--voice.svg";
-import { Button, GandiProvider, useMessage } from "@gandi-ide/gandi-ui";
+import { Button, GandiProvider, Tooltip, useMessage } from "@gandi-ide/gandi-ui";
 import { connectToRoom } from "./lib/livekit";
 import { Member } from "./components/MemberList/MemberListItem";
 import classNames from "classnames";
-import VoiceFloating from "./components/VoiceFloating/VoiceFloating";
 import LeaveCallIcon from "assets/icon--voice--off-white.svg";
 import { IntlShape } from "react-intl";
+import VoiceFloatingNew from "./components/VoiceFloatingNew/VoiceFloatingNew";
+import dots from "./dots.less";
 
 interface ITokenRequest {
   clientId: string;
@@ -253,6 +254,9 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   }, []);
 
   const [isMuted, setIsMuted] = React.useState(false);
+  if (!PluginContext.teamworkManager) {
+    return null;
+  }
   return ReactDOM.createPortal(
     <VoiceContext.Provider value={PluginContext}>
       <RoomContext.Provider value={room}>
@@ -270,24 +274,50 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
             }}
           >
             <section className={styles.voiceRoot} ref={containerRef}>
-              <Button
-                className={classNames({
-                  [styles.voiceButton]: true,
-                  [styles.voiceButtonConnected]: isConnected || isLoading,
-                })}
-                colorScheme="green"
-                border={"none"}
-                size={"lg"}
-                onClick={isConnected ? onLeave : handleClick}
-                isLoading={isLoading}
-              >
-                <span className={styles.voiceIcon}>{isConnected ? <LeaveCallIcon /> : <VoiceIcon />}</span>
-                {!isConnected && <div className={styles.join}>{msg("plugins.voiceCooperation.join")}</div>}
-              </Button>
-
+              <Tooltip label={isConnected && "Leave"}>
+                <Button
+                  className={classNames({
+                    [styles.voiceButton]: true,
+                    [styles.voiceButtonConnected]: isConnected,
+                    [styles.voiceButtonLoading]: isLoading,
+                  })}
+                  colorScheme="green"
+                  border={"none"}
+                  size={"lg"}
+                  onClick={isConnected ? onLeave : handleClick}
+                  disabled={isLoading}
+                  sx={{
+                    height: "36px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <span className={styles.buttonIcon}>
+                    {isConnected && <LeaveCallIcon />}
+                    {!isConnected && !isLoading && <VoiceIcon />}
+                    {isLoading && (
+                      <div
+                        className={dots.loadingDots}
+                        style={{
+                          width: "18px !important",
+                          height: "18px !important",
+                          // display: "flex",
+                          // alignItems: "center",
+                        }}
+                      >
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                    )}
+                  </span>
+                  {!isConnected && !isLoading && (
+                    <div className={styles.join}>{msg("plugins.voiceCooperation.join")}</div>
+                  )}
+                </Button>
+              </Tooltip>
               {isConnected &&
                 ReactDOM.createPortal(
-                  <VoiceFloating
+                  <VoiceFloatingNew
                     intl={PluginContext.intl}
                     members={voiceMemberList}
                     isMicrophoneMuted={isMuted}
