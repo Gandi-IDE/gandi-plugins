@@ -7,6 +7,7 @@ import MutedMicrophoneIcon from "../../../../assets/icon--voice--muted-microphon
 import VoiceSettingIcon from "../../../../assets/icon--voice--setting.svg";
 import IF from "components/IF";
 import { MicrophoneSlashIcon, MicrophoneIcon } from "@gandi-ide/gandi-ui/dist/Icon";
+import classNames from "classnames";
 interface Member extends OnlineUsers {
   isMuted: boolean;
   isSpeaking: boolean;
@@ -125,21 +126,17 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
             </Box>
           </IF>
           <IF condition={!member.isLocal && voicePlugin.teamworkManager.userInfo.authority === "ADMIN"}>
-            <Box as="div" className={styles.memberListItemAction} onClick={handleActionButtonClick}>
+            <Box
+              as="div"
+              className={classNames(styles.memberListItemAction, styles.overrideMenu)}
+              onClick={handleActionButtonClick}
+            >
               <Menu
                 items={items}
                 key={member.userInfo.id}
                 sx={{
-                  background: "var(--voice-plugin-bg)",
-                  "--menu-color-disabled-bg": "var(--theme-color-300)",
-                  "--menu-color-text": "var(--theme-text-primary)",
-                  "--menu-color-disabled-text": "var(--theme-color-g400)",
-                  width: "104px",
-                  button: {
-                    _hover: {
-                      background: "var(--theme-brand-color)",
-                    },
-                  },
+                  "--menu-color-hover-bg": "var(--theme-brand-color)",
+                  "--menu-color-hover-command": "#fff",
                 }}
               >
                 <MenuButton

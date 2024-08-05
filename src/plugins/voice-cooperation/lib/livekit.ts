@@ -73,5 +73,4 @@ class CustomReconnectPolicy implements ReconnectPolicy {
   }
 }
 
-
 export { connectToRoom };

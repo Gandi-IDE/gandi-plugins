@@ -25,9 +25,28 @@ const globalCss = `
     --voice-plugin-divider: #3E495B;
     --voice-plugin-button: #D1D5DB;
     --voice-plugin-border: #3E495B;
-    --voice-plugin-bg: #F7F7F7;
+    --voice-plugin-bg: #2E3644;
     --voice-plugin-hover: rgba(156, 163, 175, 0.15);
-}`;
+}
+
+.chakra-menu__menu-list {
+    button {
+        div {
+          span {
+              color: var(--theme-text-primary) !important;
+          }
+        }
+    }
+    button:hover {
+        background: var(--theme-brand-color) !important;
+        div {  
+            span {
+                color: #fff !important;
+            }
+        }
+    }
+}
+`;
 
 interface ITokenRequest {
   clientId: string;
@@ -325,14 +344,16 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
                 },
                 Menu: {
                   baseStyle: {
-                    background: "var(--voice-plugin-bg)",
-                    "--menu-color-disabled-bg": "var(--theme-color-300)",
-                    "--menu-color-text": "var(--theme-text-primary)",
-                    "--menu-color-disabled-text": "var(--theme-color-g400)",
-                    width: "104px",
-                    button: {
+                    list: {
+                      "--menu-color-hover-bg": "var(--theme-brand-color)",
+                      bg: "var(--voice-plugin-bg)",
+                      width: "104px",
+                    },
+                    item: {
+                      bg: "var(--voice-plugin-bg)",
+                      color: "var(--theme-text-primary)",
                       _hover: {
-                        background: "var(--theme-brand-color)",
+                        bg: "var(--theme-brand-color) !important",
                       },
                     },
                   },
@@ -341,12 +362,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
             }}
           >
             <section className={styles.voiceRoot} ref={containerRef}>
-              <Tooltip
-                label={isConnected && msg("plugins.voiceCooperation.leave")}
-                // sx={{
-                //   "--tooltip-bg": "var(--theme-color-600)",
-                // }}
-              >
+              <Tooltip label={isConnected && msg("plugins.voiceCooperation.leave")}>
                 <Button
                   className={classNames({
                     [styles.voiceButton]: true,
