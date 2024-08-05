@@ -313,13 +313,13 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
           {isExpanded && <span className={styles.title}>{voicePlugin.msg("plugins.voiceCooperation.title")}</span>}
           {!isExpanded && (
             <div className={styles.minimalContainer}>
-              <AvatarGroup className={styles.avatarGroup} max={5} size="xs">
+              <AvatarGroup className={styles.avatarGroup} max={5} size="xs" spacing={-2}>
                 {members
                   .filter((member) => member.isSpeaking)
                   .map((member) => {
                     return (
                       <Avatar
-                        key={member.userInfo.id}
+                        key={member.clientId}
                         name={member.userInfo.name}
                         src={member.userInfo.avatar}
                         sx={{
