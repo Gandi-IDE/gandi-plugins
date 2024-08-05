@@ -92,7 +92,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
                   member.isMuted && (
                     <MicrophoneSlashIcon
                       viewBox="0 0 24 24"
-                      color="red"
+                      color="#fa594c"
                       style={{
                         width: 12,
                         height: 12,
@@ -120,7 +120,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
                   }}
                 />
               ) : (
-                <MicrophoneSlashIcon color="red" />
+                <MicrophoneSlashIcon color="#fa594c" />
               )}
             </Box>
           </IF>
