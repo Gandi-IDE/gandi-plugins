@@ -375,7 +375,7 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
                   ) : (
                     <MicrophoneIcon
                       sx={{
-                        color: "var(--theme-color-g300)",
+                        color: "var(--voice-plugin-button)",
                       }}
                     />
                   )}

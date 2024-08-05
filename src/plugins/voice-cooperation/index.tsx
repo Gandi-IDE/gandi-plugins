@@ -12,6 +12,23 @@ import { IntlShape } from "react-intl";
 import VoiceFloatingNew from "./components/VoiceFloatingNew/VoiceFloatingNew";
 import dots from "./dots.less";
 
+const globalCss = `
+:root[theme=light] {
+    --voice-plugin-divider: #DCE0E5;
+    --voice-plugin-button: #6B7280;
+    --voice-plugin-border: #DCE0E5;
+    --voice-plugin-bg: #F7F7F7;
+    --voice-plugin-hover: rgba(156, 163, 175, 0.16);
+}
+
+:root[theme=dark] {
+    --voice-plugin-divider: #3E495B;
+    --voice-plugin-button: #D1D5DB;
+    --voice-plugin-border: #3E495B;
+    --voice-plugin-bg: #F7F7F7;
+    --voice-plugin-hover: rgba(156, 163, 175, 0.15);
+}`;
+
 interface ITokenRequest {
   clientId: string;
   creationId: string;
@@ -42,7 +59,15 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [isConnected, setIsConnected] = React.useState(false);
-
+  React.useEffect(() => {
+    // 注入css
+    const style = document.createElement("style");
+    style.innerHTML = globalCss;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const handleClick = async () => {
     setIsMuted(false);
     if (PluginContext.teamworkManager === null) {
@@ -169,7 +194,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   };
 
   const handleNewTrack = (track: LiveKit.RemoteAudioTrack) => {
-    fetchCurrentUserList(roomRef.current)
+    fetchCurrentUserList(roomRef.current);
     const element = track.attach();
     const parentElement = document.body;
     element.id = track.sid;
@@ -296,6 +321,20 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
                     display: "flex",
                     "align-items": "center",
                     "justify-content": "space-between",
+                  },
+                },
+                Menu: {
+                  baseStyle: {
+                    background: "var(--voice-plugin-bg)",
+                    "--menu-color-disabled-bg": "var(--theme-color-300)",
+                    "--menu-color-text": "var(--theme-text-primary)",
+                    "--menu-color-disabled-text": "var(--theme-color-g400)",
+                    width: "104px",
+                    button: {
+                      _hover: {
+                        background: "var(--theme-brand-color)",
+                      },
+                    },
                   },
                 },
               },
