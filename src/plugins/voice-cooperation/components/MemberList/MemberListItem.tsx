@@ -82,7 +82,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
                 member.isSpeaking ? (
                   <MicrophoneIcon
                     viewBox="0 0 24 24"
-                    color="green"
+                    color="#39c66c"
                     style={{
                       width: 12,
                       height: 12,
@@ -116,7 +116,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
               {!member.isMuted ? (
                 <MicrophoneIcon
                   sx={{
-                    color: "var(--theme-color-g300)",
+                    color: "var(--voice-plugin-button)",
                   }}
                 />
               ) : (
@@ -130,7 +130,7 @@ const MemberListItem: React.FC<Member> = (member: Member) => {
                 items={items}
                 key={member.userInfo.id}
                 sx={{
-                  "--menu-color-bg": "var(--theme-color-300)",
+                  background: "var(--voice-plugin-bg)",
                   "--menu-color-disabled-bg": "var(--theme-color-300)",
                   "--menu-color-text": "var(--theme-text-primary)",
                   "--menu-color-disabled-text": "var(--theme-color-g400)",
