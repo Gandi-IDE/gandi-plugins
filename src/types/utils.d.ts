@@ -110,7 +110,7 @@ declare interface PluginsUtils {
    * @param targetId - ID of the target sprite (optional).
    * @returns void
    */
-  getCostumeFromTarget: (costumeIndex: number, targetId?: string) => void;
+  getCostumeFromTarget: (costumeIndex: number, targetId?: string) => string | null;
 
   /**
    * Updates the costume of the specified target.

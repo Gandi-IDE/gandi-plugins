@@ -184,9 +184,9 @@
   "plugins.inspiro.image.desc": "Terangkan idea anda di bawah👇, dan saya akan mengubahnya menjadi lukisan yang indah 🎨",
   "plugins.inspiro.title": "Pembantu AI",
   "plugins.inspiro.intro": "Pembantu AI serba boleh anda di Gandi IDE! Sama ada anda ingin menghasilkan imej yang menakjubkan, mencipta muzik yang merdu, atau memerlukan inspirasi untuk mewujudkan impian kreatif anda, Pembantu Inspiro menawarkan pelbagai kemungkinan tanpa had.",
-  "plugins.customCss.name":"CSS Kustom",
+  "plugins.customCss.name": "CSS Kustom",
   "plugins.customCss.title": "CSS Dikustom",
-  "plugins.customCss.description": "Muatkan fail CSS anda sendiri! Sesuaikan gaya Gandi anda!" ,
+  "plugins.customCss.description": "Muatkan fail CSS anda sendiri! Sesuaikan gaya Gandi anda!",
   "plugins.customCss.load": "Muatkan dari URL",
   "plugins.customCss.load.description": "Untuk mengelakkan tumpukan, hanya satu fail yang disokong untuk dimuatkan, jika anda perlu memuatkan lebih dari satu, sila gabungkan",
   "plugins.extensionManager.title": "Pengurus blok tambahan",
@@ -222,5 +222,8 @@
   "plugins.voiceCooperation.mic.on": "Hidupkan mikrofon",
   "plugins.voiceCooperation.mic.off": "Matikan mikrofon",
   "plugins.voiceCooperation.expand": "Senarai ahli",
-  "plugins.voiceCooperation.kick": "Tendang keluar"
+  "plugins.voiceCooperation.kick": "Tendang keluar",
+  "plugins.costumePiskel.title": "Penyunting Kostum Piskel",
+  "plugins.costumePiskel.description": "Mencipta sprite bergaya piksel akan menjadi lebih mudah.",
+  "plugins.costumePiskel.openCostume": "Buka dengan Piskel"
 }

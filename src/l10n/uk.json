@@ -220,5 +220,8 @@
   "plugins.voiceCooperation.mic.on": "Увімкнути мікрофон",
   "plugins.voiceCooperation.mic.off": "Вимкнути мікрофон",
   "plugins.voiceCooperation.expand": "Список учасників",
-  "plugins.voiceCooperation.kick": "Вилучити"
+  "plugins.voiceCooperation.kick": "Вилучити",
+  "plugins.costumePiskel.title": "Редактор костюмів Piskel",
+  "plugins.costumePiskel.description": "Створення піксельних спрайтів стане простішим.",
+  "plugins.costumePiskel.openCostume": "Відкрити в Piskel"
 }
