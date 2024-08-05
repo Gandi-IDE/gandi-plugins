@@ -4,10 +4,10 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
   React.useEffect(() => {
     const targetWindowMap = new Map<string, MessageEventSource>();
     const pendingTargetCostumes = new Map<string, string[]>();
-    let pendingTimer;
+    let syncTimer: NodeJS.Timeout;
 
     // https://github.com/Gandi-IDE/piskel
-    const piskelHost = "https://ai-static.ccw.site/test/piskel-f62dc0e/index.html";
+    const piskelHost = "https://ai-static.ccw.site/test/piskel-1e80317/index.html";
 
     const handleCostumeMessage = (event: MessageEvent) => {
       if (event.data && event.data.name === "plugin-piskel-update") {
@@ -24,8 +24,22 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
           height,
         });
       } else if (event.data && event.data.name === "plugin-piskel-add") {
-        const { data, fileName, fileType, targetId } = event.data;
-        utils.addCostumeToTarget(data, fileName, fileType, targetId);
+        const { data, fileName, fileType, targetId, tempCostumeId } = event.data;
+        utils.addCostumeToTarget(data, fileName, fileType, targetId).then((costumes) => {
+          costumes.forEach((costume) => {
+            targetWindowMap[targetId].postMessage(
+              {
+                name: "plugin-piskel-sync",
+                data: {
+                  tempCostumeId,
+                  costumeId: costume.id,
+                  name: costume.name,
+                },
+              },
+              { targetOrigin: "*" },
+            );
+          });
+        });
       } else if (event.data && event.data.name === "plugin-piskel-unloaded") {
         delete targetWindowMap[event.data.tid];
         delete pendingTargetCostumes[event.data.tid];
@@ -34,9 +48,43 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
       }
     };
 
+    const syncTimerHandler = () => {
+      for (const targetId of Object.keys(pendingTargetCostumes)) {
+        const costumeIds = pendingTargetCostumes[targetId];
+        if (!targetWindowMap[targetId]) {
+          continue;
+        }
+        for (let i = 0; i < costumeIds.length; i++) {
+          const costumeId = costumeIds[i];
+          const costume = vm.editingTarget.getCostumeById(costumeId);
+          if (costume) {
+            targetWindowMap[targetId].postMessage(
+              {
+                name: "plugin-piskel-data",
+                data: {
+                  name: costume.name,
+                  costumeId: costumeId,
+                  dataFormat: costume.dataFormat,
+                  assetData: costume.asset.data,
+                  bitmapResolution: costume.bitmapResolution,
+                  size: costume.size,
+                  rotationCenter: [costume.rotationCenterX, costume.rotationCenterY],
+                },
+              },
+              { targetOrigin: "*" },
+            );
+          }
+        }
+        delete pendingTargetCostumes[targetId];
+      }
+      if (syncTimer && pendingTargetCostumes.size === 0) {
+        clearInterval(syncTimer);
+        syncTimer = null;
+      }
+    };
+
     window.addEventListener("message", handleCostumeMessage, false);
 
-    // 更新造型
     utils.expandCostumeContextMenuItems([
       {
         key: "piskelUpdateCostume",
@@ -53,36 +101,24 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
           } else {
             pendingTargetCostumes[vm.editingTarget.id] = [costumeId];
           }
-          if (!pendingTimer) {
-            pendingTimer = setInterval(() => {
-              for (const targetId of Object.keys(pendingTargetCostumes)) {
-                const costumeIds = pendingTargetCostumes[targetId];
-                if (!targetWindowMap[targetId]) {
-                  continue;
-                }
-                for (let i = 0; i < costumeIds.length; i++) {
-                  const costumeId = costumeIds[i];
-                  const costume = vm.editingTarget.getCostumeById(costumeId);
-                  if (costume) {
-                    targetWindowMap[targetId].postMessage(
-                      {
-                        name: "plugin-piskel-data",
-                        data: {
-                          name: costume.name,
-                          costumeId: costumeId,
-                          dataFormat: costume.dataFormat,
-                          assetData: costume.asset.data,
-                          size: costume.size,
-                          rotationCenter: [costume.rotationCenterX, costume.rotationCenterY],
-                        },
-                      },
-                      { targetOrigin: "*" },
-                    );
-                  }
-                }
-                delete pendingTargetCostumes[targetId];
-              }
-            }, 1000);
+          if (!syncTimer) {
+            syncTimer = setInterval(syncTimerHandler, 1000);
+          }
+        },
+      },
+    ]);
+
+    utils.expandCostumeMenuItems([
+      {
+        id: "piskelNewCostume",
+        img: "https://www.piskelapp.com/static/resources/favicon.png",
+        title: msg("plugins.costumePiskel.newCostume"),
+        onClick: () => {
+          if (!targetWindowMap[vm.editingTarget.id]) {
+            window.open(
+              `${piskelHost}?tid=${encodeURIComponent(vm.editingTarget.id)}&tname=${encodeURIComponent(vm.editingTarget.getName())}`,
+              "_blank",
+            );
           }
         },
       },
@@ -90,10 +126,11 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
 
     return () => {
       utils.removeCostumeContextMenuItems(["piskelUpdateCostume"]);
+      utils.removeCostumeMenuItems(["piskelNewCostume"]);
       window.removeEventListener("message", handleCostumeMessage);
-      if (pendingTimer) {
-        clearInterval(pendingTimer);
-        pendingTimer = null;
+      if (syncTimer) {
+        clearInterval(syncTimer);
+        syncTimer = null;
       }
     };
   }, []);

@@ -184,7 +184,7 @@
   "plugins.inspiro.image.desc": "Describe tu idea a continuación👇, ¡y la convertiré en una hermosa pintura 🎨",
   "plugins.inspiro.title": "Asistente de IA",
   "plugins.inspiro.intro": "¡Tu asistente de IA todo en uno en el IDE de Gandi! Ya sea que quieras generar imágenes impresionantes, crear música melodiosa o necesites inspiración para hacer realidad tus sueños creativos, el Asistente Inspiro ofrece infinitas posibilidades.",
-  "plugins.customCss.name":"CSS Personalizado",
+  "plugins.customCss.name": "CSS Personalizado",
   "plugins.customCss.title": "CSS Personalizado",
   "plugins.customCss.description": "¡Carga tu propio archivo CSS! ¡Personaliza los estilos de Gandi!",
   "plugins.customCss.load": "Cargar desde URL",
@@ -225,5 +225,6 @@
   "plugins.voiceCooperation.kick": "Expulsar",
   "plugins.costumePiskel.title": "Editor de Disfraces Piskel",
   "plugins.costumePiskel.description": "Crear sprites de estilo píxel será más fácil.",
-  "plugins.costumePiskel.openCostume": "Abrir con Piskel"
+  "plugins.costumePiskel.openCostume": "Abrir con Piskel",
+  "plugins.costumePiskel.newCostume": "Nuevo disfraz con Piskel"
 }

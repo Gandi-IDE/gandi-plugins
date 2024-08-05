@@ -225,5 +225,6 @@
   "plugins.voiceCooperation.kick": "Tendang keluar",
   "plugins.costumePiskel.title": "Penyunting Kostum Piskel",
   "plugins.costumePiskel.description": "Mencipta sprite bergaya piksel akan menjadi lebih mudah.",
-  "plugins.costumePiskel.openCostume": "Buka dengan Piskel"
+  "plugins.costumePiskel.openCostume": "Buka dengan Piskel",
+  "plugins.costumePiskel.newCostume": "Kostum Baru dengan Piskel"
 }
