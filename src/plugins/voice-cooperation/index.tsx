@@ -169,6 +169,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   };
 
   const handleNewTrack = (track: LiveKit.RemoteAudioTrack) => {
+    fetchCurrentUserList(roomRef.current)
     const element = track.attach();
     const parentElement = document.body;
     element.id = track.sid;
@@ -264,6 +265,14 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
           <GandiProvider
             resetCSS={false}
             theme={{
+              semanticTokens: {
+                colors: {
+                  "bg-module": {
+                    _dark: "var(--theme-color-600)",
+                    _light: "var(--theme-color-600)",
+                  },
+                },
+              },
               styles: {
                 global: {
                   body: {
@@ -271,10 +280,34 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
                   },
                 },
               },
+              components: {
+                Tooltip: {
+                  baseStyle: {
+                    "--tooltip-bg": "var(--theme-color-600)",
+                    "--popper-arrow-bg": "var(--theme-color-600)",
+                    background: "var(--theme-color-600)",
+                    height: "44px",
+                    padding: "0 16px",
+                    border: "var(--theme-border-size-tip) solid var(--theme-border-color-tip)",
+                    "border-radius": "8px",
+                    "box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                    transform: "translate(-50%, 0)",
+                    "white-space": "nowrap",
+                    display: "flex",
+                    "align-items": "center",
+                    "justify-content": "space-between",
+                  },
+                },
+              },
             }}
           >
             <section className={styles.voiceRoot} ref={containerRef}>
-              <Tooltip label={isConnected && "Leave"}>
+              <Tooltip
+                label={isConnected && msg("plugins.voiceCooperation.leave")}
+                // sx={{
+                //   "--tooltip-bg": "var(--theme-color-600)",
+                // }}
+              >
                 <Button
                   className={classNames({
                     [styles.voiceButton]: true,

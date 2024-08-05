@@ -331,6 +331,11 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
                   })}
               </AvatarGroup>
               <div>
+                {members.filter((member) => member.isSpeaking).length === 0 && (
+                  <div className={styles.speakingTipsContainer}>
+                    <span className={styles.tip}>{voicePlugin.msg("plugins.voiceCooperation.noOne")}</span>
+                  </div>
+                )}
                 {members.filter((member) => member.isSpeaking).length === 1 && (
                   <div className={styles.speakingTipsContainer}>
                     <span className={styles.username}>
@@ -350,32 +355,34 @@ const VoiceFloatingNew: React.FC<VoiceFloatingProps> = ({
             </div>
           )}
           <div className={styles.buttonGroup}>
-            <Button
-              className={styles.controlButton}
-              sx={{
-                width: 24,
-                height: 24,
-                p: 0,
-              }}
-              onClick={onToggleMicrophone}
-            >
-              <span
-                style={{
+            {!isExpanded && (
+              <Button
+                className={styles.controlButton}
+                sx={{
                   width: 24,
                   height: 24,
+                  p: 0,
                 }}
+                onClick={onToggleMicrophone}
               >
-                {isMicrophoneMuted ? (
-                  <MicrophoneSlashIcon color="red" />
-                ) : (
-                  <MicrophoneIcon
-                    sx={{
-                      color: "var(--theme-color-g300)",
-                    }}
-                  />
-                )}
-              </span>
-            </Button>
+                <span
+                  style={{
+                    width: 24,
+                  }}
+                >
+                  {isMicrophoneMuted ? (
+                    <MicrophoneSlashIcon color="#fa594c" />
+                  ) : (
+                    <MicrophoneIcon
+                      sx={{
+                        color: "var(--theme-color-g300)",
+                      }}
+                    />
+                  )}
+                </span>
+              </Button>
+            )}
+
             <Button
               className={styles.controlButton}
               sx={{
