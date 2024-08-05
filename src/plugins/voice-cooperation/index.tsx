@@ -144,6 +144,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
         return member[1].clientId === cid;
       })[1];
       if (!userInfo) return;
+      console.log(participant);
       const remoteUserInfo = {
         ...userInfo,
         isMuted: !participant.isMicrophoneEnabled,
