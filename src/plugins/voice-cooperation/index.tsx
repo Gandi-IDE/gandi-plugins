@@ -169,6 +169,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   };
 
   const handleNewTrack = (track: LiveKit.RemoteAudioTrack) => {
+    fetchCurrentUserList(roomRef.current)
     const element = track.attach();
     const parentElement = document.body;
     element.id = track.sid;
