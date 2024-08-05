@@ -223,5 +223,6 @@
   "plugins.voiceCooperation.kick": "Вилучити",
   "plugins.costumePiskel.title": "Редактор костюмів Piskel",
   "plugins.costumePiskel.description": "Створення піксельних спрайтів стане простішим.",
-  "plugins.costumePiskel.openCostume": "Відкрити в Piskel"
+  "plugins.costumePiskel.openCostume": "Відкрити в Piskel",
+  "plugins.costumePiskel.newCostume": "Новий костюм з Piskel"
 }

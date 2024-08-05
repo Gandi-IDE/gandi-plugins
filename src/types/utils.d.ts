@@ -90,9 +90,14 @@ declare interface PluginsUtils {
    * @param fileName - Costume file name.
    * @param fileType - Costume file type.
    * @param targetId - ID of the target sprite (optional).
-   * @returns void
+   * @returns Promise<Array<Scratch.Costume>>
    */
-  addCostumeToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
+  addCostumeToTarget: (
+    buffer: ArrayBuffer | string,
+    fileName: string,
+    fileType: string,
+    targetId?: string,
+  ) => Promise<Array<Scratch.Costume>>;
 
   /**
    * Deletes the specified costume by costumeIndex from the target sprite.
@@ -127,9 +132,14 @@ declare interface PluginsUtils {
    * @param fileName - Sound file name.
    * @param fileType - Sound file type.
    * @param targetId - ID of the target sprite (optional).
-   * @returns void
+   * @returns Promise<Scratch.Sound>
    */
-  addSoundToTarget: (buffer: ArrayBuffer | string, fileName: string, fileType: string, targetId?: string) => void;
+  addSoundToTarget: (
+    buffer: ArrayBuffer | string,
+    fileName: string,
+    fileType: string,
+    targetId?: string,
+  ) => Promise<Scratch.Sound>;
 
   /**
    * Deletes the specified sound by soundIndex from the target sprite.

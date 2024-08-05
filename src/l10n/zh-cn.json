@@ -225,5 +225,6 @@
   "plugins.voiceCooperation.kick": "踢出",
   "plugins.costumePiskel.title": "Piskel 造型编辑器",
   "plugins.costumePiskel.description": "制作像素风格的素材将变得更加简单。",
-  "plugins.costumePiskel.openCostume": "使用 Piskel 打开"
+  "plugins.costumePiskel.openCostume": "使用 Piskel 打开",
+  "plugins.costumePiskel.newCostume": "使用 Piskel 创建新造型"
 }
