@@ -10,20 +10,23 @@
     // padding: 8px 6px;
     // margin-left: 8px;
     display: flex;
-    padding: 8px 12px !important;
+    padding: 8px !important;
     align-items: center;
     gap: 4px;
     border-radius: 6px;
-    background: var(--theme-color-200) !important;
-    margin-left: 12px;
-    border: 1px solid rgba(0, 0, 0, 0) !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    // background: var(--theme-color-200) !important;
+    margin-left: 8px;
+    border: none !important;
     box-sizing: border-box !important;
     transition: all 0.2s !important;
 }
 
 .voice-button:hover {
     transition: all 0.2s !important;
-    border: 1px solid var(--theme-color-100, #566276) !important;
+    border: none !important;
     background: var(--theme-color-200) !important;
 }
 
@@ -51,7 +54,7 @@
 
 .voice-button-loading {
     background: var(--theme-color-200) !important;
-    width: 42px !important;
+    padding: 7px !important;    
 }
 
 .voice-button-connected {
@@ -59,7 +62,7 @@
     background: var(--red--, #FA594C) !important;
     transition: all 0.2s !important;
     display: flex;
-    padding: 9px 12px !important;
+    padding: 7px !important;
     align-items: center;
     gap: 4px;
 }

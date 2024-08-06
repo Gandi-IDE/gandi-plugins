@@ -362,7 +362,13 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
             }}
           >
             <section className={styles.voiceRoot} ref={containerRef}>
-              <Tooltip label={isConnected && msg("plugins.voiceCooperation.leave")}>
+              <Tooltip
+                label={
+                  isConnected
+                    ? msg("plugins.voiceCooperation.leave")
+                    : !isLoading && msg("plugins.voiceCooperation.join")
+                }
+              >
                 <Button
                   className={classNames({
                     [styles.voiceButton]: true,
@@ -371,11 +377,12 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
                   })}
                   colorScheme="green"
                   border={"none"}
-                  size={"lg"}
+                  variant={"ghost"}
                   onClick={isConnected ? onLeave : handleClick}
                   disabled={isLoading}
                   sx={{
-                    height: "36px",
+                    height: "32px",
+                    width: "32px",
                     borderRadius: "6px",
                   }}
                 >
@@ -398,9 +405,6 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
                       </div>
                     )}
                   </span>
-                  {!isConnected && !isLoading && (
-                    <div className={styles.join}>{msg("plugins.voiceCooperation.join")}</div>
-                  )}
                 </Button>
               </Tooltip>
               {isConnected &&
