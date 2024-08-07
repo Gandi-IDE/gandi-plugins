@@ -70,9 +70,9 @@ const LocalizationContext = React.createContext<IntlShape>(null);
 const RoomContext = React.createContext<LiveKit.Room>(null);
 const VoiceContext = React.createContext<PluginContext>(null);
 const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
-  // if (!PluginContext.teamworkManager) {
-  //   return null;
-  // }
+  if (!PluginContext.teamworkManager) {
+    return null;
+  }
   // const toast = useMessage({ followCursor: false });
   const { msg } = PluginContext;
   const [room, setRoom] = React.useState<LiveKit.Room>(null);
