@@ -22,7 +22,7 @@ export const isOverlap = (
     height: number;
   },
   isControlBlock: boolean,
-  workspace: { scale?: number },
+  scale: number,
 ) => {
   // 计算两个矩形的四个边界
   const left1 = rect1.x;
@@ -40,9 +40,9 @@ export const isOverlap = (
   } else {
     // control 类型的block跳过设置
     if (isControlBlock) {
-      const blockLeft = left1 + controlBorder.left * workspace.scale;
-      const blockTop = top1 + controlBorder.top * workspace.scale;
-      const blockBottom = bottom1 - controlBorder.bottom * workspace.scale;
+      const blockLeft = left1 + controlBorder.left * scale;
+      const blockTop = top1 + controlBorder.top * scale;
+      const blockBottom = bottom1 - controlBorder.bottom * scale;
       if (left2 > blockLeft && blockBottom > bottom2 && blockTop < top2) {
         return false;
       }

@@ -1,3 +1,5 @@
+import React from "react";
+import { noop } from "lodash-es";
 import WorkspaceQuerier from "./WorkspaceQuerier.js";
 import renderBlock, { getBlockHeight } from "./BlockRenderer.js";
 import { BlockTypeInfo } from "./BlockTypeInfo.js";
@@ -5,7 +7,6 @@ import { onClearTextWidthCache } from "./module.js";
 import "./compatibility.css";
 import "./styles.css";
 import FastInputIcon from "assets/icon--fast-input.svg";
-import React from "react";
 
 const FastInput = (apis: PluginContext) => {
   const Blockly = apis.blockly;
@@ -376,8 +377,8 @@ const FastInput = (apis: PluginContext) => {
       clientX: mousePosition.x,
       clientY: mousePosition.y,
       type: "mousedown",
-      stopPropagation: function () { },
-      preventDefault: function () { },
+      stopPropagation: noop,
+      preventDefault: noop,
       target: selectedPreview.svgBlock,
     };
     if (workspace.getGesture(fakeEvent)) {

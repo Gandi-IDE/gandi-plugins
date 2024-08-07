@@ -87,7 +87,9 @@ declare namespace Blockly {
         targetBlock: () => null | Block;
       };
       fieldRow: Array<{
+        argType_: string[] | null;
         arrowWidth_: number;
+        box_?: SVGRectElement;
         class_?: string;
         name?: string;
         renderSep: number;
@@ -100,7 +102,7 @@ declare namespace Blockly {
       }>;
       fieldWidth: number;
       name: string;
-      outlinePath: null;
+      outlinePath: null | SVGElement;
       renderHeight: number;
       renderWidth: number;
       sourceBlock_: Blockly.Block;
@@ -310,7 +312,7 @@ declare namespace Blockly {
     forceDeleteVariableById(id: string): void;
     createVariable(
       name: string,
-      opt_type?: string | undefined,
+      opt_type?: string | null,
       opt_id?: string | undefined,
       opt_isLocal?: boolean | undefined,
       opt_isCloud?: boolean | undefined,

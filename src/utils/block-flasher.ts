@@ -5,7 +5,7 @@ class BlockFlasher {
   block: Blockly.Block | null;
   count: number;
   flashOn: boolean;
-  timerId: NodeJS.Timeout;
+  timerId: NodeJS.Timeout | null;
   constructor() {
     this.block = null;
     this.timerId = null;
@@ -43,7 +43,7 @@ class BlockFlasher {
     this.flashOn = !this.flashOn;
     this.count--;
     if (this.count > 0) {
-      this.timerId = setTimeout(() => this.privateFlash(this.block), 200);
+      this.timerId = setTimeout(() => this.privateFlash(block), 200);
     } else {
       this.timerId = null;
       this.block = null;

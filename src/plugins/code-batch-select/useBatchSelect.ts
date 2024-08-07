@@ -17,10 +17,10 @@ const useBatchSelect: (params: {
 } = ({ enabledBatchSelect, workspace, onSelectedElementsChanged, blockly }) => {
   const blocklyBlocksSvgNode = useRef<Element>(document.querySelector(blocklyWorkspaceClassName));
   const selectedElementsRef = useRef<SelectedElements>([{}, {}]);
-  const drawPositionRef = useRef<{ x: number; y: number }>();
+  const drawPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const mousemoveRef = useRef<number>(0);
-  const selectionableElements = useRef<BlocksAndFramesList>([[], []]);
-  const rectNode = useRef<Element>();
+  const selectableElements = useRef<BlocksAndFramesList>([[], []]);
+  const rectNode = useRef<SVGRectElement>();
 
   const setFrameHighlight = useCallback((frame: Blockly.Frame, visible: boolean) => {
     const svgGroup = frame.getSvgRoot();
@@ -37,7 +37,7 @@ const useBatchSelect: (params: {
     }
   }, []);
 
-  const setBlockStatusAndStyles = (block, status: boolean, onlyStyle?: boolean) => {
+  const setBlockStatusAndStyles = (block: Blockly.Block, status: boolean, onlyStyle?: boolean) => {
     if (status) {
       block.svgPath_.setAttribute("fill-opacity", "0.4");
       if (!onlyStyle) {
@@ -54,11 +54,11 @@ const useBatchSelect: (params: {
       });
       block.inputList?.forEach((ipt) => {
         if (ipt.name === "CONDITION") {
-          ipt.outlinePath.setAttribute("fill-opacity", "0.4");
+          ipt.outlinePath?.setAttribute("fill-opacity", "0.4");
         }
-        ipt?.fieldRow?.forEach((fld) => {
-          if (fld?.argType_?.length > 0) {
-            fld.box_.setAttribute("fill-opacity", "0.4");
+        ipt.fieldRow?.forEach((fld) => {
+          if (fld.argType_ && fld.argType_.length > 0 && fld.box_) {
+            fld.box_.setAttribute("fill-opacity", "1");
           }
         });
       });
@@ -78,10 +78,10 @@ const useBatchSelect: (params: {
     });
     block.inputList?.forEach((ipt) => {
       if (ipt.name === "CONDITION") {
-        ipt.outlinePath.setAttribute("fill-opacity", "0.4");
+        ipt.outlinePath?.setAttribute("fill-opacity", "0.4");
       }
-      ipt?.fieldRow?.forEach((fld) => {
-        if (fld?.argType_?.length > 0) {
+      ipt.fieldRow?.forEach((fld) => {
+        if (fld.argType_ && fld.argType_.length > 0 && fld.box_) {
           fld.box_.setAttribute("fill-opacity", "1");
         }
       });
@@ -89,7 +89,7 @@ const useBatchSelect: (params: {
   };
 
   // Record the current selectionable elements (such as Block and Frame).
-  const updateSelectionableElements = () => {
+  const updateSelectableElements = () => {
     const list: BlocksAndFramesList = [[], []];
     list[0] = workspace.getAllBlocks().filter((it) => !it.isShadow_ && it.intersects_);
     list[1] = workspace.getTopFrames();
@@ -112,14 +112,14 @@ const useBatchSelect: (params: {
         height: frame.getHeight() * workspace.scale,
       };
     });
-    selectionableElements.current = list;
+    selectableElements.current = list;
   };
 
   // Clear all highlighted styles of elements that are selected by the bounding box.
   const clearAllBoxedElements = useCallback(
     (isDelete?: boolean) => {
       if (!isDelete) {
-        selectionableElements.current[0].forEach((block) => {
+        selectableElements.current[0].forEach((block) => {
           if (block.svgPath_) {
             block.svgPath_.setAttribute("fill-opacity", "1");
             block.boxed = false;
@@ -131,12 +131,12 @@ const useBatchSelect: (params: {
             });
           }
         });
-        selectionableElements.current[1].forEach((frame) => {
+        selectableElements.current[1].forEach((frame) => {
           setFrameHighlight(frame, false);
         });
       }
       selectedElementsRef.current = [{}, {}];
-      selectionableElements.current = [[], []];
+      selectableElements.current = [[], []];
       onSelectedElementsChanged(selectedElementsRef.current);
     },
     [setFrameHighlight],
@@ -144,15 +144,14 @@ const useBatchSelect: (params: {
 
   const calculateBlockActivity = debounce((rect2) => {
     const selectedBlocksSet: Set<string> = new Set();
-    const selectedBlocks = {};
-    const selectedFrames = {};
-    selectionableElements.current[0].forEach((block) => {
+    const selectedBlocks: Record<string, Blockly.Block> = {};
+    const selectedFrames: Record<string, Blockly.Frame> = {};
+    selectableElements.current[0].forEach((block) => {
       if (block.isSelectable()) {
         const { temporaryCoordinate } = block;
         if (
-          isOverlap(temporaryCoordinate, rect2, block.category_ === "control", {
-            scale: workspace.scale,
-          })
+          temporaryCoordinate &&
+          isOverlap(temporaryCoordinate, rect2, block.category_ === "control", workspace.scale)
         ) {
           selectedBlocks[block.id] = block;
           if (!selectedBlocksSet.has(block.id)) {
@@ -164,15 +163,15 @@ const useBatchSelect: (params: {
         }
       }
     });
-    selectionableElements.current[0].forEach((block) => {
+    selectableElements.current[0].forEach((block) => {
       if (selectedBlocksSet.has(block.id) && !block.boxed) {
         setBlockStatusAndStyles(block, true);
         selectedBlocks[block.id] = block;
       }
     });
     selectedElementsRef.current[0] = selectedBlocks;
-    selectionableElements.current[1].forEach((frame) => {
-      if (frame.locked) return;
+    selectableElements.current[1].forEach((frame) => {
+      if (frame.locked || !frame.temporaryCoordinate) return;
       let selected = false;
       const c1 = frame.temporaryCoordinate;
       const c2 = rect2;
@@ -194,24 +193,24 @@ const useBatchSelect: (params: {
     onSelectedElementsChanged(selectedElementsRef.current);
   }, 80);
 
-  const startRect = (event, clearBoxed = true) => {
+  const startRect = (event: MouseEvent, clearBoxed = true) => {
     clearBoxed && clearAllBoxedElements();
-    updateSelectionableElements();
+    updateSelectableElements();
     event.preventDefault();
     event.stopPropagation();
     const x = event.offsetX;
     const y = event.offsetY;
     drawPositionRef.current = { x, y };
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", x);
-    rect.setAttribute("y", y);
+    rect.setAttribute("x", String(x));
+    rect.setAttribute("y", String(y));
     rect.setAttribute("width", "0");
     rect.setAttribute("height", "0");
     rect.setAttribute("fill", "rgba(45, 140, 255, 0.15)");
     rect.setAttribute("stroke", "#2D8CFF");
     rect.setAttribute("stroke-width", "2");
     rectNode.current = rect;
-    blocklyBlocksSvgNode.current.appendChild(rect);
+    blocklyBlocksSvgNode.current?.appendChild(rect);
   };
 
   const drawRect = (event) => {
@@ -241,7 +240,7 @@ const useBatchSelect: (params: {
     delete selectedElementsRef.current[1][frame.id];
     setFrameHighlight(frame, false);
     if (unselectBlocks) {
-      Object.values(selectionableElements.current[0]).forEach((block) => {
+      Object.values(selectableElements.current[0]).forEach((block) => {
         if (block.isInFrame() === frame) {
           setBlockStatusAndStyles(block, false);
           delete selectedElementsRef.current[0][block.id];
@@ -257,7 +256,7 @@ const useBatchSelect: (params: {
     selectedBlocks[block.id] = block;
     setBlockStatusAndStyles(block, true);
     getChildBlocks(block).forEach((childBlockId) => {
-      const childBlock = selectionableElements.current[0].find((el) => el.id === childBlockId);
+      const childBlock = selectableElements.current[0].find((el) => el.id === childBlockId);
       if (childBlock) {
         setBlockStatusAndStyles(childBlock, true);
         selectedBlocks[childBlock.id] = childBlock;
@@ -285,7 +284,7 @@ const useBatchSelect: (params: {
   // 选择中单个Frame
   const selectFrameElement = useCallback((frame: Blockly.Frame) => {
     selectedElementsRef.current[1][frame.id] = frame;
-    Object.values(selectionableElements.current[0]).forEach((block) => {
+    Object.values(selectableElements.current[0]).forEach((block) => {
       if (block.isInFrame() === frame) {
         setBlockStatusAndStyles(block, false);
         delete selectedElementsRef.current[0][block.id];
@@ -296,13 +295,13 @@ const useBatchSelect: (params: {
     onSelectedElementsChanged(selectedElementsRef.current);
   }, []);
 
-  const mousedown = (event) => {
+  const mousedown = (event: MouseEvent) => {
     if (blockly.locked) {
       return;
     }
     mousemoveRef.current = 0;
     const ctrlKey = isCtrlKeyDown(event);
-    if (event.target) {
+    if (event.target && event.target instanceof SVGAElement) {
       const element = event.target.tooltip;
       const targetClassName = event.target.className.baseVal || "";
       // 当点选中已经被框选中的元素（Frame or Block）时，不做任何处理。
@@ -375,14 +374,14 @@ const useBatchSelect: (params: {
     // 单个未被选中的click事件：增加选中
     if (event.target?.tooltip && !event.target.tooltip.boxed && rectKey && isClick) {
       const element = event.target.tooltip;
-      updateSelectionableElements();
-      const maybeBlock = selectionableElements.current[0].find((i) => i.id === element.id);
+      updateSelectableElements();
+      const maybeBlock = selectableElements.current[0].find((i) => i.id === element.id);
       if (maybeBlock) {
         const frame = maybeBlock.isInFrame();
         if (frame && frame.boxed) {
           unselectBlockElement(maybeBlock);
           unselectFrameElement(frame, false);
-          Object.values(selectionableElements.current[0]).forEach((item) => {
+          Object.values(selectableElements.current[0]).forEach((item) => {
             if (item.id !== maybeBlock.id && item.isInFrame() === frame) {
               selectBlockElement(item);
             }
@@ -391,7 +390,7 @@ const useBatchSelect: (params: {
           selectBlockElement(maybeBlock);
         }
       }
-      const maybeFrame = selectionableElements.current[1].find((i) => i.id === element.id);
+      const maybeFrame = selectableElements.current[1].find((i) => i.id === element.id);
       // frame的单选时移除mousedown生成的框选节点
       if (maybeFrame) {
         blocklyBlocksSvgNode.current.removeChild(rectNode.current);
