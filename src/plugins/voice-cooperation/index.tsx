@@ -69,12 +69,9 @@ const newTeamMember = new Audio(
 const LocalizationContext = React.createContext<IntlShape>(null);
 const RoomContext = React.createContext<LiveKit.Room>(null);
 const VoiceContext = React.createContext<PluginContext>(null);
-const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
-  if (!PluginContext.teamworkManager) {
-    return null;
-  }
+const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext) => {
   // const toast = useMessage({ followCursor: false });
-  const { msg } = PluginContext;
+  const { msg } = pluginContext;
   const [room, setRoom] = React.useState<LiveKit.Room>(null);
   const [voiceMemberList, setVoiceMemberList] = React.useState<Array<Member>>([]);
   const voiceMemberListRef = React.useRef<Array<Member>>([]);
@@ -95,7 +92,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   }, []);
   const handleClick = async () => {
     setIsMuted(false);
-    if (PluginContext.teamworkManager === null) {
+    if (pluginContext.teamworkManager === null) {
       toast.error(msg("plugins.voiceCooperation.errorNotInCooperation"), {
         position: "top-center",
       });
@@ -106,12 +103,12 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       return;
     }
     setIsLoading(true);
-    const creationId = PluginContext.teamworkManager.creationInfo.id;
-    const authority = PluginContext.teamworkManager.userInfo.authority;
-    const clientId = PluginContext.teamworkManager.userInfo.clientId;
+    const creationId = pluginContext.teamworkManager.creationInfo.id;
+    const authority = pluginContext.teamworkManager.userInfo.authority;
+    const clientId = pluginContext.teamworkManager.userInfo.clientId;
     try {
-      const tokenReq = await PluginContext.server.axios.post<ITokenRequest, IToken>(
-        `${PluginContext.server.hosts.GANDI_MAIN}/rtc/join`,
+      const tokenReq = await pluginContext.server.axios.post<ITokenRequest, IToken>(
+        `${pluginContext.server.hosts.GANDI_MAIN}/rtc/join`,
         {
           creationId: creationId,
           authority: authority,
@@ -125,12 +122,12 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
         throw new Error();
       }
       const token = tokenReq.token;
-      connectToRoom(token, (connected: boolean, room: LiveKit.Room) => {
+      connectToRoom(token, (connected: boolean, _room?: LiveKit.Room) => {
         if (connected) {
           // 播放音效
           mentionAudio.play();
-          setRoom(room);
-          roomRef.current = room;
+          setRoom(_room);
+          roomRef.current = _room;
         } else {
           setRoom(null);
           roomRef.current = null;
@@ -140,9 +137,9 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
         }
         setIsConnected(connected);
         setIsLoading(false);
-        fetchCurrentUserList(room);
-        roomEventRegister(room);
-        room.remoteParticipants.forEach((participant) => {
+        fetchCurrentUserList(_room);
+        roomEventRegister(_room);
+        _room.remoteParticipants.forEach((participant) => {
           if (participant.getTrackPublications().length > 0) {
             participant.getTrackPublications().forEach((track) => {
               if (track.kind === LiveKit.Track.Kind.Audio) {
@@ -180,7 +177,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     if (!room) return;
     if (room.state !== LiveKit.ConnectionState.Connected) return;
     const tempList = [];
-    const localUser = PluginContext.teamworkManager.onlineUsers.get(PluginContext.teamworkManager.userInfo.clientId);
+    const localUser = pluginContext.teamworkManager.onlineUsers.get(pluginContext.teamworkManager.userInfo.clientId);
     if (!localUser) return;
     const localUserInfo = {
       ...localUser,
@@ -192,7 +189,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
     tempList.push(localUserInfo);
     room.remoteParticipants.forEach((participant) => {
       const cid = participant.identity;
-      const userInfo = Array.from(PluginContext.teamworkManager.onlineUsers).find((member) => {
+      const userInfo = Array.from(pluginContext.teamworkManager.onlineUsers).find((member) => {
         return member[1].clientId === cid;
       })[1];
       if (!userInfo) return;
@@ -313,11 +310,13 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   }, []);
 
   const [isMuted, setIsMuted] = React.useState(false);
-
+  if (!pluginContext.teamworkManager) {
+    return null;
+  }
   return ReactDOM.createPortal(
-    <VoiceContext.Provider value={PluginContext}>
+    <VoiceContext.Provider value={pluginContext}>
       <RoomContext.Provider value={room}>
-        <LocalizationContext.Provider value={PluginContext.intl}>
+        <LocalizationContext.Provider value={pluginContext.intl}>
           <GandiProvider
             resetCSS={false}
             theme={{
@@ -422,7 +421,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
               {isConnected &&
                 ReactDOM.createPortal(
                   <VoiceFloatingNew
-                    intl={PluginContext.intl}
+                    intl={pluginContext.intl}
                     members={voiceMemberList}
                     isMicrophoneMuted={isMuted}
                     onToggleMicrophone={onToggleMicrophone}

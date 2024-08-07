@@ -4,7 +4,11 @@ import config from "../config";
 
 const VoiceServer = config.SERVER_URL; // localhost debug
 let globalReason = 0;
-async function connectToRoom(token: string, callback: (status: boolean, room?: LiveKit.Room) => void) {
+type Callback = {
+  (status: true, room: LiveKit.Room): void;
+  (status: false): void;
+};
+async function connectToRoom(token: string, callback: Callback) {
   const room = new LiveKit.Room({
     dynacast: true, // optimize publish bandwidth and CPU for published tracks
     publishDefaults: {
