@@ -2,6 +2,7 @@
   "include": ["src"],
   "compilerOptions": {
     "allowJs": true,
+    "strict": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "declaration": true,
@@ -21,7 +22,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "target": "ES2017",
-    "jsx": "react"
+    "jsx": "react",
   },
   "exclude": ["node_modules"]
 }
