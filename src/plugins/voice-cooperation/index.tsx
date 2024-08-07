@@ -3,7 +3,8 @@ import * as LiveKit from "livekit-client";
 import styles from "./styles.less";
 import ReactDOM from "react-dom";
 import VoiceIcon from "assets/icon--voice.svg";
-import { Button, GandiProvider, Tooltip, useMessage } from "@gandi-ide/gandi-ui";
+import { Button, GandiProvider, Tooltip } from "@gandi-ide/gandi-ui";
+import toast from "react-hot-toast";
 import { connectToRoom } from "./lib/livekit";
 import { Member } from "./components/MemberList/MemberListItem";
 import classNames from "classnames";
@@ -69,12 +70,17 @@ const LocalizationContext = React.createContext<IntlShape>(null);
 const RoomContext = React.createContext<LiveKit.Room>(null);
 const VoiceContext = React.createContext<PluginContext>(null);
 const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
-  const toast = useMessage({ followCursor: true });
+  // if (!PluginContext.teamworkManager) {
+  //   return null;
+  // }
+  // const toast = useMessage({ followCursor: false });
   const { msg } = PluginContext;
   const [room, setRoom] = React.useState<LiveKit.Room>(null);
   const [voiceMemberList, setVoiceMemberList] = React.useState<Array<Member>>([]);
+  const voiceMemberListRef = React.useRef<Array<Member>>([]);
   const roomRef = React.useRef<LiveKit.Room>();
   roomRef.current = room;
+  voiceMemberListRef.current = voiceMemberList;
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [isConnected, setIsConnected] = React.useState(false);
@@ -90,9 +96,8 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   const handleClick = async () => {
     setIsMuted(false);
     if (PluginContext.teamworkManager === null) {
-      toast(msg("plugins.voiceCooperation.errorNotInCooperation"), {
-        status: "error",
-        duration: 5000,
+      toast.error(msg("plugins.voiceCooperation.errorNotInCooperation"), {
+        position: "top-center",
       });
       return;
     }
@@ -125,10 +130,13 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
           // 播放音效
           mentionAudio.play();
           setRoom(room);
+          roomRef.current = room;
         } else {
           setRoom(null);
+          roomRef.current = null;
           mentionAudio.play();
           setVoiceMemberList([]);
+          voiceMemberListRef.current = [];
         }
         setIsConnected(connected);
         setIsLoading(false);
@@ -148,16 +156,16 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       setIsConnected(false);
       setIsLoading(false);
       setVoiceMemberList([]);
+      voiceMemberListRef.current = [];
       setRoom(null);
+      roomRef.current = null;
       if (error instanceof LiveKit.PublishDataError) {
-        toast(msg("plugins.voiceCooperation.errorMsgPermission"), {
-          status: "error",
-          duration: 5000,
+        toast.error(msg("plugins.voiceCooperation.errorMsgPermission"), {
+          position: "top-center",
         });
       }
-      toast(msg("plugins.voiceCooperation.error"), {
-        status: "error",
-        duration: 5000,
+      toast.error(msg("plugins.voiceCooperation.error"), {
+        position: "top-center",
       });
       console.error("Failed to obtain token", error);
     }
@@ -198,13 +206,12 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       tempList.push(remoteUserInfo);
     });
     setVoiceMemberList(tempList);
+    voiceMemberListRef.current = tempList;
   };
 
   const roomEventRegister = (room: LiveKit.Room) => {
     room
       ?.on(LiveKit.RoomEvent.TrackSubscribed, handleNewTrack)
-      .on(LiveKit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
-      .on(LiveKit.RoomEvent.TrackSubscribed, handleNewTrack)
       .on(LiveKit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
       .on(LiveKit.RoomEvent.Reconnected, () => handleReconnect(room))
       .on(LiveKit.RoomEvent.TrackMuted, () => fetchCurrentUserList(room))
@@ -228,38 +235,44 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   };
 
   React.useEffect(() => {
-    const handleActiveSpeakersChanged = (speakers: Array<LiveKit.Participant>) => {
-      const activeSpeakers = voiceMemberList.filter((member) =>
-        speakers.some((speaker) => speaker.identity === member.clientId),
-      );
+    voiceMemberListRef.current = voiceMemberList;
+  }, [voiceMemberList]);
 
-      setVoiceMemberList((prevList) =>
-        prevList.map((member) => {
-          if (activeSpeakers.some((active) => active.clientId === member.clientId)) {
-            return { ...member, isSpeaking: true };
-          } else {
-            return { ...member, isSpeaking: false }; // 如果需要将其他用户的 isSpeaking 设置为 false
-          }
-        }),
-      );
-    };
+  const handleActiveSpeakersChanged = (speakers: Array<LiveKit.Participant>) => {
+    const activeSpeakers = voiceMemberListRef.current.filter((member) =>
+      speakers.some((speaker) => speaker.identity === member.clientId),
+    );
+
+    setVoiceMemberList((prevList) =>
+      prevList.map((member) => {
+        if (activeSpeakers.some((active) => active.clientId === member.clientId)) {
+          return { ...member, isSpeaking: true };
+        } else {
+          return { ...member, isSpeaking: false }; // 如果需要将其他用户的 isSpeaking 设置为 false
+        }
+      }),
+    );
+  };
+
+  React.useEffect(() => {
     room
       ?.on(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
       .on(LiveKit.RoomEvent.ParticipantConnected, handleParticipantChanged)
       .on(LiveKit.RoomEvent.ParticipantDisconnected, handleParticipantChanged);
     return () => {
-      roomRef.current
+      room
         ?.off(LiveKit.RoomEvent.ActiveSpeakersChanged, handleActiveSpeakersChanged)
         .off(LiveKit.RoomEvent.ParticipantConnected, handleParticipantChanged)
         .off(LiveKit.RoomEvent.ParticipantDisconnected, handleParticipantChanged);
     };
-  }, [room, voiceMemberList]);
+  }, [room]);
 
   const handleReconnect = (room: LiveKit.Room) => {
     setIsConnected(true);
     setIsLoading(false);
     fetchCurrentUserList(room);
     setRoom(room);
+    roomRef.current = room;
   };
   React.useEffect(() => {
     return () => {
@@ -268,6 +281,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
       };
       cleanup();
       setRoom(null);
+      roomRef.current = null;
       // PostAction: cleanup room
     };
   }, []);
@@ -299,9 +313,7 @@ const VoiceCooperation: React.FC<PluginContext> = (PluginContext) => {
   }, []);
 
   const [isMuted, setIsMuted] = React.useState(false);
-  if (!PluginContext.teamworkManager) {
-    return null;
-  }
+
   return ReactDOM.createPortal(
     <VoiceContext.Provider value={PluginContext}>
       <RoomContext.Provider value={room}>
