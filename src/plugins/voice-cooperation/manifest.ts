@@ -4,7 +4,7 @@ export default {
   description: "A plugin provided voice cooperation capabilities",
   credits: [
     {
-      name: "Sparrow",
+      name: "Sparrow@CCW",
       link: "https://www.ccw.site/student/619b9141e0c34311283fd4d8",
     },
   ],
