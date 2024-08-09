@@ -30,6 +30,7 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
             options: [
               { label: msg('plugins.customCss.theme.none'), value: "none" },
               { label: msg('plugins.customCss.theme.turbowarpDark'), value: "turbowarpDark" },
+              { label: msg('plugins.customCss.theme.penghuinmodDark'), value: "penguinmodDark" },
             ],
             onChange: (value) => {
               switch(value) {

@@ -77,7 +77,7 @@
   }
 }
 
-:root[theme="dark"] .turbowarpDark {
+:root .turbowarpDark {
   --theme-yellow-color: #ffc700;
   --theme-brand-color: #ff4c4c;
   --theme-error-color: hsla(30, 100%, 55%, 1);
@@ -106,4 +106,129 @@
   --theme-border-color-tip: #ffffff26;
 
   --gui-item-active-transparent: #ff4d4d59;
+}
+
+.penguinmodDark {
+  :global(.gandi_menu-bar_menu-bar_JcuHF), :global(.gandi_vertical-bar_bar_Tsvpu) {
+    background-color: var(--theme-color-700);
+  }
+
+  :global(.gandi_editor-wrapper_tab_2OPuA.gandi_editor-wrapper_selected_1drBd) {
+    color: var(--theme-color-700);
+    background-color: #111111;
+  }
+
+  :global(.gandi_editor-wrapper_tab_2OPuA) {
+    background-color: #333333;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  :global(.gandi_editor-wrapper_tab_2OPuA):hover {
+    background-color: #111111;
+  }
+
+  :global(.gandi_editor-wrapper_tabList_4HFZz) {
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  :global(.blocklyToolboxDiv) {
+    background-color: #111111;
+    border-radius: 0px 0px 8px 8px;
+  }
+
+  :global(.gandi_stage-selector_stage-selector_3oWOr):hover, :global(.addons_tip-icon_oy8QS):hover, :global(.gandi_plugin-tooltip_tip-icon_1pyZM):hover, :global(.gandi_input_input-form_l9eYg):hover {
+    border-color: hsla(194, 100%, 50%, 1);
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  :global(.gandi_input_input-form_l9eYg) {
+    border-radius: 2rem;
+  }
+
+  :global(.gandi_action-menu_more-button_1fMGZ), :global(.gandi_action-menu_more-buttons-outer_3J9yZ) {
+    background: #134c91;
+  }
+  :global(.gandi_action-menu_more-button_1fMGZ):hover {
+    background: hsla(194, 100%, 50%, 1);
+  }
+
+  :global(.gandi_collapsible-box_collapsible-box_1_329), :global(.gandi_stage-wrapper_stage-wrapper_2bejr.gandi_stage-wrapper_full-screen_2hjMb) {
+    background-color: #111111;
+  }
+  :global(.gandi_plugins_plugins-root_xA3t3), 
+  :global(.gandi_target-pane_count_3fmUd), 
+  :global(.gandi_extension-item_extensionItem_d06hF), 
+  :global(.gandi_asset-panel_wrapper_366X0), 
+  :global(.blocklyWidgetDiv .goog-menu),
+  :global(.gandi_stage-header_stage-header-wrapper-overlay_5vfJa) {
+    background: #111111;
+  }
+
+  :global(.blocklyWidgetDiv .goog-menu) {
+    border-color: #ffffff26;
+    color: #eeeeee;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    margin: 0;
+    outline: none;
+    padding: 4px 0;
+  }
+
+  :global(.gandi_sprite-selector_scroll-wrapper_3NNnc) {
+    background-color: var(--theme-color-b200);
+    border-color: var(--theme-border-color-tip);
+    border-width: 1px;
+    border-style: solid;
+  }
+  :global(.gandi_target-pane_count_3fmUd) {
+    border-top: 1px solid var(--theme-border-color-tip);
+  }
+
+  :global(.publish-button-2RcKQ) {
+    border: 1px solid var(--theme-text-primary);
+    background-color: var(--theme-color-700);
+    background-blend-mode: normal;
+  }
+  :global(.publish-button-2RcKQ):hover {
+    border: 1px solid var(--theme-text-primary);
+    background-color: var(--theme-color-700);
+    background-blend-mode: normal;
+  }
+  :global(.login-button-lZQv5) {
+    color: var(--theme-color-g400);
+    border: 1px solid var(--theme-text-primary);
+  }
+}
+
+:root .penguinmodDark {
+  --theme-yellow-color: #ffc700;
+  --theme-brand-color: hsla(194, 100%, 50%, 1);
+  --theme-error-color: hsla(30, 100%, 55%, 1);
+  --theme-brand-color-p4: #134c91;
+  --theme-brand-color-p3: #134c91;
+  --theme-error-color-p3: hsla(30, 100%, 55%, 0.25);
+
+  --theme-color-700: #009CCC;
+  --theme-color-600: #134c91;
+  --theme-color-550: #009CCC;
+  --theme-color-500: #1e1e1e; //editor background
+  --theme-color-400: #2e2e2e;
+  --theme-color-350: rgb(17, 17, 17);
+  --theme-color-300: #484848; //editor background dots
+  --theme-color-200: #111111;
+  --theme-color-150: #3F4654;
+  --theme-color-100: #333333;
+  --theme-color-50: #515151;
+  --theme-color-b100: hsla(194, 100%, 50%, 1);
+  --theme-color-b200: #1e1e1e;
+  --theme-color-g500: #808080;
+  --theme-color-g450: rgba(156, 163, 175, 0.4);
+  --theme-color-g400: #eee;
+  --theme-color-g300: #b3b3b3;
+  --theme-text-primary: hsla(0, 100%, 100%, 1);
+  --theme-border-color-tip: #ffffff26;
+
+  --gui-item-active-transparent: hsla(194, 100%, 50%, 0.35);
 }
