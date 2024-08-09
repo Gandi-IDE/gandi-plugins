@@ -4,7 +4,7 @@ import styles from "./styles.less";
 import ReactDOM from "react-dom";
 import VoiceIcon from "assets/icon--voice.svg";
 import { Button, GandiProvider, Tooltip } from "@gandi-ide/gandi-ui";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { connectToRoom } from "./lib/livekit";
 import { Member } from "./components/MemberList/MemberListItem";
 import classNames from "classnames";
@@ -91,6 +91,30 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
     };
   }, []);
   const handleClick = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasMicrophone = devices.some((device) => device.kind === "audioinput");
+      if (!hasMicrophone) {
+        toast.error(msg("plugins.voiceCooperation.errorMsgPermission"), {
+          position: "top-center",
+        });
+        return;
+      }
+    } catch (error) {
+      toast.error(msg("plugins.voiceCooperation.errorMsgPermission"), {
+        position: "top-center",
+      });
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+    } catch (error) {
+      toast.error(msg("plugins.voiceCooperation.errorMsgPermission"), {
+        position: "top-center",
+      });
+      return;
+    }
     setIsMuted(false);
     if (pluginContext.teamworkManager === null) {
       toast.error(msg("plugins.voiceCooperation.errorNotInCooperation"), {
@@ -315,6 +339,7 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
   }
   return ReactDOM.createPortal(
     <VoiceContext.Provider value={pluginContext}>
+      <Toaster />
       <RoomContext.Provider value={room}>
         <LocalizationContext.Provider value={pluginContext.intl}>
           <GandiProvider
