@@ -26,19 +26,19 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
             key: 'presetThemes',
             type: 'select',
             label: msg('plugins.customCss.theme'),
-            value: "noPreset",
+            value: "none",
             options: [
-              { label: msg('plugins.customCss.theme.none'), value: "noPreset" },
+              { label: msg('plugins.customCss.theme.none'), value: "none" },
               { label: msg('plugins.customCss.theme.turbowarpDark'), value: "turbowarpDark" },
             ],
             onChange: (value) => {
               switch(value) {
                 default:
                   removeAllStyles()
+                  document.body.classList.add(presetThemes[value as any])
                   break;
-                case "turbowarpDark":
+                case "none":
                   removeAllStyles()
-                  document.body.classList.add(presetThemes.turbowarpDark)
                   break;
               }
             },

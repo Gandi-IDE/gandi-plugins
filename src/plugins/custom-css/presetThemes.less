@@ -5,10 +5,12 @@
 
   :global(.gandi_editor-wrapper_tab_2OPuA.gandi_editor-wrapper_selected_1drBd) {
     color: var(--theme-brand-color);
+    background-color: #111111;
   }
 
   :global(.gandi_editor-wrapper_tab_2OPuA) {
     background-color: #333333;
+    border-radius: 1rem 1rem 0 0;
   }
 
   :global(.gandi_editor-wrapper_tab_2OPuA):hover {
@@ -20,13 +22,18 @@
   }
 
   :global(.blocklyToolboxDiv) {
+    background-color: #111111;
     border-radius: 0px 0px 8px 8px;
   }
 
-  :global(.gandi_stage-selector_stage-selector_3oWOr):hover, :global(.addons_tip-icon_oy8QS):hover, :global(.gandi_plugin-tooltip_tip-icon_1pyZM):hover {
+  :global(.gandi_stage-selector_stage-selector_3oWOr):hover, :global(.addons_tip-icon_oy8QS):hover, :global(.gandi_plugin-tooltip_tip-icon_1pyZM):hover, :global(.gandi_input_input-form_l9eYg):hover {
     border-color: #ff4c4c;
     border-width: 1px;
     border-style: solid;
+  }
+
+  :global(.gandi_input_input-form_l9eYg) {
+    border-radius: 2rem;
   }
 
   :global(.gandi_action-menu_more-button_1fMGZ), :global(.gandi_action-menu_more-buttons-outer_3J9yZ) {
@@ -34,6 +41,39 @@
   }
   :global(.gandi_action-menu_more-button_1fMGZ):hover {
     background: hsla(10, 85%, 65%, 1);
+  }
+
+  :global(.gandi_collapsible-box_collapsible-box_1_329), :global(.gandi_stage-wrapper_stage-wrapper_2bejr.gandi_stage-wrapper_full-screen_2hjMb) {
+    background-color: #111111;
+  }
+  :global(.gandi_plugins_plugins-root_xA3t3), 
+  :global(.gandi_target-pane_count_3fmUd), 
+  :global(.gandi_extension-item_extensionItem_d06hF), 
+  :global(.gandi_asset-panel_wrapper_366X0), 
+  :global(.blocklyWidgetDiv .goog-menu),
+  :global(.gandi_stage-header_stage-header-wrapper-overlay_5vfJa) {
+    background: #111111;
+  }
+
+  :global(.blocklyWidgetDiv .goog-menu) {
+    border-color: #ffffff26;
+    color: #eeeeee;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    margin: 0;
+    outline: none;
+    padding: 4px 0;
+  }
+
+  :global(.gandi_sprite-selector_scroll-wrapper_3NNnc) {
+    background-color: var(--theme-color-b200);
+    border-color: var(--theme-border-color-tip);
+    border-width: 1px;
+    border-style: solid;
+  }
+  :global(.gandi_target-pane_count_3fmUd) {
+    border-top: 1px solid var(--theme-border-color-tip);
   }
 }
 
@@ -44,11 +84,26 @@
   --theme-brand-color-p4: #ff4d4d59;
   --theme-brand-color-p3: hsla(10, 85%, 65%, 0.35);
   --theme-error-color-p3: hsla(30, 100%, 55%, 0.25);
-  --theme-color-200: #111111;
-  --theme-color-300: #111111;
-  --theme-color-b200: #1e1e1e;
 
+  --theme-color-700: #990000;
+  --theme-color-600: #cc0000;
   --theme-color-550: #1e1e1e;
-
+  --theme-color-500: #1e1e1e; //editor background
+  --theme-color-400: #2e2e2e;
+  --theme-color-350: #1d2634;
+  --theme-color-300: #484848; //editor background dots
+  --theme-color-200: #111111;
+  --theme-color-150: #3F4654;
+  --theme-color-100: #333333;
+  --theme-color-50: #515151;
   --theme-color-b100: #ff4c4c;
+  --theme-color-b200: #1e1e1e;
+  --theme-color-g500: #808080;
+  --theme-color-g450: rgba(156, 163, 175, 0.4);
+  --theme-color-g400: #999999;
+  --theme-color-g300: #b3b3b3;
+  --theme-text-primary: #eeeeee;
+  --theme-border-color-tip: #ffffff26;
+
+  --gui-item-active-transparent: #ff4d4d59;
 }
