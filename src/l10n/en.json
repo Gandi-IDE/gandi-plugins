@@ -192,7 +192,7 @@
   "plugins.customCss.theme": "Preset Themes",
   "plugins.customCss.theme.none": "None",
   "plugins.customCss.theme.turbowarpDark": "Turbowarp Dark",
-  "plugins.customCss.theme.penghuinmodDark": "PenguinMod Dark",
+  "plugins.customCss.theme.penguinmodDark": "PenguinMod Dark",
   "plugins.extensionManager.title": "Extension Manager",
   "plugins.extensionManager.intro": "Manage your extensions.",
   "plugins.voiceCooperation.title": "Voice Cooperation",

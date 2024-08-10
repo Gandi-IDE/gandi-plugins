@@ -4,6 +4,12 @@ import React from "react";
 import presetThemes from "./presetThemes.less";
 
 const CustomCss = ({ registerSettings, msg }: PluginContext) => {
+
+  let presets = [
+    "turbowarpDark",
+    "penguinmodDark",
+  ]
+
   const linkDom = document.createElement("link");
   linkDom.type = "text/css";
   linkDom.rel = "stylesheet";
@@ -11,8 +17,19 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
   document.getElementsByTagName("head")[0].appendChild(linkDom);
 
   const removeAllStyles = () => {
-    document.body.classList.remove(presetThemes.turbowarpDark)
+    for (let i in presets) {
+      document.body.classList.remove(presetThemes[presets[i]])
+    }
   }
+
+  const generateOptions = () => {
+    let options = [{ label: msg('plugins.customCss.theme.none'), value: "none" }]
+    for (let i in presets) {
+      options.push({ label: msg(`plugins.customCss.theme.${presets[i]}`), value: presets[i] })
+    }
+    return options
+  }
+
   const register = registerSettings(
     msg("plugins.customCss.title"),
     "custom-css",
@@ -27,11 +44,7 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
             type: 'select',
             label: msg('plugins.customCss.theme'),
             value: "none",
-            options: [
-              { label: msg('plugins.customCss.theme.none'), value: "none" },
-              { label: msg('plugins.customCss.theme.turbowarpDark'), value: "turbowarpDark" },
-              { label: msg('plugins.customCss.theme.penghuinmodDark'), value: "penguinmodDark" },
-            ],
+            options: generateOptions(),
             onChange: (value) => {
               switch(value) {
                 default:
