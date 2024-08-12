@@ -1,0 +1,121 @@
+.container {
+    position: relative;
+    border-radius: 0 0 8px 8px;
+    font-size: 12px;
+    line-height: 18px;
+    padding: 9px;
+    color: var(--theme-color-g300);
+    height: calc(100% - 25px);
+}
+
+.tab-wrapper {
+    height: calc(100% - 15px);
+    overflow: hidden;
+}
+
+.tab {
+    margin: 0px;
+    display: flex;
+    flex-grow: 1; // 使 Tab 占据剩余空间
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.inner {
+    height: calc(100% - 10px);
+    color: var(--theme-text-primary);
+    overflow: hidden;
+}
+
+.loading {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 1;
+}
+
+.window {
+    width: 100%;
+    height: calc(100% - 14px);
+    overflow: hidden;
+    overflow-y: auto;
+    text-align: center;
+    color: #000;
+    background-color: #ffffff;
+    margin-top: 5px;
+}
+
+.windows {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    justify-content: center;
+    align-items: center;
+    width: calc(100% - 18px);
+    height: calc(100% - 42px);
+    background: var(--theme-color-300);
+}
+
+.imgCard {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    position: relative;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-height: 200px;
+    border-radius: 5px;
+    transition: all 0.2s linear;
+    overflow: hidden;
+}
+
+.imgCard:hover {
+    background: #ffffff;
+    transform: scale(1.01);
+    box-shadow: 0px 7px 15px 0px rgba(0, 0, 0, 0.076), 7px 0px 15px 0px rgba(0, 0, 0, 0.076);
+}
+
+.imgCardLoad {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+}
+
+.block {
+    cursor: move;
+}
+
+.url {
+    cursor: pointer;
+}
+
+.BackButtonIcon {
+    display: flex;
+}
+
+.iconBox {
+    margin-right: 6px;
+    border-radius: 6px;
+    transition: all 0.1s linear;
+    padding: 3px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-bottom: 4px;
+
+    &:hover {
+        background: var(--theme-color-200);
+    }
+}
+
+.p {
+    margin-top: 16px;
+    font-size: 11px;
+}
