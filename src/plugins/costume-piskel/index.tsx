@@ -1,4 +1,5 @@
 import * as React from "react";
+import Icon from "assets/icon--costumepiskel.svg?url";
 
 const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
   React.useEffect(() => {
@@ -111,7 +112,7 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
     utils.expandCostumeMenuItems([
       {
         id: "piskelNewCostume",
-        img: "https://www.piskelapp.com/static/resources/favicon.png",
+        img: Icon,
         title: msg("plugins.costumePiskel.newCostume"),
         onClick: () => {
           if (!targetWindowMap[vm.editingTarget.id]) {
