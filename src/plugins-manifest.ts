@@ -17,7 +17,7 @@ import inspiro from "plugins/inspiro/manifest";
 import customCss from "src/plugins/custom-css/manifest";
 import extensionManager from "src/plugins/extension-manager/manifest";
 import voiceCooperation from "src/plugins/voice-cooperation/manifest";
-import gandiSolution from "src/plugins/gandi-solution/manifest";
+import blockSharing from "plugins/block-sharing/manifest";
 import costumePiskel from "src/plugins/costume-piskel/manifest";
 
 export default {
@@ -40,6 +40,6 @@ export default {
   "custom-css": customCss,
   "extension-manager": extensionManager,
   "voice-cooperation": voiceCooperation,
-  "gandi-solution": gandiSolution,
+  "gandi-solution": blockSharing,
   "costume-piskel": costumePiskel,
 };

@@ -53,7 +53,7 @@ const BluePrint: React.FC<BluePrintProps> = ({ content, msg }) => {
         className={classNames(styles.inner, styles.block)}
         ref={imgRef}
         src={content.url}
-        alt={msg("plugins.gandiSolution.bluePrint")}
+        alt={msg("plugins.blockSharing.bluePrint")}
         width="100%"
         height="500px"
         onLoad={load}

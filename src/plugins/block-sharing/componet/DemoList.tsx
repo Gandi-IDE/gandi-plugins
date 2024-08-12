@@ -2,7 +2,7 @@ import styles from "../styles.less";
 import React, { useEffect, useRef } from "react";
 import { Spinner } from "@gandi-ide/gandi-ui";
 import hack from "../hack";
-import BluePrint from "./BluePrint";
+import Demo from "./Demo";
 
 interface BluePrintListProps {
   list: Array<{ url: string; block: string }>;
@@ -13,9 +13,9 @@ const BluePrintList: React.FC<BluePrintListProps> = ({ list, msg }) => {
   return (
     <div className={styles.window}>
       {list.length === 0 ? (
-        <p className={styles.p}>{msg("plugins.gandiSolution.noBluePrint")}</p>
+        <p className={styles.p}>{msg("plugins.blockSharing.noDemo")}</p>
       ) : (
-        list.map((item, index) => <BluePrint key={index} content={item} msg={msg} />)
+        list.map((item, index) => <Demo key={index} content={item} />)
       )}
     </div>
   );

@@ -46,7 +46,7 @@ const hack = {
         return svgText;
       } catch (error) {
         console.error("Fetch SVG file error:", error);
-        toast.error(hack.msg("plugins.gandiSolution.networkError"));
+        toast.error(hack.msg("plugins.blockSharing.networkError"));
         return null;
       }
     };
@@ -100,7 +100,7 @@ const hack = {
                     });
                   } catch (e) {
                     console.error(e);
-                    toast.error(hack.msg("plugins.gandiSolution.blockContentError"));
+                    toast.error(hack.msg("plugins.blockSharing.blockContentError"));
                   }
                 }
               }
@@ -354,7 +354,7 @@ const hack = {
                     vm.refreshWorkspace();
                   });
                 } catch (e) {
-                  toast.error(hack.msg("plugins.gandiSolution.blockContentError"));
+                  toast.error(hack.msg("plugins.blockSharing.blockContentError"));
                 }
               }
             }

@@ -1,6 +1,6 @@
 import * as React from "react";
 import styles from "./styles.less";
-import GandiSolutionIcon from "assets/icon--gandi-solution.svg";
+import BlockSharingIcon from "assets/icon--gandi-solution.svg";
 import PluginsManager from "../plugins-manager/index";
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import useStorageInfo from "hooks/useStorageInfo";
@@ -24,7 +24,7 @@ const DEFAULT_CONTAINER_INFO = {
   translateY: 60,
 };
 
-const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, workspace, blockly, utils }) => {
+const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, workspace, blockly, utils }) => {
   const [visible, setVisible] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [loading, setLoading] = React.useState("load");
@@ -65,7 +65,7 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
         const saveAsSvg = {
           id: "saveAsSvg",
           enabled: true,
-          text: msg("plugins.gandiSolution.saveAsSvg"),
+          text: msg("plugins.blockSharing.saveAsSvg"),
           callback: () => {
             hack.exportSVG(block, vm, blockly).then(async (svgData) => {
               const downloadLink = document.createElement("a");
@@ -80,7 +80,7 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
         const copyAsSvg = {
           id: "copyAsSvg",
           enabled: true,
-          text: msg("plugins.gandiSolution.copyAsSvg"),
+          text: msg("plugins.blockSharing.copyAsSvg"),
           callback: async () => {
             try {
               if (navigator.clipboard && window.ClipboardItem) {
@@ -91,14 +91,14 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
                   const data = [new ClipboardItem({ [blob.type]: blob })];
                   // 调用Clipboard API的write方法将数据写入剪切板
                   await navigator.clipboard.write(data);
-                  toast.success(msg("plugins.gandiSolution.copyBlockSuccess"));
+                  toast.success(msg("plugins.blockSharing.copyBlockSuccess"));
                 });
               } else {
-                toast.error(msg("plugins.gandiSolution.browserNotSupport"));
+                toast.error(msg("plugins.blockSharing.browserNotSupport"));
               }
             } catch (err) {
               console.error(err);
-              toast.error(msg("plugins.gandiSolution.copyError"));
+              toast.error(msg("plugins.blockSharing.copyError"));
             }
           },
         };
@@ -122,54 +122,31 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
   hack.startHack(workspace, blockly, vm, utils, setLoading);
 
   React.useEffect(() => {
-    const register = registerSettings(
-      msg("plugins.gandiSolution.title"),
-      "gandiSolution",
-      [
-        {
-          key: "gandiSolution",
-          label: msg("plugins.gandiSolution.title"),
-          items: [
-            {
-              key: "autoURL",
-              type: "switch",
-              label: msg("plugins.gandiSolution.autoURL"),
-              value: false,
-              // eslint-disable-next-line @typescript-eslint/no-empty-function
-              onChange: (value) => {
-                if (window.location.search.includes("Block") && window.location.search.includes("JumpLink") && value) {
-                  setBlockValue(window.location.search.split("Block=")[1].split("&")[0]);
-                  setJumpLink(window.location.search.split("JumpLink=")[1].split("&")[0]);
-                  setAutoURL(Boolean(value));
-                  handleClick(undefined);
-                  if (window.location.search.split("JumpLink=")[1].split("&")[0]) {
-                    console.log("e");
-                    hack.postBlocks(
-                      `https://m.ccw.site/creator-college/images/${window.location.search.split("JumpLink=")[1].split("&")[0]}`,
-                      workspace,
-                      utils,
-                      vm,
-                    );
-                  }
-                  const currentUrl = new URL(window.location.href);
-                  currentUrl.searchParams.delete("Block");
-                  currentUrl.searchParams.delete("JumpLink");
-                  setTimeout(() => {
-                    window.history.replaceState(null, "", currentUrl.href);
-                  }, 1000);
-                }
-              },
-            },
-          ],
-        },
-      ],
-      <GandiSolutionIcon />,
-    );
+    if (window.location.search.includes("Block") && window.location.search.includes("JumpLink")) {
+      setBlockValue(window.location.search.split("Block=")[1].split("&")[0]);
+      setJumpLink(window.location.search.split("JumpLink=")[1].split("&")[0]);
+      setAutoURL(Boolean(true));
+      handleClick(undefined);
+      if (window.location.search.split("JumpLink=")[1].split("&")[0]) {
+        console.log("e");
+        hack.postBlocks(
+          `https://m.ccw.site/creator-college/images/${window.location.search.split("JumpLink=")[1].split("&")[0]}`,
+          workspace,
+          utils,
+          vm,
+        );
+      }
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete("Block");
+      currentUrl.searchParams.delete("JumpLink");
+      setTimeout(() => {
+        window.history.replaceState(null, "", currentUrl.href);
+      }, 1000);
+    }
     return () => {
-      register.dispose();
       window.postMessage(["dispose"], "*");
     };
-  }, [registerSettings, msg]);
+  }, [setAutoURL, msg]);
 
   const backToHome = () => {
     (document.getElementById("gandi-solution-article-iframe") as HTMLIFrameElement).src = String(
@@ -183,17 +160,17 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
       {ReactDOM.createPortal(
         <Tooltip
           className={styles.icon}
-          icon={<GandiSolutionIcon />}
+          icon={<BlockSharingIcon />}
           onClick={handleClick}
-          tipText={msg("plugins.gandiSolution.title")}
+          tipText={msg("plugins.blockSharing.title")}
         />,
         document.querySelector(".plugins-wrapper"),
       )}
       {visible &&
         ReactDOM.createPortal(
           <ExpansionBox
-            title={msg("plugins.gandiSolution.title")}
-            id="gandiSolution"
+            title={msg("plugins.blockSharing.title")}
+            id="blockSharing"
             minWidth={300}
             minHeight={450}
             borderRadius={8}
@@ -217,10 +194,10 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
                   <Tab
                     className={styles.tab}
                     items={[
-                      msg("plugins.gandiSolution.tag.1"),
-                      msg("plugins.gandiSolution.tag.2"),
-                      msg("plugins.gandiSolution.tag.3"),
-                      msg("plugins.gandiSolution.tag.4"),
+                      msg("plugins.blockSharing.tag.1"),
+                      msg("plugins.blockSharing.tag.2"),
+                      msg("plugins.blockSharing.tag.3"),
+                      msg("plugins.blockSharing.tag.4"),
                     ]}
                     activeIndex={currentIndex}
                     onChange={setCurrentIndex}
@@ -229,14 +206,14 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
               ) : loading === "home" ? (
                 <Tab
                   className={styles.tab}
-                  items={[msg("plugins.gandiSolution.tag.5")]}
+                  items={[msg("plugins.blockSharing.tag.5")]}
                   activeIndex={currentIndex}
                   onChange={setCurrentIndex}
                 />
               ) : loading === "load" ? (
                 <Tab
                   className={styles.tab}
-                  items={[msg("plugins.gandiSolution.tag.load")]}
+                  items={[msg("plugins.blockSharing.tag.load")]}
                   activeIndex={currentIndex}
                   onChange={setCurrentIndex}
                 />
@@ -270,6 +247,6 @@ const GandiSolution: React.FC<PluginContext> = ({ msg, registerSettings, vm, wor
   );
 };
 
-GandiSolution.displayName = "GandiSolution";
+blockSharing.displayName = "blockSharing";
 
-export default GandiSolution;
+export default blockSharing;
