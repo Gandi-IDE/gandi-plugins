@@ -161,17 +161,19 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
         }
         setIsConnected(connected);
         setIsLoading(false);
-        fetchCurrentUserList(_room);
-        roomEventRegister(_room);
-        _room.remoteParticipants.forEach((participant) => {
-          if (participant.getTrackPublications().length > 0) {
-            participant.getTrackPublications().forEach((track) => {
-              if (track.kind === LiveKit.Track.Kind.Audio) {
-                handleNewTrack(track.track as LiveKit.RemoteAudioTrack);
-              }
-            });
-          }
-        });
+        if (_room) {
+          fetchCurrentUserList(_room);
+          roomEventRegister(_room);
+          _room.remoteParticipants.forEach((participant) => {
+            if (participant.getTrackPublications().length > 0) {
+              participant.getTrackPublications().forEach((track) => {
+                if (track.kind === LiveKit.Track.Kind.Audio) {
+                  handleNewTrack(track.track as LiveKit.RemoteAudioTrack);
+                }
+              });
+            }
+          });
+        }
       });
     } catch (error) {
       setIsConnected(false);
