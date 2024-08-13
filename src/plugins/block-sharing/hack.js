@@ -373,11 +373,11 @@ const hack = {
         window.addEventListener(eventName, preventDefaults, false);
       });
       const handlePaste = (event) => {
-        event.preventDefault();
         const text = event.clipboardData.getData("text");
 
         // 处理被复制的内容
         if (text.startsWith("data:image/svg+xml;")) {
+          event.preventDefault();
           const convertDataUrlToBlob = (dataUrl) => {
             // Split the data URL
             const parts = dataUrl.split(",");
