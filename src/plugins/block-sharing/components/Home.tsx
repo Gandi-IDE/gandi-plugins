@@ -1,6 +1,6 @@
 import styles from "../styles.less";
-import React, { useEffect, useRef } from "react";
-import { Box, Spinner } from "@gandi-ide/gandi-ui";
+import React, { useRef } from "react";
+import { Spinner } from "@gandi-ide/gandi-ui";
 import hack from "../hack";
 
 interface ArticleProps {
@@ -10,10 +10,10 @@ interface ArticleProps {
 
 const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [loading, setloading] = React.useState(true);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    hack.setLoad(setloading);
+    hack.setLoad(setLoading);
     if (iframeRef.current) {
       iframeRef.current.onload = () => {
         hack.bluePrint = [];
@@ -26,7 +26,7 @@ const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
               iframeRef.current.contentWindow.postMessage(["loadBlock"], "*");
             }
           }, 2000);
-          setloading(false);
+          setLoading(false);
         }, 100);
       };
     }
@@ -36,12 +36,12 @@ const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
     <div className={styles.window}>
       {loading && (
         <div className={styles.windows}>
-          <Spinner id={"gandi-solution-loading"} className={styles.loading} />
+          <Spinner id={"block-sharing-loading"} className={styles.loading} />
         </div>
       )}
       <iframe
         allow="clipboard-write"
-        id="gandi-solution-article-iframe"
+        id="block-sharing-article-iframe"
         ref={iframeRef}
         className={styles.inner}
         src={name + "?hideHeader" + (Jump ? "&JumpLink=" + Jump : "")}

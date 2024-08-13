@@ -40,6 +40,6 @@ export default {
   "custom-css": customCss,
   "extension-manager": extensionManager,
   "voice-cooperation": voiceCooperation,
-  "gandi-solution": blockSharing,
+  "block-sharing": blockSharing,
   "costume-piskel": costumePiskel,
 };

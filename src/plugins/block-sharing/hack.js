@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import blocksMedia from "./block-media";
+import blocksMedia from "lib/block-media";
 import computedStyleToInlineStyle from "computed-style-to-inline-style";
 import materialDrag from "./material-drag";
 /* eslint-disable no-case-declarations */
@@ -19,7 +19,7 @@ const hack = {
   setLoad: (callback) => {
     hack.loading = callback;
   },
-  droping: false,
+  dropping: false,
   DragInterval: null,
   dropContent: null,
   dropBlock: (e, workspace, utils, vm, drop = true) => {
@@ -51,9 +51,9 @@ const hack = {
       }
     };
     const s = workspace.getParentSvg();
-    if (hack.droping) {
+    if (hack.dropping) {
       if (drop) {
-        hack.droping = false;
+        hack.dropping = false;
       }
       const decodeFromBase64Unicode = (base64Str) => {
         const binaryString = atob(base64Str);
@@ -244,7 +244,7 @@ const hack = {
     });
   },
   postBlocks: (blocks, workspace, utils, vm) => {
-    hack.droping = true;
+    hack.dropping = true;
     hack.dropContent = blocks;
     const timer = setInterval(() => {
       if (vm?.editingTarget?.originalTargetId) {
@@ -435,7 +435,7 @@ const hack = {
         if (hack.CurrentIndex === 0) {
           //本地环境下拿到的event不一样
           if (hack.isHTTP) {
-            const pos = document.getElementById("gandi-solution-article-iframe").getBoundingClientRect();
+            const pos = document.getElementById("block-sharing-article-iframe").getBoundingClientRect();
             pageX = x + pos.left;
             pageY = y + pos.top;
           } else {
@@ -471,7 +471,7 @@ const hack = {
             );
             break;
           case "postBlock":
-            hack.droping = true;
+            hack.dropping = true;
             hack.dropContent = e.data[1];
             hack.dropBlock(
               {
@@ -500,13 +500,13 @@ const hack = {
             );
             break;
           case "startDrop":
-            hack.droping = true;
+            hack.dropping = true;
             hack.dropContent = e.data[1];
             document.addEventListener(
               "mousedown",
               () => {
-                if (hack.droping) {
-                  hack.droping = false;
+                if (hack.dropping) {
+                  hack.dropping = false;
                   hack.dropContent = null;
                 }
               },
@@ -540,7 +540,7 @@ const hack = {
                 hack.DragInterval = blockContent;
                 utils.onDragAssetInfo(materialDrag(blockContent));
               } else {
-                hack.droping = false;
+                hack.dropping = false;
                 hack.dropContent = null;
               }
             }
@@ -605,7 +605,7 @@ const hack = {
         window.removeEventListener("message", message);
 
         // 取消任何正在进行的拖拽操作
-        hack.droping = false;
+        hack.dropping = false;
         hack.dropContent = null;
         hack.DragInterval = null;
 

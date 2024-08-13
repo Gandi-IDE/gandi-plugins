@@ -1,6 +1,5 @@
 import styles from "../styles.less";
-import React, { useEffect, useRef } from "react";
-import hack from "../hack";
+import React from "react";
 import classNames from "classnames";
 
 interface ArticleProps {

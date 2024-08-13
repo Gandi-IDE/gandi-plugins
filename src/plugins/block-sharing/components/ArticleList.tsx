@@ -1,7 +1,5 @@
 import styles from "../styles.less";
-import React, { useEffect, useRef } from "react";
-import { Spinner } from "@gandi-ide/gandi-ui";
-import hack from "../hack";
+import React from "react";
 import Article from "./Article";
 
 interface ArticleListProps {

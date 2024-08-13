@@ -1,18 +1,17 @@
 import * as React from "react";
 import styles from "./styles.less";
-import BlockSharingIcon from "assets/icon--gandi-solution.svg";
-import PluginsManager from "../plugins-manager/index";
+import BlockSharingIcon from "assets/icon--block-sharing.svg";
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import useStorageInfo from "hooks/useStorageInfo";
 import ReactDOM from "react-dom";
 import Tooltip from "components/Tooltip";
 import Tab from "components/Tab";
-import Home from "./componet/Home";
+import Home from "./components/Home";
 import IF from "components/IF";
 import hack from "./hack.js";
-import BluePrintList from "./componet/BluePrintList";
-import ArticleList from "./componet/ArticleList";
-import DemoList from "./componet/DemoList";
+import BluePrintList from "./components/BluePrintList";
+import ArticleList from "./components/ArticleList";
+import DemoList from "./components/DemoList";
 import toast from "react-hot-toast";
 import { Box } from "@gandi-ide/gandi-ui";
 import HomeIcon from "./icons/home.svg";
@@ -28,9 +27,9 @@ const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, work
   const [visible, setVisible] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [loading, setLoading] = React.useState("load");
-  // const [Link, setLink] = React.useState("https://learn.ccw.site");
-  // const [Link, setLink] = React.useState("http://localhost:3000");
-  const [Link, setLink] = React.useState("http://learn-qa.xiguacity.cn");
+  // const Link = "https://learn.ccw.site";
+  // const Link = "http://localhost:3000";
+  const Link = "http://learn-qa.xiguacity.cn";
   const [autoURL, setAutoURL] = React.useState(false);
   const [blockValue, setBlockValue] = React.useState("");
   const [JumpLink, setJumpLink] = React.useState("");
@@ -149,7 +148,7 @@ const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, work
   }, [setAutoURL, msg]);
 
   const backToHome = () => {
-    (document.getElementById("gandi-solution-article-iframe") as HTMLIFrameElement).src = String(
+    (document.getElementById("block-sharing-article-iframe") as HTMLIFrameElement).src = String(
       new URL("/tag/blueprint/new?hideHeader", Link),
     );
     setCurrentIndex(0);
