@@ -22,14 +22,14 @@ const DEFAULT_CONTAINER_INFO = {
   translateX: 72,
   translateY: 60,
 };
+// const LINK = "https://learn.ccw.site";
+// const LINK = "http://localhost:3000";
+const LINK = "http://learn-qa.xiguacity.cn";
 
 const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, workspace, blockly, utils }) => {
   const [visible, setVisible] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [loading, setLoading] = React.useState("load");
-  // const Link = "https://learn.ccw.site";
-  // const Link = "http://localhost:3000";
-  const Link = "http://learn-qa.xiguacity.cn";
   const [autoURL, setAutoURL] = React.useState(false);
   const [blockValue, setBlockValue] = React.useState("");
   const [JumpLink, setJumpLink] = React.useState("");
@@ -149,7 +149,7 @@ const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, work
 
   const backToHome = () => {
     (document.getElementById("block-sharing-article-iframe") as HTMLIFrameElement).src = String(
-      new URL("/tag/blueprint/new?hideHeader", Link),
+      new URL("/tag/blueprint/new?hideHeader", LINK),
     );
     setCurrentIndex(0);
   };
@@ -223,8 +223,8 @@ const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, work
                 <Home
                   name={
                     autoURL
-                      ? String(new URL(`/article/${blockValue}`, Link))
-                      : String(new URL("/tag/blueprint/new", Link))
+                      ? String(new URL(`/article/${blockValue}`, LINK))
+                      : String(new URL("/tag/blueprint/new", LINK))
                   }
                   Jump={JumpLink}
                 />
