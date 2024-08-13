@@ -17,6 +17,7 @@
 .container-header {
   position: relative;
   cursor: move;
+
   .title {
     font-size: 12px;
     line-height: 18px;
@@ -29,6 +30,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .close-button {
     position: absolute;
     top: 2px;
@@ -37,14 +39,24 @@
     cursor: pointer;
     padding: 5px;
     border-radius: 6px;
+
     &:hover {
       background: var(--theme-color-200);
     }
+
     svg {
       width: 10px;
       height: 10px;
     }
   }
+}
+
+.containers {
+  position: absolute;
+  border-radius: 0 0 8px 8px;
+  height: 100%;
+  width: 100%;
+  background-color: #0000;
 }
 
 .anchor {
@@ -62,6 +74,7 @@
   height: 2px;
   cursor: ns-resize;
 }
+
 .bottom {
   bottom: 0px;
   left: 0;
@@ -69,6 +82,7 @@
   height: 2px;
   cursor: ns-resize;
 }
+
 .left {
   left: 0px;
   top: 0;
@@ -76,6 +90,7 @@
   height: 100%;
   cursor: ew-resize;
 }
+
 .right {
   right: 0px;
   top: 0;
