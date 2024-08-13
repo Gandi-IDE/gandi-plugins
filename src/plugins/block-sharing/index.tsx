@@ -26,7 +26,7 @@ const DEFAULT_CONTAINER_INFO = {
 // const LINK = "http://localhost:3000";
 const LINK = "http://learn-qa.xiguacity.cn";
 
-const blockSharing: React.FC<PluginContext> = ({ msg, registerSettings, vm, workspace, blockly, utils }) => {
+const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, utils }) => {
   const [visible, setVisible] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [loading, setLoading] = React.useState("load");
