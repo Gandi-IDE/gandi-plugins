@@ -22,9 +22,9 @@ const DEFAULT_CONTAINER_INFO = {
   translateX: 72,
   translateY: 60,
 };
-// const LINK = "https://learn.ccw.site";
+const LINK = "https://learn.ccw.site";
 // const LINK = "http://localhost:3000";
-const LINK = "http://learn-qa.xiguacity.cn";
+// const LINK = "http://learn-qa.xiguacity.cn";
 
 const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, utils }) => {
   const [visible, setVisible] = React.useState(false);
