@@ -32,6 +32,9 @@ importers:
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
+      computed-style-to-inline-style:
+        specifier: ^4.0.0
+        version: 4.0.0
       deep-object-diff:
         specifier: ^1.1.9
         version: 1.1.9
@@ -2585,6 +2588,9 @@ packages:
 
   compute-scroll-into-view@1.0.14:
     resolution: {integrity: sha512-mKDjINe3tc6hGelUMNDzuhorIUZ7kS7BwyY0r2wQd2HOH2tRuJykiC06iSEX8y1TuhNzvz4GcJnK16mM2J1NMQ==}
+
+  computed-style-to-inline-style@4.0.0:
+    resolution: {integrity: sha512-PwVJVqD1SZnDVbEJrshRARbKUq9JG2SlkkEY8NacLpRz98FemLfdZw3vjHndjP5gHvOruxg6Ywhcs2kqD2EmEw==}
 
   concat-map@0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
@@ -6057,7 +6063,7 @@ packages:
     engines: {node: '>=0.10.0'}
 
   source-map@0.6.1:
-    resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
+    resolution: {integrity: sha1-dHIq8y6WFOnCh6jQu95IteLxomM=}
     engines: {node: '>=0.10.0'}
 
   source-map@0.7.4:
@@ -10230,6 +10236,8 @@ snapshots:
       - supports-color
 
   compute-scroll-into-view@1.0.14: {}
+
+  computed-style-to-inline-style@4.0.0: {}
 
   concat-map@0.0.1: {}
 

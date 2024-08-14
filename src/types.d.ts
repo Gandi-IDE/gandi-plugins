@@ -56,6 +56,8 @@ interface Window {
       setGroup(state: boolean | string): void;
     };
     Utils: {
+      onDragAssetInfo: (data: any) => void;
+
       genUid: () => string;
       tokenizeInterpolation: (message: string) => string[];
       getMouseVectorPosition(
