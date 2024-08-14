@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Turn off microphone",
   "plugins.voiceCooperation.expand": "Member list",
   "plugins.voiceCooperation.kick": "Kick out",
+  "plugins.voiceCooperation.badConnection": "{name}'s connection is unstable",
   "plugins.blockSharing.title": "Block Sharing",
   "plugins.blockSharing.description": "Share your blocks to Creator Academy or anywhere else, and import to Gandi with one click",
   "plugins.blockSharing.autoURL": "Automatically parses and redirects information",

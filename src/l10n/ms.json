@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Matikan mikrofon",
   "plugins.voiceCooperation.expand": "Senarai ahli",
   "plugins.voiceCooperation.kick": "Tendang keluar",
+  "plugins.voiceCooperation.badConnection": "Sambungan {name} tidak stabil",
   "plugins.blockSharing.title": "Perkongsian Blok",
   "plugins.blockSharing.description": "Kongsi blok anda ke Akademi Pencipta atau mana-mana tempat lain, dan import ke Gandi dengan satu klik",
   "plugins.blockSharing.autoURL": "Secara automatik menganalisis dan mengarahkan maklumat",

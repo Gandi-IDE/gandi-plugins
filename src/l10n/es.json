@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Desactivar micrófono",
   "plugins.voiceCooperation.expand": "Lista de miembros",
   "plugins.voiceCooperation.kick": "Expulsar",
+  "plugins.voiceCooperation.badConnection": "La conexión de {name} es inestable",
   "plugins.blockSharing.title": "Compartir Bloques",
   "plugins.blockSharing.description": "Comparte tus bloques en la Academia de Creadores o en cualquier otro lugar, y expórtalos a Gandi con un solo clic",
   "plugins.blockSharing.autoURL": "Automáticamente analiza y redirige la información",

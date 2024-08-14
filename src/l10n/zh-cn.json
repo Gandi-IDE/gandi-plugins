@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "关闭麦克风",
   "plugins.voiceCooperation.expand": "成员列表",
   "plugins.voiceCooperation.kick": "踢出",
+  "plugins.voiceCooperation.badConnection": "{name} 的网络连接不稳定",
   "plugins.blockSharing.title": "积木分享",
   "plugins.blockSharing.description": "分享你的积木到创作者学院或者其他任何地方，并一键导入Gandi",
   "plugins.blockSharing.autoURL": "自动解析跳转信息",

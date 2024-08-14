@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Выключить микрофон",
   "plugins.voiceCooperation.expand": "Список участников",
   "plugins.voiceCooperation.kick": "Выгнать",
+  "plugins.voiceCooperation.badConnection": "Соединение {name} нестабильно",
   "plugins.blockSharing.title": "Обмен Блоками",
   "plugins.blockSharing.description": "Поделитесь своими блоками в Академии Создателей или в любом другом месте, и импортируйте их в Gandi одним щелчком",
   "plugins.blockSharing.autoURL": "Автоматически анализирует и перенаправляет информацию",
