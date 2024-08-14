@@ -58,7 +58,7 @@ const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, ut
     setVisible(true);
   }, []);
 
-  React.useMemo(() => {
+  React.useEffect(() => {
     const menuItemId: string = window.Blockly.ContextMenu.addDynamicMenuItem(
       (items, block) => {
         const saveAsSvg = {
