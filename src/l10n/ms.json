@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Matikan mikrofon",
   "plugins.voiceCooperation.expand": "Senarai ahli",
   "plugins.voiceCooperation.kick": "Tendang keluar",
+  "plugins.voiceCooperation.badConnection": "Sambungan {name} tidak stabil",
   "plugins.costumePiskel.title": "Penyunting Kostum Piskel",
   "plugins.costumePiskel.description": "Mencipta sprite bergaya piksel akan menjadi lebih mudah.",
   "plugins.costumePiskel.openCostume": "Buka dengan Piskel",

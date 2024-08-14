@@ -223,6 +223,7 @@
   "plugins.voiceCooperation.mic.off": "Выключить микрофон",
   "plugins.voiceCooperation.expand": "Список участников",
   "plugins.voiceCooperation.kick": "Выгнать",
+  "plugins.voiceCooperation.badConnection": "Соединение {name} нестабильно",
   "plugins.costumePiskel.title": "Редактор костюмов Piskel",
   "plugins.costumePiskel.description": "Создание пиксельных спрайтов станет проще.",
   "plugins.costumePiskel.openCostume": "Открыть в Piskel",

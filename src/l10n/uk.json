@@ -222,6 +222,7 @@
   "plugins.voiceCooperation.expand": "Список учасників",
   "plugins.voiceCooperation.kick": "Вилучити",
   "plugins.costumePiskel.title": "Редактор костюмів Piskel",
+  "plugins.voiceCooperation.badConnection": "З'єднання {name} нестабільне",
   "plugins.costumePiskel.description": "Створення піксельних спрайтів стане простішим.",
   "plugins.costumePiskel.openCostume": "Відкрити в Piskel",
   "plugins.costumePiskel.newCostume": "Новий костюм з Piskel"

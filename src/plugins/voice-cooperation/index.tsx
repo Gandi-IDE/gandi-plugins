@@ -3,7 +3,7 @@ import * as LiveKit from "livekit-client";
 import styles from "./styles.less";
 import ReactDOM from "react-dom";
 import VoiceIcon from "assets/icon--voice.svg";
-import { Button, GandiProvider, Tooltip } from "@gandi-ide/gandi-ui";
+import { Avatar, Box, Button, GandiProvider, Tooltip } from "@gandi-ide/gandi-ui";
 import toast, { Toaster } from "react-hot-toast";
 import { connectToRoom } from "./lib/livekit";
 import { Member } from "./components/MemberList/MemberListItem";
@@ -239,7 +239,8 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
       .on(LiveKit.RoomEvent.Reconnected, () => handleReconnect(room))
       .on(LiveKit.RoomEvent.TrackMuted, () => fetchCurrentUserList(room))
       .on(LiveKit.RoomEvent.TrackUnmuted, () => fetchCurrentUserList(room))
-      .on(LiveKit.RoomEvent.ParticipantConnected, () => newTeamMember.play());
+      .on(LiveKit.RoomEvent.ParticipantConnected, () => newTeamMember.play())
+      .on(LiveKit.RoomEvent.ConnectionQualityChanged, handleQualityChanged);
   };
 
   const handleNewTrack = (track: LiveKit.RemoteAudioTrack) => {
@@ -335,10 +336,50 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
     };
   }, []);
 
+  const handleQualityChanged = (quality: LiveKit.ConnectionQuality, participant: LiveKit.Participant) => {
+    console.log(quality, participant);
+    if (quality === LiveKit.ConnectionQuality.Poor || quality === LiveKit.ConnectionQuality.Lost) {
+      const user = voiceMemberListRef.current.filter((member) => member.clientId === participant.identity)[0];
+      toast(
+        () => {
+          return (
+            <GandiProvider>
+              <span>
+                <Avatar
+                  name={user.userInfo.name}
+                  src={user.userInfo.avatar}
+                  size="sm"
+                  sx={{
+                    width: "24px",
+                    height: "24px",
+                  }}
+                />
+                <Box sx={{ marginLeft: "8px", fontSize: "12px" }}>
+                  {pluginContext.intl.formatMessage(
+                    {
+                      id: "plugins.voiceCooperation.badConnection",
+                    },
+                    {
+                      name: user.userInfo.name,
+                    },
+                  )}
+                </Box>
+              </span>
+            </GandiProvider>
+          );
+        },
+        {
+          duration: 5 * 1000,
+        },
+      );
+    }
+  };
+
   const [isMuted, setIsMuted] = React.useState(false);
   if (!pluginContext.teamworkManager) {
     return null;
   }
+
   return ReactDOM.createPortal(
     <VoiceContext.Provider value={pluginContext}>
       <Toaster />
