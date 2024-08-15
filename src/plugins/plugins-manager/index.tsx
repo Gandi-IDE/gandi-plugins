@@ -1,4 +1,5 @@
 import * as React from "react";
+import { noop } from "lodash-es";
 import { Toaster } from "react-hot-toast";
 import { spinalToCamel } from "utils/name-helper";
 import PluginsManagerIcon from "assets/icon--plugins-manage.svg";
@@ -27,7 +28,6 @@ const DEFAULT_INJECT_PLUGINS = [
 interface PluginsManagerProps extends PluginContext {
   plugins: Record<string, () => void>;
   disabledPlugins: string[];
-  unavailablePlugins: string[];
   loadAndInjectPlugin: (name: string) => void;
 }
 
@@ -37,21 +37,54 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
   intl,
   plugins,
   disabledPlugins,
-  unavailablePlugins,
   loadAndInjectPlugin,
 }) => {
-  const defaultInjectedPlugins = React.useMemo(
-    () => DEFAULT_INJECT_PLUGINS.filter((n) => !disabledPlugins.concat(unavailablePlugins).includes(spinalToCamel(n))),
-    [disabledPlugins, unavailablePlugins],
-  );
-
   React.useEffect(() => {
-    defaultInjectedPlugins.forEach((name) => {
-      loadAndInjectPlugin(name);
-    });
-  }, [defaultInjectedPlugins]);
+    const pluginSettings = ALL_PLUGINS.reduce((acc: Array<PluginSetting>, key) => {
+      const pluginName = spinalToCamel(key);
+      // Disabled plugins will not be visible in the plugin list unless they are allowed to be default-loaded.
+      // Even for default-loaded plugins, if they are on the disabled list, they will only be visible in the plugin list but cannot be loaded or enabled.
+      if (disabledPlugins.includes(key) && !DEFAULT_INJECT_PLUGINS.includes(key)) return acc;
 
-  React.useEffect(() => {
+      const title = messages[`plugins.${pluginName}.title`] ? msg(`plugins.${pluginName}.title`) : key;
+      const pluginSetting: PluginSetting = {
+        key: pluginName,
+        label: title,
+        type: "switch",
+        value: false,
+        disabled: disabledPlugins.includes(key),
+        tags: pluginsManifest[key].credits || [],
+        description: messages[`plugins.${pluginName}.description`]
+          ? `${msg(`plugins.${pluginName}.description`)}`
+          : null,
+        onChange: (value: boolean, cancelChange: () => void) => {
+          if (value === false && LoadingPlugins[key]) {
+            // If the plug-in is loading, do not allow it to be injected
+            LoadingPlugins[key]();
+            return;
+          }
+          if (value === true && LoadingPlugins[key]) {
+            // If the plug-in is in the process of loading, you do not need to load it again
+            return;
+          }
+          if (disabledPlugins.includes(key)) {
+            // If the plug-in is only used, but wants to be loaded, cancel it
+            cancelChange();
+            return;
+          }
+          if (value && !plugins[key]) {
+            loadAndInjectPlugin(key);
+          } else if (plugins[key]) {
+            plugins[key]();
+            delete plugins[key];
+          }
+        },
+      };
+      if (DEFAULT_INJECT_PLUGINS.includes(key)) {
+        pluginSetting.onChange(true, noop);
+      }
+      return acc.concat(pluginSetting);
+    }, []);
     const register = registerSettings(
       msg("plugins.pluginsManager.title"),
       "plugins-manager",
@@ -85,43 +118,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
               )}
             </>
           ),
-          items: ALL_PLUGINS.filter((i) => !unavailablePlugins.includes(i)).map((key) => {
-            const pluginName = spinalToCamel(key);
-            const title = messages[`plugins.${pluginName}.title`] ? msg(`plugins.${pluginName}.title`) : key;
-            return {
-              key: pluginName,
-              label: title,
-              type: "switch",
-              value: defaultInjectedPlugins.includes(key),
-              disabled: disabledPlugins.includes(key),
-              tags: pluginsManifest[key].credits || [],
-              description: messages[`plugins.${pluginName}.description`]
-                ? `${msg(`plugins.${pluginName}.description`)}`
-                : null,
-              onChange: (value: boolean, cancelChange: () => void) => {
-                if (value === false && LoadingPlugins[key]) {
-                  // If the plug-in is loading, do not allow it to be injected
-                  LoadingPlugins[key]();
-                  return;
-                }
-                if (value === true && LoadingPlugins[key]) {
-                  // If the plug-in is in the process of loading, you do not need to load it again
-                  return;
-                }
-                if (disabledPlugins.includes(pluginName)) {
-                  // If the plug-in is only used, but wants to be loaded, cancel it
-                  cancelChange();
-                  return;
-                }
-                if (value && !plugins[key]) {
-                  loadAndInjectPlugin(key);
-                } else if (plugins[key]) {
-                  plugins[key]();
-                  delete plugins[key];
-                }
-              },
-            };
-          }),
+          items: pluginSettings,
         },
       ],
       <PluginsManagerIcon />,
