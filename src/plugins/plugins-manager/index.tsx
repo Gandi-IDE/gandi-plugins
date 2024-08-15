@@ -41,8 +41,8 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
   loadAndInjectPlugin,
 }) => {
   const defaultInjectedPlugins = React.useMemo(
-    () => DEFAULT_INJECT_PLUGINS.filter((n) => !disabledPlugins.includes(spinalToCamel(n))),
-    [disabledPlugins],
+    () => DEFAULT_INJECT_PLUGINS.filter((n) => !disabledPlugins.concat(unavailablePlugins).includes(spinalToCamel(n))),
+    [disabledPlugins, unavailablePlugins],
   );
 
   React.useEffect(() => {
