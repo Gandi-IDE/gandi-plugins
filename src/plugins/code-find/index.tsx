@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { debounce, update } from "lodash-es";
+import { debounce } from "lodash-es";
 import { defineMessages } from "@formatjs/intl";
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import Tooltip from "components/Tooltip";
