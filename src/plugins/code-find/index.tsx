@@ -90,7 +90,7 @@ const DEFAULT_CONTAINER_INFO = {
 };
 
 const BlockLi: React.FC<BlockLiProps> = ({ data, intl, onClick, onMouseEnterImage, onMouseLeaveImage }) => {
-  const { scriptText, blockIds } = data;  
+  const { scriptText, blockIds } = data;
   const [current, setCurrent] = React.useState(1);
   const ref = React.useRef(null);
 
@@ -334,10 +334,21 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
     setVisible(false);
   }, []);
 
-  const onSearchInputChange = (e: React.ChangeEvent) => {
-    const value = (e.target as HTMLInputElement).value;
+  const updateSearch = (value: string) => {
     setKeyword(value);
     filterBlock(value);
+  };
+
+  const onSearchInputChange = (e: React.ChangeEvent) => {
+    const value = (e.target as HTMLInputElement).value;
+    updateSearch(value);
+  };
+
+  const onSearchInputKeydown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      const value = (e.target as HTMLInputElement).value;
+      updateSearch(value);
+    }
   };
 
   const onClickOption = React.useCallback(
@@ -520,6 +531,7 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
                 placeholder={intl.formatMessage(messages.intro)}
                 className={styles.searchInput}
                 onChange={onSearchInputChange}
+                onKeyDown={onSearchInputKeydown}
                 autoComplete="off"
               />
               <div className={styles.searchResult}>
