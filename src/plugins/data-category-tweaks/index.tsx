@@ -1,4 +1,6 @@
 import * as React from "react";
+import DataCategoryTweaksIcon from "src/assets/icon--data-category-tweaks.svg"
+import "./styles.less"
 
 const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, msg, registerSettings}) => {
   React.useEffect(() => {
@@ -53,8 +55,7 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
           ],
         },
       ],
-      // This is an icon for the plugin, which can be a React component or an img link.
-      //iconComponentOrIconLink,
+      <DataCategoryTweaksIcon />
     );
 
     const runtime = vm.runtime as any
