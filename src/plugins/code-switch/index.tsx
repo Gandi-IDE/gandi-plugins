@@ -40,7 +40,7 @@ const CodeSwitch: React.FC<PluginContext> = ({ intl, vm }) => {
    * @param {*} workspace
    * @param {Element} xmlBlock
    */
-  const pasteBlockXML = (workspace, xmlBlock) => {
+  const pasteBlockData = (workspace, xmlBlock) => {
     // but without the collision checking.
     const block = window.Blockly.Xml.domToBlock(xmlBlock, workspace);
     const x = +xmlBlock.getAttribute("x");
@@ -207,7 +207,7 @@ const CodeSwitch: React.FC<PluginContext> = ({ intl, vm }) => {
 
       // Remove the old block and insert the new one.
       block.dispose();
-      const newBlock = pasteBlockXML(workspace, xml);
+      const newBlock = pasteBlockData(workspace, xml);
 
       if (parentConnection) {
         // Search for the same type of connection on the new block as on the old block.

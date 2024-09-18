@@ -21,5 +21,6 @@ export default {
   "custom-css": () => import(/* webpackChunkName: "plugin-custom-css" */ "src/plugins/custom-css"),
   "extension-manager": () => import(/* webpackChunkName: "plugin-extension-manager" */ "src/plugins/extension-manager"),
   "voice-cooperation": () => import(/* webpackChunkName: "plugin-voice-cooperation" */ "src/plugins/voice-cooperation"),
+  "block-sharing": () => import(/* webpackChunkName: "plugin-block-sharing" */ "plugins/block-sharing"),
   "costume-piskel": () => import(/* webpackChunkName: "plugin-costume-piskel" */ "src/plugins/costume-piskel"),
 } as const;

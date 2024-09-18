@@ -7,6 +7,7 @@ import pluginsEntry from "./plugins-entry";
 import pluginsL10n from "./plugins-l10n";
 import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
+import { camelToKebab } from "utils/name-helper";
 
 export const LoadingPlugins = {};
 
@@ -68,10 +69,11 @@ class PluginsController {
     const div = document.createElement("div");
     div.setAttribute("data-plugin-name", "plugins-manager");
     this.wrapperElement.appendChild(div);
+
+    const { disabledPlugins = [], unavailablePlugins = [] } = this.options;
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
-      disabledPlugins: this.options.disabledPlugins,
-      unavailablePlugins: this.options.unavailablePlugins || [],
+      disabledPlugins: disabledPlugins.concat(unavailablePlugins).map(camelToKebab),
       loadAndInjectPlugin: this.loadAndInjectPlugin.bind(this),
       plugins: this.plugins,
     });

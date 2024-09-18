@@ -74,6 +74,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
   });
   const container = React.useRef<HTMLDivElement>(null);
   const resizable = React.useRef(false);
+  const [resize, setResize] = React.useState(false);
   const direction = React.useRef("");
   const containerNodeInfo = React.useRef(containerInfo);
   const client = React.useRef({ x: 0, y: 0 });
@@ -149,6 +150,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
       const { x, y } = client.current;
 
       if (resizable.current) {
+        setResize(true);
         shouldStopNextClickEventPropagate = true;
         // 鼠标按下的位置在右边，修改宽度
         if (dire.indexOf("e") !== -1) {
@@ -202,6 +204,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
       }
     };
     const handleMouseUp = () => {
+      setResize(false);
       resizable.current = false;
       container.current.style.cursor = "";
       container.current.style.userSelect = "";
@@ -260,6 +263,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
           <h3 className={styles.title}>{title}</h3>
         </div>
         {children}
+        {resize && <div className={styles.containers}></div>}
         {canResize && (
           <>
             <div className={classNames(styles.anchor, styles.top)} onMouseDown={(e) => handleMouseDown(e, "n")} />
