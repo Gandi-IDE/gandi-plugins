@@ -23,4 +23,5 @@ export default {
   "voice-cooperation": () => import(/* webpackChunkName: "plugin-voice-cooperation" */ "src/plugins/voice-cooperation"),
   "block-sharing": () => import(/* webpackChunkName: "plugin-block-sharing" */ "plugins/block-sharing"),
   "costume-piskel": () => import(/* webpackChunkName: "plugin-costume-piskel" */ "src/plugins/costume-piskel"),
+  "separate-list-category": () => import(/* webpackChunkName: "plugin-separate-list-category" */ "src/plugins/separate-list-category"),
 } as const;
