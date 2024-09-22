@@ -1,0 +1,27 @@
+:global(.scratchCategoryItemBubble) {
+  position: relative;
+}
+
+:global(.scratchCategoryItemBubble::after) {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+:global(.scratchCategoryId-variables .scratchCategoryItemBubble) {
+  background-image: url(src/assets/icon--variables.svg);
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+:global(.scratchCategoryId-lists .scratchCategoryItemBubble) {
+  background-image: url(src/assets/icon--list.svg);
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
