@@ -1,3 +1,5 @@
+/// <reference path="../../node_modules/gandi-types/types/scratch-storage.d.ts" />
+
 type L10n = "en" | "zh-cn" | string;
 
 interface LogSystem {
@@ -40,115 +42,7 @@ interface ExtensionBlockMetadata {
   xml: string;
 }
 
-declare namespace Scratch {
-  export type RenderTarget = {
-    originalTargetId: string;
-    blocks: Blocks;
-    comments: Record<string, Comment>;
-    currentCostume: number;
-    direction: number;
-    draggable: boolean;
-    dragging: boolean;
-    drawableID: number;
-    editor?: string;
-    effects: {
-      brightness: number;
-      color: number;
-      fisheye: number;
-      ghost: number;
-      mosaic: number;
-      pixelate: number;
-      whirl: number;
-    };
-    frames: Frames;
-    id: string;
-    interpolationData: null;
-    isModule: boolean;
-    isOriginal: boolean;
-    isStage: boolean;
-    locked?: boolean;
-    renderer?: any;
-    sprite: Sprite;
-    tempo: number;
-    textToSpeechLanguage: null;
-    variables: Record<string, Variable>;
-    videoState: string;
-    videoTransparency: number;
-    volume: number;
-    size: number;
-    visible: boolean;
-    x: number;
-    y: number;
-    createVariable(id: string, name: string, type: string, isCloud?: boolean): void;
-    deleteVariable(id: string, isRemoteOperation?: boolean): void;
-    getCostumes(): Array<Costume>;
-    getCostumeById(id: string): Scratch.Costume;
-    getName(): string;
-  };
-
-  export type BlockState = {
-    fields: {
-      [key: string]: {
-        id?: string | null;
-        name: string;
-        value: string;
-        variableType?: string;
-      };
-    };
-    id: string;
-    inputs: {
-      [key: string]: {
-        block: string | null;
-        name: string;
-        shadow: string;
-      };
-    };
-    next: string | null;
-    opcode: string;
-    parent: string | null;
-    shadow: boolean;
-    topLevel: boolean;
-    x?: number;
-    y?: number;
-    mutation?: {
-      argumentdefaults?: string;
-      argumentids?: string;
-      argumentnames?: string;
-      children: unknown[];
-      hasnext?: string;
-      isglobal?: string;
-      isreporter?: string;
-      proccode?: string;
-      tagName: string;
-      targetid?: string;
-      type?: string;
-      warp?: string;
-      blockInfo?: {
-        arguments?: Record<
-          string,
-          {
-            type: string;
-            defaultValue: string;
-          }
-        >;
-        blockType?: string;
-        isDynamic?: boolean;
-        text: string;
-        opcode: string;
-      };
-    };
-  };
-
-  export type Blocks = {
-    forceNoGlow: boolean;
-    runtime: Runtime;
-    getBlock: (blockId: string) => BlockState;
-    _blocks: {
-      [id: string]: BlockState;
-    };
-    _scripts: Array<string>;
-  };
-
+declare namespace Gandi {
   export type FrameState = {
     blocks: string[];
     collapsed: boolean;
@@ -169,84 +63,10 @@ declare namespace Scratch {
     toXML(id: string): string;
   };
 
-  export type Comment = {
-    blockId: string | null;
-    id: string;
-    text: string;
-    minimized: boolean;
-    width: number;
-    height: number;
-    x: number;
-    y: number;
-  };
-
-  export type Sprite = {
-    blocks: Blocks;
-    clones: Array<RenderTarget>;
-    costumes_: Array<Costume>;
+  export type Sprite = VM.Sprite & {
     frames: Frames;
-    name: string;
-    runtime: Runtime;
-    soundBank: SoundBank;
-    sounds: Array<Sound>;
-    y: number;
-    createClone: (optLayerGroup: string) => RenderTarget;
-    removeClone: (clone: RenderTarget) => void;
-  };
-
-  export type Asset = {
-    assetId: string;
-    assetType: {
-      contentType: string;
-      immutable: boolean;
-      name: string;
-      runtimeFormat: string;
-    };
-    data: Uint8Array;
-    dataFormat: string;
-    dependencies: unknown[];
-    externalSource: boolean;
-    _clean: boolean;
-  };
-
-  export type Costume = {
-    id: string;
-    asset: Asset;
-    assetId: string;
-    bitmapResolution: number;
-    dataFormat: string;
-    md5: string;
-    name: string;
-    rotationCenterX: number;
-    rotationCenterY: number;
-    size: [number, number];
-    skinId: number;
-  };
-
-  export type Sound = {
-    asset: Asset;
-    assetId: string;
-    dataFormat: string;
-    format: string;
-    md5: string;
-    name: string;
-    rate: number;
-    sampleCount: number;
-    soundId: string;
-  };
-
-  export type Variable = {
-    // eslint-disable-next-line @typescript-eslint/no-misused-new
-    constructor(id: string, name: string, type: string, isCloud: boolean, targetId: string): void;
-    id: string;
-    isCloud: boolean;
-    name: string;
-    type: string;
-    value: string | Array<string | boolean | number>;
-    targetId: string;
-    _monitorUpToDate: boolean;
-    _name: string;
-    _value: string | Array<string | boolean | number>;
+    createClone: (optLayerGroup: string) => VM.Target;
+    removeClone: (clone: VM.Target) => void;
   };
 
   export interface SoundBank {
@@ -257,33 +77,29 @@ declare namespace Scratch {
     soundPlayers: unknown;
   }
 
-  export interface Runtime extends NodeJS.EventEmitter {
-    addCloudVariable: () => void;
-    addonBlocks: Record<
-      string,
-      {
-        procedureCode: string;
-        callback: (...args: unknown[]) => unknown;
-        arguments: string[];
-        color: string;
-        secondaryColor: string;
-      }
-    >;
+  export interface Asset extends ScratchStorage.Asset {
+    data: Uint8Array;
+  }
 
-    audioEngine: unknown;
-    canAddCloudVariable: () => boolean;
-    ccwAPI: unknown;
-    cloudOptions: {
-      limit: number;
-    };
-    compilerOptions: {
-      enabled: boolean;
-      warpTimer: boolean;
-    };
-    currentMSecs: number;
-    currentStepTime: number;
-    debug: boolean;
-    framerate: number;
+  export interface BaseAsset extends VM.BaseAsset {
+    asset: Asset | null;
+  }
+
+  export interface Costume extends VM.Costume {
+    asset: Asset | null;
+  }
+
+  export interface Target extends VM.Target {
+    sprite: Sprite;
+    locked?: boolean;
+    getCostumeById(id: string): Costume;
+    getCostumes(): Costume[];
+    deleteVariable(id: string, isRemoteOperation?: boolean): void;
+  }
+
+  export interface Runtime extends VM.Runtime {
+    targets: Target[];
+    ccwAPI: unknown; // TODO: implement ccwAPI
     gandi: {
       assets: Array<unknown>;
       configs: Record<string, unknown>;
@@ -310,40 +126,12 @@ declare namespace Scratch {
         runtimeFormat: string;
       }>;
     };
-    greenFlag(): void;
-    hasCloudData(): boolean;
-    interpolationEnabled: boolean;
-    ioDevices: unknown;
     isLoadProjectAssetsNonBlocking: boolean;
     logSystem: LogSystem;
-    storage: any;
-    threads: Array<Scratch.Thread>;
-    monitorBlocks: Scratch.Blocks;
-    targets: Array<Scratch.RenderTarget>;
     allAssetsIsUploading?: boolean;
-    getTargetById: (targetId: string) => Scratch.RenderTarget;
-    requestAddMonitor(monitorId: string, isRemoteOperation?: boolean): void;
-    requestUpdateMonitor: (monitor: Map<unknown, unknown>) => boolean;
-    requestRemoveMonitor(monitorId: string, isRemoteOperation?: boolean): boolean;
-    _pushMonitors: () => void;
-    _pushThread: (
-      id: string,
-      target: Scratch.RenderTarget,
-      object?: {
-        stackClick?: boolean;
-        updateMonitor?: boolean;
-        hatParam?: unknown;
-      },
-    ) => void;
   }
 
-  export type Thread = {
-    topBlock: string;
-    status: number;
-    updateMonitor: boolean;
-  };
-
-  export interface ExtensionManager {
+  export interface ExtensionManager extends VM.ExtensionManager {
     asyncExtensionsLoadedCallbacks: Array<(...args: unknown[]) => unknown>;
     loadingAsyncExtensions: number;
     nextExtensionWorker: number;
@@ -383,7 +171,7 @@ declare namespace Scratch {
     isExternalExtension(extensionId: string): boolean;
     isValidExtensionURL(extensionURL: string): boolean;
     loadExtensionIdSync(extensionId: string): string;
-    loadExtensionURL(extensionURL: string, shouldReplace?: boolean): Promise<unknown>;
+    loadExtensionURL(extensionURL: string, shouldReplace?: boolean): Promise<number>;
     loadExtensionURLInWorker(extensionURL: string): Promise<unknown>;
     loadExternalExtensionById(extensionId: string, shouldReplace?: boolean): Promise<unknown> | undefined;
     loadExternalExtensionToLibrary(
@@ -395,7 +183,7 @@ declare namespace Scratch {
       addedAndLoaded: string[];
     }>;
     onWorkerInit(id: string, e: unknown): void;
-    refreshBlocks(targetServiceName: string): Promise<string>;
+    refreshBlocks(targetServiceName?: string): Promise<void[]>;
     registerExtension(extensionId: string, extension: Extension, shouldReplace?: boolean): string | undefined;
     registerExtensionService(serviceName: string): void;
     registerExtensionServiceSync(serviceName: string): void;

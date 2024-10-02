@@ -129,6 +129,9 @@ importers:
       eslint-plugin-react:
         specifier: ^7.31.8
         version: 7.34.1(eslint@8.57.0)
+      gandi-types:
+        specifier: git+https://github.com/Turbowarp/types-tw.git#tw
+        version: '@turbowarp/types@https://codeload.github.com/Turbowarp/types-tw/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4'
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -1554,6 +1557,10 @@ packages:
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha1-zMqrdYr1Z2Hre/N69vA/Mm3XmK0=}
     engines: {node: '>=10.13.0'}
+
+  '@turbowarp/types@https://codeload.github.com/Turbowarp/types-tw/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4':
+    resolution: {tarball: https://codeload.github.com/Turbowarp/types-tw/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4}
+    version: 0.0.12
 
   '@types/body-parser@1.19.5':
     resolution: {integrity: sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg==}
@@ -6063,7 +6070,7 @@ packages:
     engines: {node: '>=0.10.0'}
 
   source-map@0.6.1:
-    resolution: {integrity: sha1-dHIq8y6WFOnCh6jQu95IteLxomM=}
+    resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
 
   source-map@0.7.4:
@@ -8724,6 +8731,8 @@ snapshots:
 
   '@trysound/sax@0.2.0': {}
 
+  '@turbowarp/types@https://codeload.github.com/Turbowarp/types-tw/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4': {}
+
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
@@ -9076,43 +9085,11 @@ snapshots:
       '@umijs/deps': 3.5.42
       '@umijs/utils': 3.5.42
 
-  '@umijs/bundler-utils@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)':
-    dependencies:
-      '@umijs/babel-preset-umi': 3.5.42
-      '@umijs/types': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
-      '@umijs/utils': 3.5.42
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-router
-
   '@umijs/bundler-utils@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)':
     dependencies:
       '@umijs/babel-preset-umi': 3.5.42
       '@umijs/types': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)
       '@umijs/utils': 3.5.42
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-router
-
-  '@umijs/bundler-webpack@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)':
-    dependencies:
-      '@umijs/bundler-utils': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
-      '@umijs/case-sensitive-paths-webpack-plugin': 1.0.1
-      '@umijs/deps': 3.5.42
-      '@umijs/types': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
-      '@umijs/utils': 3.5.42
-      jest-worker: 26.6.2
-      node-libs-browser: 2.2.1
-      normalize-url: 1.9.1
-      postcss: 7.0.32
-      postcss-flexbugs-fixes: 4.2.1
-      postcss-loader: 3.0.0
-      postcss-preset-env: 6.7.0
-      postcss-safe-parser: 4.0.2
-      terser: 5.14.2
-      webpack-chain: 6.5.1
     transitivePeerDependencies:
       - react
       - react-dom
@@ -9168,14 +9145,14 @@ snapshots:
     dependencies:
       '@types/react-router-config': 5.0.2
       '@umijs/babel-preset-umi': 3.5.42
-      '@umijs/bundler-webpack': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
+      '@umijs/bundler-webpack': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)
       '@umijs/core': 3.5.42
       '@umijs/deps': 3.5.42
       '@umijs/renderer-mpa': 3.5.42(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
-      '@umijs/renderer-react': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
+      '@umijs/renderer-react': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)
       '@umijs/runtime': 3.5.42(react@16.14.0)
       '@umijs/server': 3.5.42
-      '@umijs/types': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
+      '@umijs/types': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)
       '@umijs/utils': 3.5.42
       ansi-html: 0.0.9
       core-js: 3.6.5
@@ -9189,7 +9166,7 @@ snapshots:
       react: 16.14.0
       react-refresh: 0.10.0
       react-router: 5.2.0(react@16.14.0)
-      react-router-config: 5.1.1(react-router@5.2.0(react@16.14.0))(react@16.14.0)
+      react-router-config: 5.1.1(react-router@5.2.0(react@18.2.0))(react@16.14.0)
       react-router-dom: 5.2.0(react@16.14.0)
       regenerator-runtime: 0.13.5
       schema-utils: 3.3.0
@@ -9263,18 +9240,6 @@ snapshots:
       react: 16.14.0
       react-dom: 16.14.0(react@16.14.0)
 
-  '@umijs/renderer-react@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)':
-    dependencies:
-      '@types/react': 16.14.60
-      '@types/react-dom': 16.9.24
-      '@types/react-router-config': 5.0.11
-      '@umijs/runtime': 3.5.42(react@16.14.0)
-      react: 16.14.0
-      react-dom: 16.14.0(react@16.14.0)
-      react-router-config: 5.1.1(react-router@5.2.0(react@16.14.0))(react@16.14.0)
-    transitivePeerDependencies:
-      - react-router
-
   '@umijs/renderer-react@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)':
     dependencies:
       '@types/react': 16.14.60
@@ -9324,20 +9289,6 @@ snapshots:
       '@umijs/core': 3.5.42
       '@umijs/deps': 3.5.42
       '@umijs/utils': 3.5.42
-
-  '@umijs/types@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)':
-    dependencies:
-      '@umijs/babel-preset-umi': 3.5.42
-      '@umijs/core': 3.5.42
-      '@umijs/deps': 3.5.42
-      '@umijs/renderer-react': 3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@16.14.0))(react@16.14.0)
-      '@umijs/server': 3.5.42
-      '@umijs/utils': 3.5.42
-      webpack-chain: 6.5.1
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-router
 
   '@umijs/types@3.5.42(react-dom@16.14.0(react@16.14.0))(react-router@5.2.0(react@18.2.0))(react@16.14.0)':
     dependencies:
@@ -9701,7 +9652,7 @@ snapshots:
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -10419,7 +10370,7 @@ snapshots:
 
   css-blank-pseudo@0.1.4:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   css-box-model@1.2.1:
     dependencies:
@@ -10427,7 +10378,7 @@ snapshots:
 
   css-has-pseudo@0.10.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-selector-parser: 5.0.0
 
   css-loader@6.10.0(webpack@5.90.3(webpack-cli@4.10.0)):
@@ -10445,7 +10396,7 @@ snapshots:
 
   css-prefers-color-scheme@3.1.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   css-select@4.3.0:
     dependencies:
@@ -13202,93 +13153,93 @@ snapshots:
 
   postcss-attribute-case-insensitive@4.0.2:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-selector-parser: 6.1.2
 
   postcss-color-functional-notation@2.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-color-gray@5.0.0:
     dependencies:
       '@csstools/convert-colors': 1.4.0
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-color-hex-alpha@5.0.3:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-color-mod-function@3.0.3:
     dependencies:
       '@csstools/convert-colors': 1.4.0
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-color-rebeccapurple@4.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-custom-media@7.0.8:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-custom-properties@8.0.11:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-custom-selectors@5.1.2:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-selector-parser: 5.0.0
 
   postcss-dir-pseudo-class@5.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-selector-parser: 5.0.0
 
   postcss-double-position-gradients@1.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-env-function@2.0.2:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-flexbugs-fixes@4.2.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-focus-visible@4.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-focus-within@3.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-font-variant@4.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-gap-properties@2.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-image-set-function@3.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-initial@3.0.4:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-js@2.0.3:
     dependencies:
@@ -13298,7 +13249,7 @@ snapshots:
   postcss-lab-function@2.0.1:
     dependencies:
       '@csstools/convert-colors': 1.4.0
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-load-config@2.1.2:
@@ -13309,7 +13260,7 @@ snapshots:
   postcss-loader@3.0.0:
     dependencies:
       loader-utils: 1.4.2
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-load-config: 2.1.2
       schema-utils: 1.0.0
 
@@ -13325,11 +13276,11 @@ snapshots:
 
   postcss-logical@3.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-media-minmax@4.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-modules-extract-imports@3.0.0(postcss@8.4.37):
     dependencies:
@@ -13359,19 +13310,19 @@ snapshots:
 
   postcss-nesting@7.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-overflow-shorthand@2.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-page-break@2.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-place@4.0.1:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-values-parser: 2.0.1
 
   postcss-preset-env@6.7.0:
@@ -13383,7 +13334,7 @@ snapshots:
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
       cssdb: 4.4.0
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-attribute-case-insensitive: 4.0.2
       postcss-color-functional-notation: 2.0.1
       postcss-color-gray: 5.0.0
@@ -13416,26 +13367,26 @@ snapshots:
 
   postcss-pseudo-class-any-link@6.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
       postcss-selector-parser: 5.0.0
 
   postcss-replace-overflow-wrap@3.0.0:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-safe-parser@4.0.2:
     dependencies:
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-selector-matches@4.0.0:
     dependencies:
       balanced-match: 1.0.2
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-selector-not@4.0.1:
     dependencies:
       balanced-match: 1.0.2
-      postcss: 7.0.32
+      postcss: 7.0.39
 
   postcss-selector-parser@5.0.0:
     dependencies:
@@ -13837,12 +13788,6 @@ snapshots:
       use-sidecar: 1.1.2(@types/react@18.3.3)(react@18.2.0)
     optionalDependencies:
       '@types/react': 18.3.3
-
-  react-router-config@5.1.1(react-router@5.2.0(react@16.14.0))(react@16.14.0):
-    dependencies:
-      '@babel/runtime': 7.25.0
-      react: 16.14.0
-      react-router: 5.2.0(react@16.14.0)
 
   react-router-config@5.1.1(react-router@5.2.0(react@18.2.0))(react@16.14.0):
     dependencies:

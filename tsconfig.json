@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["node_modules/gandi-types/types/scratch-vm-extension.d.ts", "src"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -16,7 +16,15 @@
       "utils/*": ["./src/utils/*"],
       "components/*": ["./src/components/*"],
       "hooks/*": ["./src/hooks/*"],
-      "types/*": ["./src/types/*"]
+      "types/*": ["./src/types/*"],
+      "scratch-vm": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-render": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-svg-renderer": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-render-fonts": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-storage": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-audio": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-parser": ["./node_modules/gandi-types/index.d.ts"],
+      "scratch-blocks": ["./node_modules/gandi-types/index.d.ts"]
     },
     "resolveJsonModule": true,
     "sourceMap": true,
