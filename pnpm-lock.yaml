@@ -144,6 +144,9 @@ importers:
       less-loader:
         specifier: ^11.0.0
         version: 11.1.4(less@4.2.0)(webpack@5.90.3(webpack-cli@4.10.0))
+      mkdirp:
+        specifier: ^3.0.1
+        version: 3.0.1
       plop:
         specifier: ^3.1.1
         version: 3.1.2
@@ -4686,7 +4689,12 @@ packages:
     hasBin: true
 
   mkdirp@1.0.4:
-    resolution: {integrity: sha1-PrXtYmInVteaXw4qIh3+utdcL34=}
+    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  mkdirp@3.0.1:
+    resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -12648,6 +12656,8 @@ snapshots:
       minimist: 1.2.8
 
   mkdirp@1.0.4: {}
+
+  mkdirp@3.0.1: {}
 
   move-concurrently@1.0.1:
     dependencies:
