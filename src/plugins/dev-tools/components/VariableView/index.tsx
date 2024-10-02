@@ -29,7 +29,7 @@ export interface VariableItemViewProps {
   trackable?: boolean;
   variableId: string;
   variableName: string;
-  variableValue: string | ListVariable;
+  variableValue: VM.ScratchCompatibleValue | ListVariable;
   onClickShowClones?: () => void;
 }
 
@@ -164,7 +164,7 @@ const VariableItemView = React.forwardRef<HTMLLIElement, VariableItemViewProps>(
             {isList ? "" : ":"}
           </span>
           {!isList && (
-            <Bubble title={value}>
+            <Bubble title={String(value)}>
               <span className={classNames(styles.ellipsis, styles.variableValue)}>{value}</span>
             </Bubble>
           )}

@@ -2,17 +2,17 @@ import { variableChangeEventBus } from "./dev-tools-observer";
 
 export interface VariableChangeEventDetail {
   propertyName: string;
-  value: Scratch.Variable["value"];
+  value: VM.Variable["value"];
 }
 
-const onChange = (eventName: string, propertyName: string, value: Scratch.Variable["value"]) => {
+const onChange = (eventName: string, propertyName: string, value: VM.ScratchList | string) => {
   variableChangeEventBus.emit(eventName, {
     propertyName,
     value,
   });
 };
 
-function proxyVariableList(value: Array<string | boolean | number>, eventName: string) {
+function proxyVariableList(value: VM.ScratchList, eventName: string) {
   return new Proxy(value, {
     set(list, idx, val) {
       list[idx] = val;
@@ -24,11 +24,10 @@ function proxyVariableList(value: Array<string | boolean | number>, eventName: s
   });
 }
 
-export function addProxy(variable: Scratch.Variable) {
-  const eventName = `${variable.targetId}${variable.id}`;
+export function addProxy(variable: VM.Variable, targetId: string) {
+  const eventName = `${variable}${variable.id}`;
   const type = variable.type;
-  let value =
-    type === "list" ? proxyVariableList(variable.value as (string | number | boolean)[], eventName) : variable.value;
+  let value = type === "list" ? proxyVariableList(variable.value as VM.ScratchList, eventName) : variable.value;
   let name = variable.name;
   Object.defineProperties(variable, {
     value: {
@@ -61,9 +60,12 @@ export function addProxy(variable: Scratch.Variable) {
   });
 }
 
-export function removeProxy(variable: Scratch.Variable, target: Scratch.RenderTarget) {
-  const { id, name, type, value, isCloud, targetId } = variable;
-  const Variable = variable.constructor;
-  target.variables[id] = new Variable(id, name, type, isCloud, targetId);
+export function removeProxy(variable: VM.Variable, target: VM.RenderedTarget) {
+  type VariableConstructor = {
+    new (id: string, name: string, type: string, isCloud: boolean, targetId: string): VM.Variable;
+  };
+  const { id, name, type, value, isCloud } = variable;
+  const Variable = variable.constructor as VariableConstructor;
+  target.variables[id] = new Variable(id, name, type, isCloud, target.id);
   target.variables[id].value = type === "list" ? [...value] : value;
 }

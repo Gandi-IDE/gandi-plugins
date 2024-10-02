@@ -363,7 +363,7 @@ declare namespace Blockly {
     startDragWithFakeEvent(fakeEvent: unknown, block: Blockly.BlockSvg): void;
     getAudioManager(): Blockly.WorkspaceAudio;
     getGrid(): Blockly.Grid;
-    getTargetCostumeData: (asset: Scratch.Asset) => string;
+    getTargetCostumeData: (asset: Gandi.Asset) => string;
   }
 
   export interface Flyout {

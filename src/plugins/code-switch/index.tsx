@@ -16,7 +16,7 @@ const CodeSwitch: React.FC<PluginContext> = ({ intl, vm }) => {
       .filter((block) => block.opcode === "procedures_prototype")
       .forEach((block) => {
         const procCode = block.mutation.proccode;
-        const argumentNames = JSON.parse(block.mutation.argumentnames);
+        const argumentNames = 'argumentnames' in block.mutation ? JSON.parse(block.mutation.argumentnames) : [];
         // argumentdefaults is unreliable, so we have to parse the procedure code to determine argument types
         const parsedArguments = parseArguments(procCode);
         const stringArgs = [];

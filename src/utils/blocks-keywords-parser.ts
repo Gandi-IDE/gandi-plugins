@@ -170,7 +170,7 @@ interface BlockArgObject {
 }
 
 export default class BlocksKeywordsParser {
-  blocks: Record<string, Scratch.BlockState>;
+  blocks: Record<string, VM.Block>;
   blockDefinitions: Record<string, { init: () => void }>;
   workspace: Blockly.WorkspaceSvg;
 
@@ -258,7 +258,7 @@ export default class BlocksKeywordsParser {
    * @param block - The block state.
    * @returns The parsed block information.
    */
-  parseSingleBlock(block: Scratch.BlockState): BlockInfo | undefined {
+  parseSingleBlock(block: VM.Block): BlockInfo | undefined {
     let blockJson: BlockInitJson = null;
     if (this.blockDefinitions[block.opcode]) {
       this.blockDefinitions[block.opcode].init.call({
@@ -308,11 +308,11 @@ export default class BlocksKeywordsParser {
     }
   }
 
-  parseProcedureBlock(block: Scratch.BlockState) {
+  parseProcedureBlock(block: VM.Block) {
     let script = block.mutation.proccode;
     let keywordText = script;
     const params = parseArgs(block.mutation.proccode);
-    if (params.length) {
+    if (params.length && "argumentnames" in block.mutation) {
       if (block.mutation.argumentnames) {
         const argumentnames = JSON.parse(block.mutation.argumentnames);
         params.forEach((param, index) => {
@@ -354,8 +354,9 @@ export default class BlocksKeywordsParser {
     return [script, keywordText];
   }
 
-  parseDynamicBlock(block: Scratch.BlockState) {
-    let script = block.mutation.blockInfo.text || block.mutation.blockInfo.opcode;
+  parseDynamicBlock(block: VM.Block) {
+    const mutation = block.mutation as unknown as Record<string, Record<string, string>>;
+    let script = mutation.blockInfo.text || mutation.blockInfo.opcode;
     let keywordText = script;
     let blockJson: BlockInitJson = null;
     if (this.blockDefinitions[block.opcode]) {
@@ -393,7 +394,7 @@ export default class BlocksKeywordsParser {
         script = params.join("");
         script = appendOutputTag(
           {
-            outputShape: block.mutation.blockInfo.blockType.toLowerCase(),
+            outputShape: mutation.blockInfo.blockType.toLowerCase(),
             extension: {
               key: key,
               iconUrl: "",
@@ -409,7 +410,7 @@ export default class BlocksKeywordsParser {
     }
   }
 
-  parser(block: Scratch.BlockState, json: BlockInitJson) {
+  parser(block: VM.Block, json: BlockInitJson) {
     const scriptTextRows = [];
     const keywordTextRows = [];
     const outputShape = this.determineOutputShape(json);
@@ -523,7 +524,7 @@ export default class BlocksKeywordsParser {
     return { scriptTextRows, keywordTextRows, outputShape };
   }
 
-  processor(blocks: Record<string, Scratch.BlockState>) {
+  processor(blocks: Record<string, VM.Block>) {
     this.blocks = blocks;
     const options: Array<[string, string, string]> = [];
     for (const key in this.blocks) {
@@ -542,7 +543,7 @@ export default class BlocksKeywordsParser {
         } else if (block.opcode === "procedures_call") {
           const [script, keywordText] = this.parseProcedureBlock(block);
           options.push([block.id, `${script}:: custom`, keywordText]);
-        } else if (block.mutation && block.mutation.blockInfo) {
+        } else if (block.mutation && 'blockInfo' in block.mutation) {
           const [script, keywordText] = this.parseDynamicBlock(block);
           options.push([block.id, script, keywordText]);
         } else if (!isShadow && (isNotParent || isParentNextBlock || isParentSubstackBlock)) {
