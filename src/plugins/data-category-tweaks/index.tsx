@@ -274,6 +274,9 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
   return () => {
     dynamicEnableOrDisable()
     register.dispose()
+    
+    runtime.getBlocksXML = originalGetBlocksXML
+    ScratchBlocks.Flyout.prototype.show = oldShow;
   };
 }, [vm, blockly, workspace, msg, registerSettings]);
 
