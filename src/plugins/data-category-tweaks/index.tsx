@@ -40,7 +40,7 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
               onChange: (value: boolean) => {
                 setHasSeparateListCategory(value);
                 if (vm.editingTarget) {
-                  (vm as any).emitWorkspaceUpdate();
+                  vm.emitWorkspaceUpdate();
                 }
               },
             },
@@ -272,32 +272,23 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
 
     // If editingTarget is set, the editor has already rendered and we have to tell it to rerender.
     if (vm.editingTarget) {
-      (vm as any).emitWorkspaceUpdate();
+      vm.emitWorkspaceUpdate();
     }
 
-    const dynamicEnableOrDisable = () => {
-      if (vm.editingTarget && hasSeparateListCategory) {
-        (vm as any).emitWorkspaceUpdate();
-      }
-
-      if (workspace && hasSeparateLocalVariables && hasMoveReportersDown) {
-        workspace.refreshToolboxSelection_();
-      }
-
+    return () => {
+      const shouldEmitWorkspaceUpdate = vm.editingTarget && hasSeparateListCategory;
+      const shouldRefreshToolboxSelection = workspace && hasSeparateLocalVariables && hasMoveReportersDown;
+      // Set all states to their default and refresh the UI
       setHasSeparateListCategory(false);
       hasSeparateLocalVariables = false;
       hasMoveReportersDown = false;
-    };
-
-    return () => {
-      dynamicEnableOrDisable();
-      register.dispose();
-
+      if (shouldEmitWorkspaceUpdate) vm.emitWorkspaceUpdate();
+      if (shouldRefreshToolboxSelection) workspace.refreshToolboxSelection_();
+      // Restore an overridden function to its original implementation.
       runtime.getBlocksXML = originalGetBlocksXML;
       ScratchBlocks.Flyout.prototype.show = oldShow;
-      if (style) {
-        style.remove();
-      }
+
+      register.dispose();
     };
   }, [vm, blockly, workspace, msg, registerSettings]);
 
