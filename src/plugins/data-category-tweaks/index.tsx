@@ -1,12 +1,12 @@
 import * as React from "react";
-import DataCategoryTweaksIcon from "src/assets/icon--data-category-tweaks.svg"
-import "./styles.less"
+import DataCategoryTweaksIcon from "src/assets/icon--data-category-tweaks.svg";
+import "./styles.less";
 
-const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, msg, registerSettings}) => {
+const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, msg, registerSettings }) => {
   React.useEffect(() => {
-    let hasSeparateListCategory: boolean = false
-    let hasSeparateLocalVariables: boolean = false
-    let hasMoveReportersDown: boolean =  false
+    let hasSeparateListCategory = false;
+    let hasSeparateLocalVariables = false;
+    let hasMoveReportersDown = false;
 
     const register = registerSettings(
       msg("plugins.dataCategoryTweaks.title"),
@@ -22,7 +22,7 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
               type: "switch",
               value: hasSeparateListCategory,
               onChange: (value: boolean) => {
-                hasSeparateListCategory = value
+                hasSeparateListCategory = value;
                 if (vm.editingTarget) {
                   (vm as any).emitWorkspaceUpdate();
                 }
@@ -34,7 +34,7 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
               type: "switch",
               value: hasSeparateLocalVariables,
               onChange: (value: boolean) => {
-                hasSeparateLocalVariables = value
+                hasSeparateLocalVariables = value;
                 if (workspace) {
                   workspace.refreshToolboxSelection_();
                 }
@@ -46,7 +46,7 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
               type: "switch",
               value: hasMoveReportersDown,
               onChange: (value: boolean) => {
-                hasMoveReportersDown = value
+                hasMoveReportersDown = value;
                 if (workspace) {
                   workspace.refreshToolboxSelection_();
                 }
@@ -55,18 +55,18 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
           ],
         },
       ],
-      <DataCategoryTweaksIcon />
+      <DataCategoryTweaksIcon />,
     );
 
-    const runtime = vm.runtime as any
-    const ScratchBlocks = blockly
+    const runtime = vm.runtime as any;
+    const ScratchBlocks = blockly;
 
     const SMALL_GAP = 8;
     const BIG_GAP = 24;
 
     const separateVariablesByType = (toolboxXML) => {
       const listButtonIndex = toolboxXML.findIndex(
-        (i) => i.getAttribute("callbackkey") === "CREATE_LIST" || i.getAttribute("type") === "data_addtolist"
+        (i) => i.getAttribute("callbackkey") === "CREATE_LIST" || i.getAttribute("type") === "data_addtolist",
       );
       return {
         variables: toolboxXML.slice(0, listButtonIndex),
@@ -176,7 +176,7 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
       }
 
       if (!hasSeparateListCategory) {
-        return result
+        return result;
       }
 
       /*
@@ -265,24 +265,24 @@ const dataCategoryTweaks: React.FC<PluginContext> = ({vm, blockly, workspace, ms
       if (workspace && hasSeparateLocalVariables && hasMoveReportersDown) {
         workspace.refreshToolboxSelection_();
       }
-        
-      hasSeparateListCategory = false
-      hasSeparateLocalVariables = false
-      hasMoveReportersDown =  false
-    }
 
-  return () => {
-    dynamicEnableOrDisable()
-    register.dispose()
-    
-    runtime.getBlocksXML = originalGetBlocksXML
-    ScratchBlocks.Flyout.prototype.show = oldShow;
-  };
-}, [vm, blockly, workspace, msg, registerSettings]);
+      hasSeparateListCategory = false;
+      hasSeparateLocalVariables = false;
+      hasMoveReportersDown = false;
+    };
+
+    return () => {
+      dynamicEnableOrDisable();
+      register.dispose();
+
+      runtime.getBlocksXML = originalGetBlocksXML;
+      ScratchBlocks.Flyout.prototype.show = oldShow;
+    };
+  }, [vm, blockly, workspace, msg, registerSettings]);
 
   return null;
 };
 
-dataCategoryTweaks.displayName = "Data category tweaks";
+DataCategoryTweaks.displayName = "Data category tweaks";
 
-export default dataCategoryTweaks;
+export default DataCategoryTweaks;
