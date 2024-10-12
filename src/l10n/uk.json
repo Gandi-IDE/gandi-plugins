@@ -249,5 +249,9 @@
   "plugins.voiceCooperation.badConnection": "З'єднання {name} нестабільне",
   "plugins.costumePiskel.description": "Створення піксельних спрайтів стане простішим.",
   "plugins.costumePiskel.openCostume": "Відкрити в Piskel",
-  "plugins.costumePiskel.newCostume": "Новий костюм з Piskel"
+  "plugins.costumePiskel.newCostume": "Новий костюм з Piskel",
+  "plugins.dataCategoryTweaks.title": "Налаштування категорії даних",
+  "plugins.dataCategoryTweaks.separateLocalVariables": "Окремі змінні тільки для спрайтів",
+  "plugins.dataCategoryTweaks.moveReportersDown": "Перемістити блоки даних над списком змінних",
+  "plugins.dataCategoryTweaks.separateListCategory": "Окрема категорія списків"
 }

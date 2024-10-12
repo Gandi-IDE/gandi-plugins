@@ -252,7 +252,6 @@
   "plugins.costumePiskel.description": "Mencipta sprite bergaya piksel akan menjadi lebih mudah.",
   "plugins.costumePiskel.openCostume": "Buka dengan Piskel",
   "plugins.costumePiskel.newCostume": "Kostum Baru dengan Piskel",
-
   "plugins.dataCategoryTweaks.title": "Tweak kategori pembolehubah",
   "plugins.dataCategoryTweaks.separateLocalVariables": "Pisahkan pembolehubah sprite-sahaja",
   "plugins.dataCategoryTweaks.moveReportersDown": "Letak blok data diatas senarai pembolehubah",
@@ -260,5 +259,4 @@
   "for-all-sprites": "Untuk semua sprite:",
   "for-this-sprite-only": "Untuk sprite ini sahaja:",
   "plugins.dataCategoryTweaks.list": "Senarai"
-
 }

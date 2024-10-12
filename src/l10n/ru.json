@@ -251,5 +251,9 @@
   "plugins.costumePiskel.title": "Редактор костюмов Piskel",
   "plugins.costumePiskel.description": "Создание пиксельных спрайтов станет проще.",
   "plugins.costumePiskel.openCostume": "Открыть в Piskel",
-  "plugins.costumePiskel.newCostume": "Новый костюм с Piskel"
+  "plugins.costumePiskel.newCostume": "Новый костюм с Piskel",
+  "plugins.dataCategoryTweaks.title": "Настройки категории данных",
+  "plugins.dataCategoryTweaks.separateLocalVariables": "Отдельные переменные только для спрайтов",
+  "plugins.dataCategoryTweaks.moveReportersDown": "Переместить блоки данных выше списка переменных",
+  "plugins.dataCategoryTweaks.separateListCategory": "Отдельная категория списков"
 }
