@@ -1,12 +1,28 @@
 import * as React from "react";
 import DataCategoryTweaksIcon from "src/assets/icon--data-category-tweaks.svg";
-import "./styles.less";
+import ListIcon from "src/assets/icon--list.svg?url";
+import VariablesIcon from "src/assets/icon--variables.svg?url";
 
 const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, msg, registerSettings }) => {
   React.useEffect(() => {
     let hasSeparateListCategory = false;
     let hasSeparateLocalVariables = false;
     let hasMoveReportersDown = false;
+    let style: HTMLStyleElement | null = null;
+    const setHasSeparateListCategory = (value: boolean) => {
+      if (value) {
+        style = document.createElement("style");
+        style.innerHTML = `
+          [theme="light"] .scratchCategoryMenuRow:nth-child(-n+10) .scratchCategoryItemIcon {
+            filter: invert(90%);
+          }
+        `;
+        document.head.appendChild(style);
+      } else if (style) {
+        style.remove();
+      }
+      hasSeparateListCategory = value;
+    };
 
     const register = registerSettings(
       msg("plugins.dataCategoryTweaks.title"),
@@ -22,9 +38,9 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
               type: "switch",
               value: hasSeparateListCategory,
               onChange: (value: boolean) => {
-                hasSeparateListCategory = value;
+                setHasSeparateListCategory(value);
                 if (vm.editingTarget) {
-                  (vm as any).emitWorkspaceUpdate();
+                  vm.emitWorkspaceUpdate();
                 }
               },
             },
@@ -227,6 +243,7 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
           <category
             name="%{BKY_CATEGORY_VARIABLES}"
             id="variables"
+            iconURI="${VariablesIcon}"
             colour="${ScratchBlocks.Colours.data.primary}"
             secondaryColour="${ScratchBlocks.Colours.data.tertiary}"
             custom="VARIABLE">
@@ -234,6 +251,7 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
           <category
             name="${msg("plugins.dataCategoryTweaks.list")}"
             id="lists"
+            iconURI="${ListIcon}"
             colour="${ScratchBlocks.Colours.data_lists.primary}"
             secondaryColour="${ScratchBlocks.Colours.data_lists.tertiary}"
             custom="LIST">
@@ -254,29 +272,23 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
 
     // If editingTarget is set, the editor has already rendered and we have to tell it to rerender.
     if (vm.editingTarget) {
-      (vm as any).emitWorkspaceUpdate();
+      vm.emitWorkspaceUpdate();
     }
 
-    const dynamicEnableOrDisable = () => {
-      if (vm.editingTarget && hasSeparateListCategory) {
-        (vm as any).emitWorkspaceUpdate();
-      }
-
-      if (workspace && hasSeparateLocalVariables && hasMoveReportersDown) {
-        workspace.refreshToolboxSelection_();
-      }
-
-      hasSeparateListCategory = false;
+    return () => {
+      const shouldEmitWorkspaceUpdate = vm.editingTarget && hasSeparateListCategory;
+      const shouldRefreshToolboxSelection = workspace && hasSeparateLocalVariables && hasMoveReportersDown;
+      // Set all states to their default and refresh the UI
+      setHasSeparateListCategory(false);
       hasSeparateLocalVariables = false;
       hasMoveReportersDown = false;
-    };
-
-    return () => {
-      dynamicEnableOrDisable();
-      register.dispose();
-
+      if (shouldEmitWorkspaceUpdate) vm.emitWorkspaceUpdate();
+      if (shouldRefreshToolboxSelection) workspace.refreshToolboxSelection_();
+      // Restore an overridden function to its original implementation.
       runtime.getBlocksXML = originalGetBlocksXML;
       ScratchBlocks.Flyout.prototype.show = oldShow;
+
+      register.dispose();
     };
   }, [vm, blockly, workspace, msg, registerSettings]);
 

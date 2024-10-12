@@ -148,6 +148,7 @@ declare interface VirtualMachine extends NodeJS.EventEmitter {
     isRemoteOperation: boolean,
   ): Promise<void> | null;
   addCostumeFromLibrary(md5ext: string, costumeObject: object): Promise<void> | null;
+  emitWorkspaceUpdate(): void;
   toJSON: () => string;
   setEditingTarget: (targetId: string) => void;
   saveProjectSb3: () => Promise<Blob>;
