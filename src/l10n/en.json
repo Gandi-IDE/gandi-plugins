@@ -252,7 +252,6 @@
   "plugins.costumePiskel.description": "Create pixel-style sprites will become easier.",
   "plugins.costumePiskel.openCostume": "Open with Piskel",
   "plugins.costumePiskel.newCostume": "New Costume with Piskel",
-
   "plugins.dataCategoryTweaks.title": "Data category tweaks",
   "plugins.dataCategoryTweaks.separateLocalVariables": "Separate Sprite-only Variables",
   "plugins.dataCategoryTweaks.moveReportersDown": "Move data blocks above variables list",
@@ -260,5 +259,4 @@
   "for-all-sprites": "For all sprites:",
   "for-this-sprite-only": "For this sprite only:",
   "plugins.dataCategoryTweaks.list": "List"
-
 }
