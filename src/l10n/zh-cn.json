@@ -251,5 +251,14 @@
   "plugins.costumePiskel.title": "Piskel 造型编辑器",
   "plugins.costumePiskel.description": "制作像素风格的素材将变得更加简单。",
   "plugins.costumePiskel.openCostume": "使用 Piskel 打开",
-  "plugins.costumePiskel.newCostume": "使用 Piskel 创建新造型"
+  "plugins.costumePiskel.newCostume": "使用 Piskel 创建新造型",
+
+  "plugins.dataCategoryTweaks.title": "数据类别调整",
+  "plugins.dataCategoryTweaks.separateLocalVariables": "私有变量",
+  "plugins.dataCategoryTweaks.moveReportersDown": "将数据块移至变量列表上方",
+  "plugins.dataCategoryTweaks.separateListCategory": "单独列表类别",
+  "for-all-sprites": "针对所有角色：",
+  "for-this-sprite-only": "仅针对此角色：",
+  "plugins.dataCategoryTweaks.list": "列表"
+
 }

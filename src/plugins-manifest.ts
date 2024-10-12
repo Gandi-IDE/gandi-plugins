@@ -19,6 +19,7 @@ import extensionManager from "src/plugins/extension-manager/manifest";
 import voiceCooperation from "src/plugins/voice-cooperation/manifest";
 import blockSharing from "plugins/block-sharing/manifest";
 import costumePiskel from "src/plugins/costume-piskel/manifest";
+import dataCategoryTweaks from "plugins/data-category-tweaks/manifest";
 
 export default {
   folder,
@@ -42,4 +43,5 @@ export default {
   "voice-cooperation": voiceCooperation,
   "block-sharing": blockSharing,
   "costume-piskel": costumePiskel,
+  "data-category-tweaks": dataCategoryTweaks,
 };
