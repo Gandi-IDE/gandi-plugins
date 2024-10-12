@@ -13,7 +13,7 @@ module.exports = {
     libraryTarget: "umd",
     library: "GandiPlugins",
     filename: "static/js/[name].js",
-    chunkFilename: "[name].[hash:5].js",
+    chunkFilename: "[name].[fullhash:5].js",
     clean: true, // Clean the output directory before emit.
   },
   module: {
@@ -35,7 +35,7 @@ module.exports = {
             options: {
               sourceMap: true,
               modules: {
-                localIdentName: "addons_[local]_[hash:base64:5]",
+                localIdentName: "addons_[local]_[fullhash:base64:5]",
                 exportLocalsConvention: "camelCaseOnly",
               },
             },

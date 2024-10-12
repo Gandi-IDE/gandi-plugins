@@ -16,7 +16,7 @@ interface IVariable {
   id: string;
   name: string;
   type: string;
-  value: string | Array<string | number | boolean>;
+  value: VM.VariableValue;
 }
 
 const messages = defineMessages({
@@ -32,7 +32,7 @@ const messages = defineMessages({
   },
 });
 
-const disposalVariables = (variables: Record<string, Scratch.Variable>): IVariable[][] =>
+const disposalVariables = (variables: Record<string, VM.Variable>): IVariable[][] =>
   Object.keys(variables).reduce(
     (acc: IVariable[][], i) => {
       const item = variables[i];
@@ -134,7 +134,7 @@ const TargetItem: React.FC<TargetItemProps> = ({ id }) => {
   React.useEffect(() => {
     if (target) {
       Object.keys(target.variables).forEach((variableId) => {
-        addProxy(target.variables[variableId]);
+        addProxy(target.variables[variableId], target.id);
       });
       return () => {
         Object.keys(target.variables).forEach((variableId) => {

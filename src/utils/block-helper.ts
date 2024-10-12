@@ -27,7 +27,7 @@ const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Wo
     .getAllVariables()
     .map(({ name, type, isCloud, id_ }) => ({ name, type, isCloud, id: id_ }));
 
-  const handleCheckVariable = (name: string, id: string, type: string, element: Element) => {
+  const handleCheckVariable = (name: string, id: string, type: VM.VariableType, element: Element) => {
     const existingVariable = existingVariables.find((i) => i.type === type && i.name === name);
     if (!existingVariable) {
       const isCloud = name.startsWith("☁ ");
@@ -48,9 +48,9 @@ const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Wo
         const name = child.innerHTML;
         const id = child.getAttribute("id");
         if (type === "VARIABLE") {
-          handleCheckVariable(name, id, "", child);
+          handleCheckVariable(name, id, VM.VariableType.Scalar, child);
         } else if (type === "LIST") {
-          handleCheckVariable(name, id, "list", child);
+          handleCheckVariable(name, id, VM.VariableType.List, child);
         }
       }
       traverse(child);

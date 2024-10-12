@@ -1,3 +1,5 @@
+/// <reference path="../node_modules/gandi-types/types/scratch-vm.d.ts" />
+
 declare module "*.less" {
   const classes: { [className: string]: string };
   export default classes;
@@ -135,33 +137,25 @@ interface RuntimeBlocksData {
   topLevel: boolean;
 }
 
-declare interface VirtualMachine extends NodeJS.EventEmitter {
-  runtime: Scratch.Runtime;
-  editingTarget: Scratch.RenderTarget;
-  extensionManager: Scratch.ExtensionManager;
-  assets: Scratch.Asset[];
+declare interface VirtualMachine extends VM {
+  runtime: Gandi.Runtime;
+  editingTarget: Gandi.Target | null;
+  extensionManager: Gandi.ExtensionManager;
   addCostume(
     md5ext: string,
     costumeObject: object,
     optTargetId: string,
-    optVersion: string,
-    isRemoteOperation: boolean,
+    optVersion?: string | number,
+    isRemoteOperation?: boolean,
   ): Promise<void> | null;
   addCostumeFromLibrary(md5ext: string, costumeObject: object): Promise<void> | null;
   emitWorkspaceUpdate(): void;
   toJSON: () => string;
   setEditingTarget: (targetId: string) => void;
-  saveProjectSb3: () => Promise<Blob>;
-  saveProjectSb3DontZip: () => Record<string, Uint8Array>;
-  xmlAdapter: (xml: Element) => Array<Scratch.BlockState> | null;
+  xmlAdapter: (xml: Element) => Array<VM.Block> | null;
   shareFrameToTarget: (
-    frame: Scratch.FrameState & { blockElements: Array<Scratch.BlockState> },
+    frame: Gandi.FrameState & { blockElements: Array<VM.Block> },
     targetId: string,
     optFromTargetId?: string,
   ) => Promise<void>;
-  shareBlocksToTarget: (
-    blocks: Array<Scratch.BlockState>,
-    targetId: string,
-    optFromTargetId?: string,
-  ) => Promise<Record<string, string>>;
 }
