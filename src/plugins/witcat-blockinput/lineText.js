@@ -44,10 +44,10 @@ const lineText = {
   originalRender_: null,
   originalResizeEditor_: null,
   init: function (Blockly) {
-    this.originShowEditor_ = Blockly.FieldTextInput.prototype.showEditor_;
-    this.originHtmlInputKeyDown_ = Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_;
-    this.originalRender_ = Blockly.FieldTextInput.prototype.render_;
-    this.originalResizeEditor_ = Blockly.FieldTextInput.prototype.resizeEditor_;
+    this.originShowEditor_ = ScratchBlocks.FieldTextInput.prototype.showEditor_;
+    this.originHtmlInputKeyDown_ = ScratchBlocks.FieldTextInput.prototype.onHtmlInputKeyDown_;
+    this.originalRender_ = ScratchBlocks.FieldTextInput.prototype.render_;
+    this.originalResizeEditor_ = ScratchBlocks.FieldTextInput.prototype.resizeEditor_;
   },
   linerender: function (value, workspace, rerender) {
     lineRender = value;
@@ -96,13 +96,13 @@ const lineText = {
     });
   },
   svg: function (Blockly) {
-    const originalJsonInit = Blockly.BlockSvg.prototype.jsonInit;
+    const originalJsonInit = ScratchBlocks.BlockSvg.prototype.jsonInit;
 
-    Blockly.BlockSvg.prototype.jsonInit = function (json) {
+    ScratchBlocks.BlockSvg.prototype.jsonInit = function (json) {
       if (borderRestoration[opcodeToSettings[this.type]] === true) {
         originalJsonInit.call(this, {
           ...json,
-          outputShape: Blockly.OUTPUT_SHAPE_SQUARE,
+          outputShape: ScratchBlocks.OUTPUT_SHAPE_SQUARE,
         });
       } else {
         originalJsonInit.call(this, json);
@@ -173,7 +173,7 @@ const lineText = {
   },
   textarea: function (Blockly) {
     const originShowEditorFunc = this.originShowEditor_;
-    Blockly.FieldTextInput.prototype.showEditor_ = function (e) {
+    ScratchBlocks.FieldTextInput.prototype.showEditor_ = function (e) {
       const originalCreateElement = document.createElement;
       document.createElement = function (tagName) {
         document.createElement = originalCreateElement;
@@ -196,12 +196,12 @@ const lineText = {
     };
 
     const originalResizeEditor = this.originalResizeEditor_;
-    Blockly.FieldTextInput.prototype.resizeEditor_ = function () {
+    ScratchBlocks.FieldTextInput.prototype.resizeEditor_ = function () {
       if (!ResizeEditorAble) {
         originalResizeEditor.call(this);
         if (textarea == "textarea") {
           var scale = this.sourceBlock_.workspace.scale;
-          var div = Blockly.WidgetDiv.DIV;
+          var div = ScratchBlocks.WidgetDiv.DIV;
 
           var initialWidth;
           if (this.sourceBlock_.isShadow()) {
@@ -211,16 +211,16 @@ const lineText = {
           }
 
           var width;
-          if (Blockly.BlockSvg.FIELD_TEXTINPUT_EXPAND_PAST_TRUNCATION) {
+          if (ScratchBlocks.BlockSvg.FIELD_TEXTINPUT_EXPAND_PAST_TRUNCATION) {
             // Resize the box based on the measured width of the text, pre-truncation
-            var textWidth = Blockly.scratchBlocksUtils.measureText(
-              Blockly.FieldTextInput.htmlInput_.style.fontSize,
-              Blockly.FieldTextInput.htmlInput_.style.fontFamily,
-              Blockly.FieldTextInput.htmlInput_.style.fontWeight,
-              Blockly.FieldTextInput.htmlInput_.value,
+            var textWidth = ScratchBlocks.scratchBlocksUtils.measureText(
+              ScratchBlocks.FieldTextInput.htmlInput_.style.fontSize,
+              ScratchBlocks.FieldTextInput.htmlInput_.style.fontFamily,
+              ScratchBlocks.FieldTextInput.htmlInput_.style.fontWeight,
+              ScratchBlocks.FieldTextInput.htmlInput_.value,
             );
             // Size drawn in the canvas needs padding and scaling
-            textWidth += Blockly.FieldTextInput.TEXT_MEASURE_PADDING_MAGIC;
+            textWidth += ScratchBlocks.FieldTextInput.TEXT_MEASURE_PADDING_MAGIC;
             textWidth *= scale;
             width = textWidth;
           } else {
@@ -228,8 +228,8 @@ const lineText = {
             width = initialWidth;
           }
           // The width must be at least FIELD_WIDTH and at most FIELD_WIDTH_MAX_EDIT
-          width = Math.max(width, Blockly.BlockSvg.FIELD_WIDTH_MIN_EDIT * scale);
-          width = Math.min(width, Blockly.BlockSvg.FIELD_WIDTH_MAX_EDIT * scale);
+          width = Math.max(width, ScratchBlocks.BlockSvg.FIELD_WIDTH_MIN_EDIT * scale);
+          width = Math.min(width, ScratchBlocks.BlockSvg.FIELD_WIDTH_MAX_EDIT * scale);
           // Add 1px to width and height to account for border (pre-scale)
           div.style.width = width / scale + 1 + "px";
           div.style.height = this.size_.height + "px";
@@ -243,7 +243,7 @@ const lineText = {
           // Add 0.5px to account for slight difference between SVG and CSS border
           var borderRadius = this.getBorderRadius() + 0.5;
           div.style.borderRadius = borderRadius + "px";
-          Blockly.FieldTextInput.htmlInput_.style.borderRadius = borderRadius + "px";
+          ScratchBlocks.FieldTextInput.htmlInput_.style.borderRadius = borderRadius + "px";
           // Pull stroke colour from the existing shadow block
           var strokeColour = this.sourceBlock_.getColourTertiary();
           div.style.borderColor = strokeColour;
@@ -276,7 +276,7 @@ const lineText = {
     };
 
     const originHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
-    Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = function (e) {
+    ScratchBlocks.FieldTextInput.prototype.onHtmlInputKeyDown_ = function (e) {
       if (e.keyCode == 13) {
         let es = {};
         es.keyCode = null;
@@ -295,16 +295,16 @@ const lineText = {
         if (line.match(regex)) inputStringSplit.push(...line.match(regex));
         else inputStringSplit.push("\u00A0");
       });
-      if (inputStringSplit.length > Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH) {
-        inputStringSplit = inputStringSplit.slice(0, Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH);
-        let s = inputStringSplit[Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1];
-        inputStringSplit[Blockly.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1] = s.slice(0, charactersPerLine - 3) + "…";
+      if (inputStringSplit.length > ScratchBlocks.BlockSvg.MAX_DISPLAY_LINE_LENGTH) {
+        inputStringSplit = inputStringSplit.slice(0, ScratchBlocks.BlockSvg.MAX_DISPLAY_LINE_LENGTH);
+        let s = inputStringSplit[ScratchBlocks.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1];
+        inputStringSplit[ScratchBlocks.BlockSvg.MAX_DISPLAY_LINE_LENGTH - 1] = s.slice(0, charactersPerLine - 3) + "…";
       }
       return inputStringSplit;
     }
 
     const originalRender_ = this.originalRender_;
-    Blockly.FieldTextInput.prototype.render_ = function () {
+    ScratchBlocks.FieldTextInput.prototype.render_ = function () {
       this.textElement_?.setAttribute("text-anchor", inputLabelTextAnchor);
       originalRender_.call(this);
       if (textarea == "textarea") {
@@ -315,8 +315,8 @@ const lineText = {
           let test = this.getDisplayText_();
           if (lineRender) {
             if (this.getText()) {
-              if (this.getText().length > Blockly.BlockSvg.MAX_DISPLAY_LENGTH) {
-                test = this.getText().slice(0, Blockly.BlockSvg.MAX_DISPLAY_LENGTH - 3) + "...";
+              if (this.getText().length > ScratchBlocks.BlockSvg.MAX_DISPLAY_LENGTH) {
+                test = this.getText().slice(0, ScratchBlocks.BlockSvg.MAX_DISPLAY_LENGTH - 3) + "...";
               } else {
                 test = this.getText();
               }
@@ -327,7 +327,7 @@ const lineText = {
           let maxLength = 0;
           for (let index = 0; index < lines.length; index++) {
             const lineText = lines[index];
-            let tspan = document.createElementNS(Blockly.SVG_NS, "tspan");
+            let tspan = document.createElementNS(ScratchBlocks.SVG_NS, "tspan");
             if (lineText.length > maxLength) {
               maxLength = lineText.length;
               maxLengthLine = index;
@@ -360,7 +360,7 @@ const lineText = {
           // visible field (FIELD_WIDTH), center it there instead,
           // unless there is a drop-down arrow.
           if (this.sourceBlock_.isShadow() && !this.positionArrow) {
-            var minOffset = Blockly.BlockSvg.FIELD_WIDTH / 2;
+            var minOffset = ScratchBlocks.BlockSvg.FIELD_WIDTH / 2;
             if (this.sourceBlock_.RTL) {
               // X position starts at the left edge of the block, in both RTL and LTR.
               // First offset by the width of the block to move to the right edge,
@@ -368,7 +368,7 @@ const lineText = {
               var minCenter = this.size_.width - minOffset;
               centerTextX = Math.min(minCenter, centerTextX);
             } else {
-              // (width / 2) should exceed Blockly.BlockSvg.FIELD_WIDTH / 2
+              // (width / 2) should exceed ScratchBlocks.BlockSvg.FIELD_WIDTH / 2
               // if the text is longer.
               centerTextX = Math.max(minOffset, centerTextX);
             }
@@ -394,11 +394,11 @@ const lineText = {
     ResizeEditorAble = bool;
   },
   dispose: function (workspace, Blockly) {
-    Blockly.FieldTextInput.prototype.showEditor_ = this.originShowEditor_;
-    Blockly.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
-    Blockly.FieldTextInput.prototype.render_ = this.originalRender_;
-    Blockly.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor_;
-    Blockly.BlockSvg.MAX_DISPLAY_LENGTH = Infinity;
+    ScratchBlocks.FieldTextInput.prototype.showEditor_ = this.originShowEditor_;
+    ScratchBlocks.FieldTextInput.prototype.onHtmlInputKeyDown_ = this.originHtmlInputKeyDown_;
+    ScratchBlocks.FieldTextInput.prototype.render_ = this.originalRender_;
+    ScratchBlocks.FieldTextInput.prototype.resizeEditor_ = this.originalResizeEditor_;
+    ScratchBlocks.BlockSvg.MAX_DISPLAY_LENGTH = Infinity;
 
     let needRerenderBlockTypes = new Set(["text", "number", "color"]);
     needRerenderBlockTypes.forEach((needRerenderBlockType) => {
@@ -409,12 +409,12 @@ const lineText = {
       const key = opcodeToSettings[block.type];
       if (key) {
         if (needRerenderBlockTypes.has(key)) {
-          block.setOutputShape(Blockly.OUTPUT_SHAPE_ROUND);
+          block.setOutputShape(ScratchBlocks.OUTPUT_SHAPE_ROUND);
         }
         const inputBlock = block.inputList[0].fieldRow[0];
-        inputBlock.maxDisplayLength = Blockly.BlockSvg.MAX_DISPLAY_LENGTH;
+        inputBlock.maxDisplayLength = ScratchBlocks.BlockSvg.MAX_DISPLAY_LENGTH;
         inputBlock.textElement_?.setAttribute("text-anchor", "middle");
-        inputBlock.size_.height = Blockly.BlockSvg.FIELD_HEIGHT;
+        inputBlock.size_.height = ScratchBlocks.BlockSvg.FIELD_HEIGHT;
         inputBlock.setVisible(false);
         inputBlock.setVisible(true);
         block.render();

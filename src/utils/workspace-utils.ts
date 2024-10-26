@@ -1,3 +1,3 @@
-export const getBlockly = (workspace: Blockly.Workspace) => {
+export const getBlockly = (workspace: ScratchBlocks.Workspace) => {
   return workspace.getScratchBlocks();
 };

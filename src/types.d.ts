@@ -1,3 +1,5 @@
+/// <reference path="../node_modules/gandi-types/index.d.ts" />
+
 declare module "*.less" {
   const classes: { [className: string]: string };
   export default classes;
@@ -19,19 +21,19 @@ interface Window {
   $monitoringVariable?: boolean;
   Blockly: {
     Xml: {
-      frameToDom(frame: Blockly.Frame, createBlocksXml?: boolean): Element;
-      clearWorkspaceAndLoadFromXml(xml: Element, workspace: Blockly.Workspace): Array<string>;
-      domToBlock(dom: Element, workspace: Blockly.Workspace): Blockly.Block;
+      frameToDom(frame: ScratchBlocks.Frame, createBlocksXml?: boolean): Element;
+      clearWorkspaceAndLoadFromXml(xml: Element, workspace: ScratchBlocks.Workspace): Array<string>;
+      domToBlock(dom: Element, workspace: ScratchBlocks.Workspace): ScratchBlocks.Block;
       domToText(dom: Element): string;
       blockToDom(
-        block: Blockly.Block,
+        block: ScratchBlocks.Block,
         opt_noId?: boolean | undefined,
         endBlockId?: string | undefined,
         withoutComment?: boolean | undefined,
       ): Element;
-      domToWorkspace(xml: Element, workspace: Blockly.Workspace): Array<string>;
+      domToWorkspace(xml: Element, workspace: ScratchBlocks.Workspace): Array<string>;
       textToDom(text: string): Element;
-      workspaceToDom(workspace: Blockly.Workspace, opt_noId?: boolean | undefined): Element;
+      workspaceToDom(workspace: ScratchBlocks.Workspace, opt_noId?: boolean | undefined): Element;
     };
     ContextMenu: {
       show(e: Event, options: Array<unknown>, rtl: boolean): void;
@@ -62,10 +64,10 @@ interface Window {
       tokenizeInterpolation: (message: string) => string[];
       getMouseVectorPosition(
         event: { clientX: number; clientY: number },
-        workspace: Blockly.Workspace,
+        workspace: ScratchBlocks.Workspace,
       ): { x: number; y: number };
       getBlockSvgImage(
-        block: Blockly.Block,
+        block: ScratchBlocks.Block,
         blockId?: string,
       ): {
         url: string;
@@ -73,15 +75,15 @@ interface Window {
         width: number;
       };
       getBlockDesc(
-        block: Blockly.Block,
+        block: ScratchBlocks.Block,
         doms: Record<string, HTMLElement>,
       ): {
         desc: string;
-        block: Blockly.Block;
+        block: ScratchBlocks.Block;
         dom: HTMLElement;
       };
     };
-    getMainWorkspace(): Blockly.Workspace;
+    getMainWorkspace(): ScratchBlocks.Workspace;
   };
   Scratch?: {
     plugins?: {
@@ -136,10 +138,10 @@ interface RuntimeBlocksData {
 }
 
 declare interface VirtualMachine extends NodeJS.EventEmitter {
-  runtime: Scratch.Runtime;
-  editingTarget: Scratch.RenderTarget;
-  extensionManager: Scratch.ExtensionManager;
-  assets: Scratch.Asset[];
+  runtime: VM.Runtime;
+  editingTarget: VM.RenderedTarget;
+  extensionManager: VM.ExtensionManager;
+  assets: ScratchStorage.Asset[];
   addCostume(
     md5ext: string,
     costumeObject: object,
@@ -153,14 +155,14 @@ declare interface VirtualMachine extends NodeJS.EventEmitter {
   setEditingTarget: (targetId: string) => void;
   saveProjectSb3: () => Promise<Blob>;
   saveProjectSb3DontZip: () => Record<string, Uint8Array>;
-  xmlAdapter: (xml: Element) => Array<Scratch.BlockState> | null;
+  xmlAdapter: (xml: Element) => Array<VM.Block> | null;
   shareFrameToTarget: (
-    frame: Scratch.FrameState & { blockElements: Array<Scratch.BlockState> },
+    frame: VM.FrameState & { blockElements: Array<VM.Block> },
     targetId: string,
     optFromTargetId?: string,
   ) => Promise<void>;
   shareBlocksToTarget: (
-    blocks: Array<Scratch.BlockState>,
+    blocks: Array<VM.Block>,
     targetId: string,
     optFromTargetId?: string,
   ) => Promise<Record<string, string>>;

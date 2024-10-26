@@ -8,7 +8,7 @@ import FastInputIcon from "assets/icon--fast-input.svg";
 import React from "react";
 
 const FastInput = (apis: PluginContext) => {
-  const Blockly = apis.blockly;
+  const ScratchBlocks = apis.blockly;
   const vm = apis.vm;
 
   const PREVIEW_LIMIT = 50;
@@ -116,7 +116,7 @@ const FastInput = (apis: PluginContext) => {
     // if (addon.tab.editorMode !== "editor") return;
     // if (addon.tab.redux.state.scratchGui.editorTab.activeTabIndex !== 0) return;
 
-    blockTypes = BlockTypeInfo.getBlocks(Blockly, vm, Blockly.getMainWorkspace(), apis.msg);
+    blockTypes = BlockTypeInfo.getBlocks(Blockly, vm, ScratchBlocks.getMainWorkspace(), apis.msg);
     querier.indexWorkspace([...blockTypes]);
     blockTypes.sort((a, b) => {
       const prio = (block) => ["operators", "data"].indexOf(block.category.name) - block.id.startsWith("data_");
@@ -345,16 +345,16 @@ const FastInput = (apis: PluginContext) => {
     const selectedPreview = queryPreviews[selectedPreviewIdx];
     if (!selectedPreview) return;
 
-    const workspace = Blockly.getMainWorkspace();
+    const workspace = ScratchBlocks.getMainWorkspace();
     // This is mostly copied from https://github.com/scratchfoundation/scratch-blocks/blob/893c7e7ad5bfb416eaed75d9a1c93bdce84e36ab/core/scratch_blocks_utils.js#L171
     // Some bits were removed or changed to fit our needs.
     workspace.setResizesEnabled(false);
 
     let newBlock;
-    Blockly.Events.disable();
+    ScratchBlocks.Events.disable();
     try {
       newBlock = selectedPreview.block.createWorkspaceForm();
-      Blockly.scratchBlocksUtils.changeObscuredShadowIds(newBlock);
+      ScratchBlocks.scratchBlocksUtils.changeObscuredShadowIds(newBlock);
 
       const svgRootNew = newBlock.getSvgRoot();
       if (!svgRootNew) {
@@ -366,10 +366,10 @@ const FastInput = (apis: PluginContext) => {
       const newBlockY = Math.floor((mousePosition.y - (blockBounds.top + blockBounds.bottom) / 2) / workspace.scale);
       newBlock.moveBy(newBlockX, newBlockY);
     } finally {
-      Blockly.Events.enable();
+      ScratchBlocks.Events.enable();
     }
-    if (Blockly.Events.isEnabled()) {
-      Blockly.Events.fire(new Blockly.Events.BlockCreate(newBlock));
+    if (ScratchBlocks.Events.isEnabled()) {
+      ScratchBlocks.Events.fire(new ScratchBlocks.Events.BlockCreate(newBlock));
     }
 
     const fakeEvent = {
@@ -448,16 +448,16 @@ const FastInput = (apis: PluginContext) => {
   // });
 
   // Open on mouse wheel button
-  const _doWorkspaceClick_ = Blockly.Gesture.prototype.doWorkspaceClick_;
-  Blockly.Gesture.prototype.doWorkspaceClick_ = function () {
+  const _doWorkspaceClick_ = ScratchBlocks.Gesture.prototype.doWorkspaceClick_;
+  ScratchBlocks.Gesture.prototype.doWorkspaceClick_ = function () {
     if (this.mostRecentEvent_.button === 1 || this.mostRecentEvent_.shiftKey) openPopup();
     mousePosition = { x: this.mostRecentEvent_.clientX, y: this.mostRecentEvent_.clientY };
     _doWorkspaceClick_.call(this);
   };
 
   // The popup should delete blocks dragged ontop of it
-  const _isDeleteArea = Blockly.WorkspaceSvg.prototype.isDeleteArea;
-  Blockly.WorkspaceSvg.prototype.isDeleteArea = function (e) {
+  const _isDeleteArea = ScratchBlocks.WorkspaceSvg.prototype.isDeleteArea;
+  ScratchBlocks.WorkspaceSvg.prototype.isDeleteArea = function (e) {
     if (popupPosition) {
       if (
         e.clientX > popupPosition.x &&
@@ -465,7 +465,7 @@ const FastInput = (apis: PluginContext) => {
         e.clientY > popupPosition.y &&
         e.clientY < popupPosition.y + previewHeight
       ) {
-        return Blockly.DELETE_AREA_TOOLBOX;
+        return ScratchBlocks.DELETE_AREA_TOOLBOX;
       }
     }
     return _isDeleteArea.call(this, e);

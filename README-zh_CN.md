@@ -57,7 +57,7 @@
     redux: PluginsRedux;
     utils: PluginsUtils;
     teamworkManager: [TeamworkManager](./src/types/teamwork.d.ts);
-    workspace: Blockly.WorkspaceSvg;
+    workspace: ScratchBlocks.WorkspaceSvg;
     msg: (id: string) => string;
     registerSettings: PluginRegister;
   }

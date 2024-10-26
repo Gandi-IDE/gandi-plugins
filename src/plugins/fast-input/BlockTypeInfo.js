@@ -282,7 +282,7 @@ export class BlockInstance {
         .setAttribute("hasnext", "" + (this.inputs[0].value === "other scripts in sprite"));
     }
 
-    const block = this.typeInfo.Blockly.Xml.domToBlock(this.typeInfo.domForm, this.typeInfo.workspace);
+    const block = this.typeInfo.ScratchBlocks.Xml.domToBlock(this.typeInfo.domForm, this.typeInfo.workspace);
     for (let i = 0; i < this.typeInfo.inputs.length; i++) {
       const inputValue = this.inputs[i];
       if (inputValue != null) this.typeInfo.inputs[i].setValue(block, inputValue);
@@ -380,7 +380,7 @@ export class BlockTypeInfo {
 
     const blocks = [];
 
-    const flyoutDom = Blockly.Xml.workspaceToDom(flyoutWorkspace);
+    const flyoutDom = ScratchBlocks.Xml.workspaceToDom(flyoutWorkspace);
     const flyoutDomBlockMap = {};
     for (const blockDom of flyoutDom.children) {
       if (blockDom.tagName === "BLOCK") {
@@ -417,7 +417,7 @@ export class BlockTypeInfo {
       if (field.className_ === "blocklyText blocklyDropdownText") {
         const options = field.getOptions();
         addInput(new BlockInputEnum(options, inputIdx, fieldIdx, fieldIdx === -1));
-      } else if (field instanceof Blockly.FieldImage) {
+      } else if (field instanceof ScratchBlocks.FieldImage) {
         switch (field.src_.split("/").pop()) {
           case "green-flag.svg":
             parts.push(locale("general.blocks.greenFlag"));
@@ -488,19 +488,19 @@ export class BlockTypeInfo {
 
       // Adapted from https://github.com/scratchfoundation/scratch-gui/blob/cc6e6324064493cf1788f3c7c0ff31e4057964ee/src/lib/blocks.js#L230
       const stageOptions = [
-        [Blockly.Msg.SENSING_OF_BACKDROPNUMBER, "backdrop #"],
-        [Blockly.Msg.SENSING_OF_BACKDROPNAME, "backdrop name"],
-        [Blockly.Msg.SENSING_OF_VOLUME, "volume"],
+        [ScratchBlocks.Msg.SENSING_OF_BACKDROPNUMBER, "backdrop #"],
+        [ScratchBlocks.Msg.SENSING_OF_BACKDROPNAME, "backdrop name"],
+        [ScratchBlocks.Msg.SENSING_OF_VOLUME, "volume"],
       ];
 
       const spriteOptions = [
-        [Blockly.Msg.SENSING_OF_XPOSITION, "x position"],
-        [Blockly.Msg.SENSING_OF_YPOSITION, "y position"],
-        [Blockly.Msg.SENSING_OF_DIRECTION, "direction"],
-        [Blockly.Msg.SENSING_OF_COSTUMENUMBER, "costume #"],
-        [Blockly.Msg.SENSING_OF_COSTUMENAME, "costume name"],
-        [Blockly.Msg.SENSING_OF_SIZE, "size"],
-        [Blockly.Msg.SENSING_OF_VOLUME, "volume"],
+        [ScratchBlocks.Msg.SENSING_OF_XPOSITION, "x position"],
+        [ScratchBlocks.Msg.SENSING_OF_YPOSITION, "y position"],
+        [ScratchBlocks.Msg.SENSING_OF_DIRECTION, "direction"],
+        [ScratchBlocks.Msg.SENSING_OF_COSTUMENUMBER, "costume #"],
+        [ScratchBlocks.Msg.SENSING_OF_COSTUMENAME, "costume name"],
+        [ScratchBlocks.Msg.SENSING_OF_SIZE, "size"],
+        [ScratchBlocks.Msg.SENSING_OF_VOLUME, "volume"],
       ];
 
       for (const targetInput of baseTargetInput.values) {

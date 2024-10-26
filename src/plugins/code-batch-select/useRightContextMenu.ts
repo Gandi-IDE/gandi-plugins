@@ -4,7 +4,7 @@ import { copyBatchedElements, pasteBatchedElements } from "utils/block-helper";
 import { SelectedElements } from "./useBatchSelect";
 
 interface IProps {
-  workspace: Blockly.WorkspaceSvg;
+  workspace: ScratchBlocks.WorkspaceSvg;
   blockly: any;
   clearAllBoxedElements?: (boolean) => void;
   intl: IntlShape;
@@ -37,13 +37,13 @@ const useBatchSelectRightMenu = ({ workspace, blockly, clearAllBoxedElements, in
               callback: () => {
                 if (!blockly.batchSelectedElements) return;
                 blockly.Events.setGroup(true);
-                Object.values(blockly.batchSelectedElements[0]).forEach((bl: Blockly.Block) => {
+                Object.values(blockly.batchSelectedElements[0]).forEach((bl: ScratchBlocks.Block) => {
                   setTimeout(function () {
                     blockly.mainWorkspace.fireDeletionListeners(bl);
                   });
                   bl.dispose(true, true);
                 });
-                Object.values(blockly.batchSelectedElements[1]).forEach((frame: Blockly.Frame) => {
+                Object.values(blockly.batchSelectedElements[1]).forEach((frame: ScratchBlocks.Frame) => {
                   frame.dispose();
                 });
                 blockly.Events.setGroup(false);

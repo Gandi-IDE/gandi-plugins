@@ -231,7 +231,7 @@ const CodeSwitch: React.FC<PluginContext> = ({ intl, vm }) => {
     // 创建下拉菜单
     const menuItemId = window.Blockly.ContextMenu.addDynamicMenuItem(
       (items, target) => {
-        const block = target as unknown as Blockly.Block;
+        const block = target as unknown as ScratchBlocks.Block;
         const type = block.type;
         let switches = blockSwitches[type] || [];
         const customBlocks = getCustomBlocks();

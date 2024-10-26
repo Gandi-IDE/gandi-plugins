@@ -3,7 +3,7 @@ import { isCtrlKeyDown } from "utils/index";
 import { copyBatchedElements, pasteBatchedElements } from "utils/block-helper";
 import { SelectedElements } from "./useBatchSelect";
 
-const useKeyDownOperate: (params: { blockly: any; workspace: Blockly.WorkspaceSvg; vm: VirtualMachine }) => null = ({
+const useKeyDownOperate: (params: { blockly: any; workspace: ScratchBlocks.WorkspaceSvg; vm: VirtualMachine }) => null = ({
   blockly,
   workspace,
   vm,

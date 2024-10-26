@@ -4,12 +4,12 @@ import BlockFlasher from "utils/block-flasher";
 type CopiedElements = [
   Array<{
     element: Element;
-    originalELement: Blockly.Block;
+    originalELement: ScratchBlocks.Block;
     nextBlockId?: string;
   }>,
   Array<{
     element: Element;
-    originalELement: Blockly.Frame;
+    originalELement: ScratchBlocks.Frame;
   }>,
 ];
 
@@ -20,19 +20,19 @@ const changeObscuredShadowIds = (element: Element) => {
   }
 };
 
-const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Workspace, vm: VirtualMachine) => {
+const resolveVariableSharingConflicts = (element: Element, workspace: ScratchBlocks.Workspace, vm: VirtualMachine) => {
   const variables: Map<string, string> = new Map();
   const lists: Map<string, string> = new Map();
   const existingVariables = workspace
     .getAllVariables()
     .map(({ name, type, isCloud, id_ }) => ({ name, type, isCloud, id: id_ }));
 
-  const handleCheckVariable = (name: string, id: string, type: string, element: Element) => {
-    const existingVariable = existingVariables.find((i) => i.type === type && i.name === name);
+  const handleCheckVariable = (name: string, id: string, type: VM.VariableType, element: Element) => {
+    const existingVariable = existingVariables.find((i) => (i.type as unknown as VM.VariableType) === type && i.name === name);
     if (!existingVariable) {
       const isCloud = name.startsWith("☁ ");
       vm.editingTarget.createVariable(id, name, type, isCloud);
-      existingVariables.push({ name, type, isCloud, id });
+      existingVariables.push({ name, type: type as unknown as ScratchBlocks.VariableType, isCloud, id });
     } else if (existingVariable.id !== id) {
       element.setAttribute("id", existingVariable.id);
     }
@@ -48,9 +48,9 @@ const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Wo
         const name = child.innerHTML;
         const id = child.getAttribute("id");
         if (type === "VARIABLE") {
-          handleCheckVariable(name, id, "", child);
+          handleCheckVariable(name, id, VM.VariableType.Scalar, child);
         } else if (type === "LIST") {
-          handleCheckVariable(name, id, "list", child);
+          handleCheckVariable(name, id, VM.VariableType.List, child);
         }
       }
       traverse(child);
@@ -68,9 +68,9 @@ const resolveVariableSharingConflicts = (element: Element, workspace: Blockly.Wo
  * @param allBlockIds All the block ids that need to be processed
  * @returns Block description
  */
-export const getBlockDescription = (block: Blockly.Block, allBlockIds: Set<string>) => {
+export const getBlockDescription = (block: ScratchBlocks.Block, allBlockIds: Set<string>) => {
   let desc = "";
-  const process = ({ inputList }: Blockly.Block) => {
+  const process = ({ inputList }: ScratchBlocks.Block) => {
     for (const input of inputList) {
       const fields = input.fieldRow;
       for (const field of fields) {
@@ -94,7 +94,7 @@ export const getBlockDescription = (block: Blockly.Block, allBlockIds: Set<strin
  * @param block in a stack
  * @returns a block that is the top of the stack of blocks
  */
-export const getTopOfStackFor = (block: Blockly.Block) => {
+export const getTopOfStackFor = (block: ScratchBlocks.Block) => {
   let base = block;
   while (base.getOutputShape() && base.getSurroundParent()) {
     base = base.getSurroundParent();
@@ -104,10 +104,10 @@ export const getTopOfStackFor = (block: Blockly.Block) => {
 
 /**
  * Based on wksp.centerOnBlock(blockId);
- * @param {object} block A Blockly.Block
- * @param {object} workspace Blockly.Workspace
+ * @param {object} block A ScratchBlocks.Block
+ * @param {object} workspace ScratchBlocks.Workspace
  */
-export const scrollBlockIntoView = (block: Blockly.Block, workspace: Blockly.WorkspaceSvg) => {
+export const scrollBlockIntoView = (block: ScratchBlocks.Block, workspace: ScratchBlocks.WorkspaceSvg) => {
   if (!block) {
     return console.warn("Block not found");
   }
@@ -176,9 +176,9 @@ export const getActivityEndBlockNext = (block, activeBlocks) => {
 };
 
 export const draggingBatchedElementAnimation = (
-  element: Blockly.Block | Blockly.Frame,
+  element: ScratchBlocks.Block | ScratchBlocks.Frame,
   isBlock: boolean,
-  processedTargetBlock?: Blockly.Block,
+  processedTargetBlock?: ScratchBlocks.Block,
 ) => {
   const animateBlock = element.getSvgRoot().cloneNode(true) as SVGAElement;
   element.getSvgRoot().style.display = "none";
@@ -194,7 +194,7 @@ export const draggingBatchedElementAnimation = (
     }, 300);
   });
   if (isBlock) {
-    let setCommentStyleBlock = element as Blockly.Block;
+    let setCommentStyleBlock = element as ScratchBlocks.Block;
     do {
       if (setCommentStyleBlock?.comment?.bubble_?.bubbleGroup_) {
         setCommentStyleBlock.comment.bubble_.bubbleGroup_.setAttribute("style", "display: none");
@@ -204,7 +204,7 @@ export const draggingBatchedElementAnimation = (
   }
 };
 
-export const draggingBatchedElements = (selectedElements: SelectedElements, processedTargetBlock?: Blockly.Block) => {
+export const draggingBatchedElements = (selectedElements: SelectedElements, processedTargetBlock?: ScratchBlocks.Block) => {
   const selectedBlocks = Object.values(selectedElements[0]);
   const selectedFrames = Object.values(selectedElements[1]);
 
@@ -309,7 +309,7 @@ export const copyBatchedElements = (selectedElements: SelectedElements) => {
 
 export const pasteBatchedElements = (
   event: { clientX: number; clientY: number },
-  workspace: Blockly.Workspace,
+  workspace: ScratchBlocks.Workspace,
   copiedElements: CopiedElements,
   vm: VirtualMachine,
 ) => {

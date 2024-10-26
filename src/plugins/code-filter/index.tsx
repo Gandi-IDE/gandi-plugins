@@ -14,7 +14,7 @@ import styles from "./styles.less";
 
 interface SelectOption {
   desc: string;
-  block: Blockly.Block;
+  block: ScratchBlocks.Block;
   dom: HTMLElement;
 }
 

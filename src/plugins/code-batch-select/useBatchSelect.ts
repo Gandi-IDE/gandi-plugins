@@ -4,12 +4,12 @@ import { getChildBlocks } from "utils/block-helper";
 import { debounce } from "lodash-es";
 const blocklyWorkspaceClassName = ".blocklySvg";
 
-type BlocksAndFramesList = [Array<Blockly.Block>, Array<Blockly.Frame>];
-export type SelectedElements = [Record<string, Blockly.Block>, Record<string, Blockly.Frame>];
+type BlocksAndFramesList = [Array<ScratchBlocks.Block>, Array<ScratchBlocks.Frame>];
+export type SelectedElements = [Record<string, ScratchBlocks.Block>, Record<string, ScratchBlocks.Frame>];
 
 const useBatchSelect: (params: {
   enabledBatchSelect?: boolean;
-  workspace: Blockly.WorkspaceSvg;
+  workspace: ScratchBlocks.WorkspaceSvg;
   onSelectedElementsChanged(elements: SelectedElements): void;
   blockly?: any;
 }) => {
@@ -22,7 +22,7 @@ const useBatchSelect: (params: {
   const selectionableElements = useRef<BlocksAndFramesList>([[], []]);
   const rectNode = useRef<Element>();
 
-  const setFrameHighlight = useCallback((frame: Blockly.Frame, visible: boolean) => {
+  const setFrameHighlight = useCallback((frame: ScratchBlocks.Frame, visible: boolean) => {
     const svgGroup = frame.getSvgRoot();
     if (svgGroup) {
       if (visible) {
@@ -237,7 +237,7 @@ const useBatchSelect: (params: {
   };
 
   // 取消选择中单个Frame
-  const unselectFrameElement = useCallback((frame: Blockly.Frame, unselectBlocks = true) => {
+  const unselectFrameElement = useCallback((frame: ScratchBlocks.Frame, unselectBlocks = true) => {
     delete selectedElementsRef.current[1][frame.id];
     setFrameHighlight(frame, false);
     if (unselectBlocks) {
@@ -252,7 +252,7 @@ const useBatchSelect: (params: {
   }, []);
 
   // 选择中单个Block
-  const selectBlockElement = useCallback((block: Blockly.Block) => {
+  const selectBlockElement = useCallback((block: ScratchBlocks.Block) => {
     const selectedBlocks = selectedElementsRef.current[0];
     selectedBlocks[block.id] = block;
     setBlockStatusAndStyles(block, true);
@@ -267,7 +267,7 @@ const useBatchSelect: (params: {
   }, []);
 
   // 取消选择中单个Block.
-  const unselectBlockElement = useCallback((block: Blockly.Block) => {
+  const unselectBlockElement = useCallback((block: ScratchBlocks.Block) => {
     // Remove the block from the active block list
     delete selectedElementsRef.current[0][block.id];
     setBlockStatusAndStyles(block, false);
@@ -283,7 +283,7 @@ const useBatchSelect: (params: {
   }, []);
 
   // 选择中单个Frame
-  const selectFrameElement = useCallback((frame: Blockly.Frame) => {
+  const selectFrameElement = useCallback((frame: ScratchBlocks.Frame) => {
     selectedElementsRef.current[1][frame.id] = frame;
     Object.values(selectionableElements.current[0]).forEach((block) => {
       if (block.isInFrame() === frame) {

@@ -2,7 +2,7 @@
  * Helper class to flash a Blockly scratch block in the users workspace
  */
 class BlockFlasher {
-  block: Blockly.Block | null;
+  block: ScratchBlocks.Block | null;
   count: number;
   flashOn: boolean;
   timerId: NodeJS.Timeout;
@@ -19,7 +19,7 @@ class BlockFlasher {
   /**
    * FLash a block 3 times
    */
-  start(block: Blockly.Block) {
+  start(block: ScratchBlocks.Block) {
     if (this.timerId) {
       clearTimeout(this.timerId);
       if (this.block?.svgPath_) {
@@ -36,7 +36,7 @@ class BlockFlasher {
   /**
    * Internal method to switch the colour of a block between light yellow and it's original colour
    */
-  private privateFlash(block: Blockly.Block) {
+  private privateFlash(block: ScratchBlocks.Block) {
     if (block.svgPath_) {
       block.svgPath_.style.fill = this.flashOn ? "#ffff80" : "";
     }
