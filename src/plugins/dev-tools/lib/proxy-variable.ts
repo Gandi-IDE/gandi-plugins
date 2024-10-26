@@ -2,10 +2,10 @@ import { variableChangeEventBus } from "./dev-tools-observer";
 
 export interface VariableChangeEventDetail {
   propertyName: string;
-  value: Scratch.Variable["value"];
+  value: VM.Variable;
 }
 
-const onChange = (eventName: string, propertyName: string, value: Scratch.Variable["value"]) => {
+const onChange = (eventName: string, propertyName: string, value: VM.Variable | string) => {
   variableChangeEventBus.emit(eventName, {
     propertyName,
     value,
@@ -17,14 +17,14 @@ function proxyVariableList(value: Array<string | boolean | number>, eventName: s
     set(list, idx, val) {
       list[idx] = val;
       if (idx !== "length") {
-        onChange(eventName, "value", [...list]);
+        onChange(eventName, "value", [...list] as any);
       }
       return true;
     },
   });
 }
 
-export function addProxy(variable: Scratch.Variable) {
+export function addProxy(variable: VM.Variable) {
   const eventName = `${variable.targetId}${variable.id}`;
   const type = variable.type;
   let value =
@@ -61,9 +61,9 @@ export function addProxy(variable: Scratch.Variable) {
   });
 }
 
-export function removeProxy(variable: Scratch.Variable, target: Scratch.RenderTarget) {
+export function removeProxy(variable: VM.Variable, target: VM.RenderedTarget) {
   const { id, name, type, value, isCloud, targetId } = variable;
-  const Variable = variable.constructor;
+  const Variable = variable.constructor as any;
   target.variables[id] = new Variable(id, name, type, isCloud, targetId);
   target.variables[id].value = type === "list" ? [...value] : value;
 }

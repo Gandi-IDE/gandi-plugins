@@ -130,8 +130,8 @@ importers:
         specifier: ^7.31.8
         version: 7.37.2(eslint@8.57.1)
       gandi-types:
-        specifier: git+https://github.com/FurryR/gandi-types#tw
-        version: '@turbowarp/types@https://codeload.github.com/FurryR/gandi-types/tar.gz/221e568ba9e502be6d6aad58c3901fde09d89ca5'
+        specifier: git+https://github.com/Gandi-IDE/gandi-types#tw
+        version: '@turbowarp/types@https://codeload.github.com/Gandi-IDE/gandi-types/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4'
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -1498,8 +1498,8 @@ packages:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
 
-  '@turbowarp/types@https://codeload.github.com/FurryR/gandi-types/tar.gz/221e568ba9e502be6d6aad58c3901fde09d89ca5':
-    resolution: {tarball: https://codeload.github.com/FurryR/gandi-types/tar.gz/221e568ba9e502be6d6aad58c3901fde09d89ca5}
+  '@turbowarp/types@https://codeload.github.com/Gandi-IDE/gandi-types/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4':
+    resolution: {tarball: https://codeload.github.com/Gandi-IDE/gandi-types/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4}
     version: 0.0.12
 
   '@types/body-parser@1.19.5':
@@ -8579,7 +8579,7 @@ snapshots:
 
   '@trysound/sax@0.2.0': {}
 
-  '@turbowarp/types@https://codeload.github.com/FurryR/gandi-types/tar.gz/221e568ba9e502be6d6aad58c3901fde09d89ca5': {}
+  '@turbowarp/types@https://codeload.github.com/Gandi-IDE/gandi-types/tar.gz/da533389791e5eace0fbb8d3a66b5eb79b186ee4': {}
 
   '@types/body-parser@1.19.5':
     dependencies:

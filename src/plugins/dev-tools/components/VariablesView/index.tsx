@@ -44,7 +44,7 @@ const VariablesView: React.FC = () => {
     devToolsObserver.set({ tackedVariables: {}, targetAndNameMap: {} });
   }, []);
 
-  const useTackedVariablesCatch = React.useCallback((newTargets: Scratch.RenderTarget[]) => {
+  const useTackedVariablesCatch = React.useCallback((newTargets: VM.RenderedTarget[]) => {
     for (let index = 0; index < newTargets.length; index++) {
       const target = newTargets[index];
       if (tackedVariablesCatch[target.id]) {
@@ -65,7 +65,7 @@ const VariablesView: React.FC = () => {
     tackedVariablesCatch = {};
   }, []);
 
-  const updateTargets = React.useCallback((newTargets: Scratch.RenderTarget[]) => {
+  const updateTargets = React.useCallback((newTargets: VM.RenderedTarget[]) => {
     if (newTargets.length === 0) {
       clearCache();
     } else {

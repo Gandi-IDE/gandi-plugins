@@ -16,7 +16,7 @@ interface IVariable {
   id: string;
   name: string;
   type: string;
-  value: string | Array<string | number | boolean>;
+  value: VM.VariableValue;
 }
 
 const messages = defineMessages({
@@ -32,7 +32,7 @@ const messages = defineMessages({
   },
 });
 
-const disposalVariables = (variables: Record<string, Scratch.Variable>): IVariable[][] =>
+const disposalVariables = (variables: Record<string, VM.Variable>): IVariable[][] =>
   Object.keys(variables).reduce(
     (acc: IVariable[][], i) => {
       const item = variables[i];
@@ -175,7 +175,7 @@ const TargetItem: React.FC<TargetItemProps> = ({ id }) => {
               renderTargetName={target.sprite.name}
               variableName={target.variables[variable.id].name}
               variableId={variable.id}
-              variableValue={target.variables[variable.id].value}
+              variableValue={String(target.variables[variable.id].value)}
             />
           ))}
         </IF>
@@ -195,7 +195,7 @@ const TargetItem: React.FC<TargetItemProps> = ({ id }) => {
               renderTargetName={target.sprite.name}
               variableName={target.variables[variable.id].name}
               variableId={variable.id}
-              variableValue={target.variables[variable.id].value}
+              variableValue={String(target.variables[variable.id].value)}
             />
           ))}
         </IF>

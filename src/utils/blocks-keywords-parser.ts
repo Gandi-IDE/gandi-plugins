@@ -313,7 +313,7 @@ export default class BlocksKeywordsParser {
     let keywordText = script;
     const params = parseArgs(block.mutation.proccode);
     if (params.length) {
-      if (block.mutation.argumentnames) {
+      if ('argumentnames' in block.mutation) {
         const argumentnames = JSON.parse(block.mutation.argumentnames);
         params.forEach((param, index) => {
           const argumentName = escapeBlocks(argumentnames[index]);
@@ -355,6 +355,7 @@ export default class BlocksKeywordsParser {
   }
 
   parseDynamicBlock(block: VM.Block) {
+    if (!('blockInfo' in block.mutation)) throw new Error('Not implemented');
     let script = block.mutation.blockInfo.text || block.mutation.blockInfo.opcode;
     let keywordText = script;
     let blockJson: BlockInitJson = null;
@@ -542,7 +543,7 @@ export default class BlocksKeywordsParser {
         } else if (block.opcode === "procedures_call") {
           const [script, keywordText] = this.parseProcedureBlock(block);
           options.push([block.id, `${script}:: custom`, keywordText]);
-        } else if (block.mutation && block.mutation.blockInfo) {
+        } else if (block.mutation && 'blockInfo' in block.mutation) {
           const [script, keywordText] = this.parseDynamicBlock(block);
           options.push([block.id, script, keywordText]);
         } else if (!isShadow && (isNotParent || isParentNextBlock || isParentSubstackBlock)) {

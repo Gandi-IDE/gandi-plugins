@@ -78,7 +78,7 @@ const TackedVariableView: React.FC<TackedVariableViewProps> = ({
       return newCLone;
     };
     // 处理删除克隆体的情况
-    const superRemoveClone = function (clone: Scratch.RenderTarget) {
+    const superRemoveClone = function (clone: VM.RenderedTarget) {
       removeClone(clone);
       setClones((prev) => prev.filter((c) => c !== clone.id));
     };

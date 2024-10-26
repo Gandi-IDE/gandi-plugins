@@ -29,7 +29,7 @@ export interface VariableItemViewProps {
   trackable?: boolean;
   variableId: string;
   variableName: string;
-  variableValue: string | ListVariable;
+  variableValue: VM.VariableValue;
   onClickShowClones?: () => void;
 }
 
@@ -97,9 +97,9 @@ const VariableItemView = React.forwardRef<HTMLLIElement, VariableItemViewProps>(
       const handleVariableChange = (variable: VariableChangeEventDetail) => {
         const { propertyName, value: newValue } = variable;
         if (propertyName === "name") {
-          setName(newValue as string);
+          setName(newValue as unknown as string);
         } else if (propertyName === "value") {
-          setValue(newValue);
+          setValue(newValue as any);
         }
       };
       variableChangeEventBus.on(eventName, handleVariableChange);
@@ -164,7 +164,7 @@ const VariableItemView = React.forwardRef<HTMLLIElement, VariableItemViewProps>(
             {isList ? "" : ":"}
           </span>
           {!isList && (
-            <Bubble title={value}>
+            <Bubble title={String(value)}>
               <span className={classNames(styles.ellipsis, styles.variableValue)}>{value}</span>
             </Bubble>
           )}
