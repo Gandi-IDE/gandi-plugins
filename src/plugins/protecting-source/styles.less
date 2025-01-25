@@ -1,0 +1,63 @@
+.container {
+  position: relative;
+  border-radius: 0 0 8px 8px;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 9px;
+  color: var(--theme-color-g300);
+  height: calc(100% - 25px);
+}
+
+// toolboxoText,toolboxItem部分内容来自 src\plugins\extension-manager\styles.less
+.toolboxText {
+  flex: auto;
+  font-size: 14px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.toolboxItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  // height: 48px;
+  position: relative;
+  font-size: 14px;
+  color: var(--theme-text-primary);
+  -webkit-user-select: none;
+  user-select: none;
+  border-bottom: 1px solid var(--gui-divider-color);
+  // padding: 3px;
+  border-radius: 5px;
+  cursor: grab;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.docHr {
+  height: 1px;
+  background: linear-gradient(to right, var(--theme-color-g300), var(--theme-color-g300) 50%, transparent 100%);
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.tipP {
+  font-size: 12px !important;
+}
+
+.docTitle {
+  font-size: 20px !important;
+  font-weight: bold;
+  margin-bottom: 5px;
+}

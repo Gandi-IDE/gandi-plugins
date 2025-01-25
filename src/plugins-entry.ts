@@ -24,4 +24,5 @@ export default {
   "block-sharing": () => import(/* webpackChunkName: "plugin-block-sharing" */ "plugins/block-sharing"),
   "costume-piskel": () => import(/* webpackChunkName: "plugin-costume-piskel" */ "src/plugins/costume-piskel"),
   "data-category-tweaks": () => import(/* webpackChunkName: "plugin-data-category-tweaks" */ "plugins/data-category-tweaks"),
+  "protecting-source": () => import(/* webpackChunkName: "plugin-protecting-source" */ "src/plugins/protecting-source"),
 } as const;
