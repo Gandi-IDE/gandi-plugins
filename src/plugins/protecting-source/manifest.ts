@@ -6,6 +6,7 @@ export default {
   credits: [
     {
       name: "多bug的啸天犬 @ CCW",
+      link: "https://www.ccw.site/student/6200811f05660557606c8b15",
     },
   ],
 };
