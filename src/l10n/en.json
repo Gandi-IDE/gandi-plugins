@@ -273,6 +273,7 @@
   "plugins.protectingSource.doc.9": "2. Close the settings interface and click the small shield icon in the toolbar (it will show a tooltip saying 'Creation Source Information Protection Tool')",
   "plugins.protectingSource.doc.10": "3. Choose to turn off or change the watermark according to your needs. If you want to turn off the watermark, you need to disable the 'Enable Creation Source Watermark' switch.",
   "plugins.protectingSource.doc.11": "If you want to change the watermark information, you need to enable the 'Enable Creation Source Watermark' switch and set your custom [IDE Name] and [IDE Link] in the detailed settings below (these contents can be filled arbitrarily! They have no impact on the project itself!)",
+  "plugins.protectingSource.doc.11.show": "[Sample Image]",
   "plugins.protectingSource.doc.12": "Have you finished reading? ^__^",
   "plugins.protectingSource.doc.13": "Note: This option has no practical function",
   "plugins.protectingSource.openShow": "Enable Creation Source Watermark (record the IDE used)?",

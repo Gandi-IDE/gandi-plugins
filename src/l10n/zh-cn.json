@@ -273,6 +273,7 @@
   "plugins.protectingSource.doc.9": "2. 关闭设置界面，点击工具栏里的小盾牌图标（鼠标放上去会提示“创作源信息保护工具”）",
   "plugins.protectingSource.doc.10": "3. 按你的需求选择 关闭水印 或 更改水印。若想要关闭水印，你需要将“打开创作源头水印”开关关闭。",
   "plugins.protectingSource.doc.11": "若想要更改水印信息，你需要打开“打开创作源头水印”开关，并在下方的详细设置里设置你自定义的[IDE名称]和[IDE访问链接]（这些内容可以随便填！对工程没有任何影响！）",
+  "plugins.protectingSource.doc.11.show": "[效果图]",
   "plugins.protectingSource.doc.12": "你看完了吗？^__^",
   "plugins.protectingSource.doc.13": "注：此选项无实际功能",
   "plugins.protectingSource.openShow": "打开创作源头水印（记录所使用的IDE）？",
