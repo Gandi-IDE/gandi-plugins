@@ -15,7 +15,7 @@
 
   1. We recommend using [VSCode](https://code.visualstudio.com/) for development.
   2. This project uses [pnpm](https://pnpm.io/) as the package manager. If you do not have [pnpm](https://pnpm.io) installed globally on your device, please refer to the [pnpm installation guide](https://pnpm.io/installation#using-npm)。
-  3. This project requires Node.js version 16.14 or higher.
+  3. This project requires Node.js version 18.12 or higher.
 
   ### 📦 Install Dependencies
 
