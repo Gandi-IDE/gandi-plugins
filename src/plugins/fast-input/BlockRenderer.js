@@ -202,7 +202,19 @@ function createBlockContainer() {
  */
 function createBlockComponent(container, shape, categoryClass, fill, stroke, width) {
   if (width < shape.minWidth) width = shape.minWidth;
-  container.classList.add("sa-block-color", categoryClass);
+
+  // Some extensions cannot be identified as community extensions using isScratchExtension
+  // because they do not have a blockIconURI.
+  // In such cases, their category_ value may contain spaces or other characters
+  // that cannot be added as a class to the DOM's classList.
+  try {
+    const safeClass = categoryClass.trim().replace(/\s+/g, "-");
+    if (safeClass) {
+      container.classList.add("sa-block-color", categoryClass);
+    }
+  } catch (error) {
+    console.error("Failed to add class:", error);
+  }
   const background = container.children[0];
   let style = "";
   if (fill) style += `fill: var(${fill});`;
