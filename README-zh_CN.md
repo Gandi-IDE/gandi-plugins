@@ -15,7 +15,7 @@
 
   1. 推荐使用 [VSCode](https://code.visualstudio.com/) 进行开发。
   2. 本项目使用 [pnpm](https://pnpm.io/) 作为包管理工具。如果你的设备没有全局安装 [pnpm](https://pnpm.io), 请参考 [pnpm 安装教程](https://pnpm.io/zh/installation#%E4%BD%BF%E7%94%A8-npm-%E5%AE%89%E8%A3%85)。
-  3. 本项目要求 [Node](https://nodejs.org/en) 版本不低于 v16.14。
+  3. 本项目要求 [Node](https://nodejs.org/en) 版本不低于 v18.12。
 
   ### 📦 安装依赖
 
