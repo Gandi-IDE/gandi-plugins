@@ -265,7 +265,7 @@
   "plugins.protectingSource.doc.1": "You can view relevant information about this plugin here.",
   "plugins.protectingSource.doc.2": "Please make sure to read this guide thoroughly! Must-read!!",
   "plugins.protectingSource.doc.3": "[Usage Scenarios and Basic Functions]",
-  "plugins.protectingSource.doc.4": "Since Gandi adds a 'source from Gandi' watermark to all exported projects (including those that do not use experimental extensions) to preserve proprietary extension information from the Experimental Square for easy identification by other IDEs and to help beginners open projects correctly,",
+  "plugins.protectingSource.doc.4": "Gandi will leave an exclusive Gandi watermark in the \"platfrom\" field of your engineering files because Gandi has an exclusive field in the engineering files for preserving the information of [Expansion Trial Square]. This practice makes it convenient for other IDEs to identify and help beginners open the works.",
   "plugins.protectingSource.doc.5": "this watermark has no impact on actual functionality and only serves as a prompt. However, Gandi does not provide an option to turn off the watermark, leading to potential exposure of creation source information and misreporting by other IDEs.",
   "plugins.protectingSource.doc.6": "Therefore, this plugin was developed: it can [turn off the IDE watermark] and also change the IDE watermark information, allowing other editors (such as Turbowarp) to display the creation source as customized content! (Whisper: It can also be used to show off in front of friends~)",
   "plugins.protectingSource.doc.7": "[Specific Usage Method]",

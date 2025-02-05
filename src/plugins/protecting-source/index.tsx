@@ -107,6 +107,7 @@ const ProtectingSource: React.FC<PluginContext> = ({ msg, vm, workspace, blockly
           key: "how",
           // 这是这一组Key的名称
           label: msg("plugins.protectingSource.doc.title"),
+          // description type:ReactNode
           description: (
             <>
               {msg("plugins.protectingSource.doc.1")}

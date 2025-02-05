@@ -265,7 +265,7 @@
   "plugins.protectingSource.doc.1": "你可以在这里查看这个插件的相关信息。",
   "plugins.protectingSource.doc.2": "请务必看完此说明！必读！！",
   "plugins.protectingSource.doc.3": "[使用场景和基本功能]",
-  "plugins.protectingSource.doc.4": "由于 Gandi 为了保存来自 拓展试验广场 的专有拓展信息，为方便其他 IDE 识别和帮助小白正确打开作品，而在所有导出的工程（包括未使用实验拓展的）中都打上了“来源于Gandi”的水印。",
+  "plugins.protectingSource.doc.4": "Gandi 会在你的工程文件中在\"platfrom\"字段中留下独属于 Gandi 标记（水印），原因是 Gandi 在工程文件中有一个独属于 Gandi 的为了保存[拓展试验广场]拓展的信息而设立的字段，这样做可以方便其他 IDE 识别以帮助小白打开作品",
   "plugins.protectingSource.doc.5": "然而，这个水印和实际功能没有任何关系，只做提示。但是 Gandi 没有给用户关闭水印的机会，会导致创作来源信息泄露和被其他 IDE 误报",
   "plugins.protectingSource.doc.6": "于是就开发了这样一个插件：不但可以[关闭创作IDE水印]，还可以更改 IDE 水印信息，让其他编辑器（如 Turbowarp）显示的创作来源是肝酱自定义的内容！（小声：还有个用法是在好友面前装一下~）",
   "plugins.protectingSource.doc.7": "[具体使用方法]",
