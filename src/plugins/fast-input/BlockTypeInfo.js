@@ -390,7 +390,7 @@ export class BlockTypeInfo {
     }
     for (const workspaceBlock of flyoutWorkspace.getTopBlocks()) {
       blocks.push(
-        ...BlockTypeInfo._createBlocks(
+        ...BlockTypeInfo._createBlocksWithCache(
           workspace,
           vm,
           Blockly,
@@ -401,6 +401,18 @@ export class BlockTypeInfo {
       );
     }
 
+    return blocks;
+  }
+
+  static btiCache = {};
+
+  static _createBlocksWithCache(workspace, vm, Blockly, locale, workspaceForm, domForm) {
+    let blocks = BlockTypeInfo.btiCache[workspaceForm.id];
+    if (blocks !== undefined) {
+      return blocks;
+    }
+    blocks = BlockTypeInfo._createBlocks(workspace, vm, Blockly, locale, workspaceForm, domForm);
+    BlockTypeInfo.btiCache[workspaceForm.id] = blocks;
     return blocks;
   }
 
