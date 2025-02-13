@@ -79,6 +79,7 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
   const containerNodeInfo = React.useRef(containerInfo);
   const client = React.useRef({ x: 0, y: 0 });
   const bounds = React.useRef({ top: 60, left: 72 });
+  const interlayer = React.useRef<HTMLDivElement | null>(null);
 
   const handleBringToFront = React.useCallback(() => {
     const minIndex = typeof zIndex === "undefined" ? 101 : zIndex;
@@ -117,6 +118,18 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
     container.current.style.userSelect = "none";
   };
 
+  const handleDragStart = React.useCallback(() => {
+    if (interlayer.current) {
+      interlayer.current.remove();
+      interlayer.current = null;
+    }
+    if (container.current.parentNode) {
+      interlayer.current = document.createElement("div");
+      interlayer.current.className = styles.interlayer;
+      container.current.parentNode.insertBefore(interlayer.current, container.current);
+    }
+  }, []);
+
   const handleDragStop = React.useCallback(
     (_: unknown, data: { x: number; y: number }) => {
       const verifiedData = verifyTranslate(data);
@@ -127,6 +140,10 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
       containerNodeInfo.current.translateX = verifiedData.x;
       containerNodeInfo.current.translateY = verifiedData.y;
       onSizeChange({ ...containerNodeInfo.current });
+      if (interlayer.current) {
+        interlayer.current.remove();
+        interlayer.current = null;
+      }
     },
     [onSizeChange],
   );
@@ -236,7 +253,13 @@ const ExpansionBox = forwardRef<ExpansionBoxRef, ExpansionBoxProps>((props, ref)
   }, [borderRadius]);
 
   return (
-    <Draggable position={position} bounds={bounds.current} onStop={handleDragStop} handle={"." + id}>
+    <Draggable
+      position={position}
+      bounds={bounds.current}
+      onStart={handleDragStart}
+      onStop={handleDragStop}
+      handle={"." + id}
+    >
       <div
         className={classNames(styles.container, className)}
         ref={container}
