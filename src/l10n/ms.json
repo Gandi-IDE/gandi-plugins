@@ -258,5 +258,13 @@
   "plugins.dataCategoryTweaks.separateListCategory": "Pisahkan kategori senarai",
   "for-all-sprites": "Untuk semua sprite:",
   "for-this-sprite-only": "Untuk sprite ini sahaja:",
-  "plugins.dataCategoryTweaks.list": "Senarai"
+  "plugins.dataCategoryTweaks.list": "Senarai",
+  "plugins.mobileCodeBatchSelect.title": "Keserasian Mudah Alih Gandi",
+  "plugins.mobileCodeBatchSelect.description": "Menyediakan cara yang lebih mudah untuk mengendalikan skrip di peranti mudah alih.",
+  "plugins.mobileCodeBatchSelect.fastCopy": "Salin Blok dengan Cepat",
+  "plugins.mobileCodeBatchSelect.fastCopy.description": "Tekan blok, kemudian sebelum menyeretnya, tekan dengan jari kedua. Blok yang diseret akan menjadi salinan.",
+  "plugins.mobileCodeBatchSelect.zoomStage": "Zum Kawasan Peringkat",
+  "plugins.mobileCodeBatchSelect.zoomStage.description": "Cubit pada kawasan kosong dalam ruang kerja skrip untuk mengezum masuk dan keluar.",
+  "plugins.mobileCodeBatchSelect.boxSelect": "Pilih Blok dengan Kotak",
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Ketuk dua kali dan tahan dengan satu atau dua jari di kawasan kosong, kemudian seret untuk memilih berbilang blok."
 }

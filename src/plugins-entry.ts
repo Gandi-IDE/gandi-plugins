@@ -24,4 +24,5 @@ export default {
   "block-sharing": () => import(/* webpackChunkName: "plugin-block-sharing" */ "plugins/block-sharing"),
   "costume-piskel": () => import(/* webpackChunkName: "plugin-costume-piskel" */ "src/plugins/costume-piskel"),
   "data-category-tweaks": () => import(/* webpackChunkName: "plugin-data-category-tweaks" */ "plugins/data-category-tweaks"),
+  "mobile-code-batch-select": () => import(/* webpackChunkName: "plugin-mobile-code-batch-select" */ "src/plugins/mobile-code-batch-select"),
 } as const;

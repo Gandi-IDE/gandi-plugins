@@ -255,5 +255,13 @@
   "plugins.dataCategoryTweaks.title": "Ajustes de categoría de datos",
   "plugins.dataCategoryTweaks.separateLocalVariables": "Separar variables solo de sprites",
   "plugins.dataCategoryTweaks.moveReportersDown": "Mover los bloques de datos por encima de la lista de variables",
-  "plugins.dataCategoryTweaks.separateListCategory": "Separar categoría de listas"
+  "plugins.dataCategoryTweaks.separateListCategory": "Separar categoría de listas",
+  "plugins.mobileCodeBatchSelect.title": "Compatibilidad Móvil de Gandi",
+  "plugins.mobileCodeBatchSelect.description": "Proporciona formas más convenientes de operar scripts en dispositivos móviles.",
+  "plugins.mobileCodeBatchSelect.fastCopy": "Copiar Bloques Rápidamente",
+  "plugins.mobileCodeBatchSelect.fastCopy.description": "Presiona un bloque, luego antes de arrastrarlo, presiona con un segundo dedo. El bloque arrastrado será una copia.",
+  "plugins.mobileCodeBatchSelect.zoomStage": "Zoom en el Escenario",
+  "plugins.mobileCodeBatchSelect.zoomStage.description": "Pellizca en un área vacía en el espacio de trabajo del script para acercar o alejar.",
+  "plugins.mobileCodeBatchSelect.boxSelect": "Selección de Bloques en Caja",
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Toca dos veces y mantén presionado con uno o dos dedos en un área vacía, luego arrastra para seleccionar varios bloques."
 }

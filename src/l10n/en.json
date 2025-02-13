@@ -258,5 +258,13 @@
   "plugins.dataCategoryTweaks.separateListCategory": "Separate List Category",
   "for-all-sprites": "For all sprites:",
   "for-this-sprite-only": "For this sprite only:",
-  "plugins.dataCategoryTweaks.list": "List"
+  "plugins.dataCategoryTweaks.list": "List",
+  "plugins.mobileCodeBatchSelect.title": "Gandi Mobile Compatibility",
+  "plugins.mobileCodeBatchSelect.description": "Provides more convenient ways to operate scripts on mobile.",
+  "plugins.mobileCodeBatchSelect.fastCopy": "Quickly Copy Blocks",
+  "plugins.mobileCodeBatchSelect.fastCopy.description": "Press a block, then before dragging, press a second finger. The dragged block will be a copied version.",
+  "plugins.mobileCodeBatchSelect.zoomStage": "Zoom Stage",
+  "plugins.mobileCodeBatchSelect.zoomStage.description": "Pinch on an empty area in the script workspace to zoom in and out.",
+  "plugins.mobileCodeBatchSelect.boxSelect": "Box Select Blocks",
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Double-tap and hold with one or two fingers on an empty area, then drag to select multiple blocks."
 }

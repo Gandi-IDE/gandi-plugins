@@ -258,5 +258,13 @@
   "plugins.dataCategoryTweaks.separateListCategory": "单独列表类别",
   "for-all-sprites": "适用于所有角色：",
   "for-this-sprite-only": "仅适用于当前角色：",
-  "plugins.dataCategoryTweaks.list": "列表"
+  "plugins.dataCategoryTweaks.list": "列表",
+  "plugins.mobileCodeBatchSelect.title": "Gandi手机版兼容",
+  "plugins.mobileCodeBatchSelect.description": "兼容手机的一些更加便捷地操作脚本区的方法。",
+  "plugins.mobileCodeBatchSelect.fastCopy": "快捷复制积木",
+  "plugins.mobileCodeBatchSelect.fastCopy.description": "在按下积木之后，拖拽积木之前，按下第二根手指，拖拽积木之后拖拽的就是复制的积木。",
+  "plugins.mobileCodeBatchSelect.zoomStage": "缩放脚本区",
+  "plugins.mobileCodeBatchSelect.zoomStage.description": "在脚本区空白处双指按下缩放，即可缩放脚本区积木大小。",
+  "plugins.mobileCodeBatchSelect.boxSelect": "框选积木",
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "在脚本区空白处双击并按住单/双指，拖动手指就可以选中多个积木。"
 }
