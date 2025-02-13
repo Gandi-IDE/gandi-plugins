@@ -94,7 +94,7 @@ const enableTouchZoom = (blockly: any, workspace: Blockly.WorkspaceSvg) => {
       lastDist = newDist;
       return;
       //return originalDrag.call(this, getTouchCenterDistance());
-      //你猜为啥要注释掉，因为几把的scratch不能同时缩放和拖动，你敢同时，它就敢给你（缩放中心点）坐标炸掉！
+      //因为scratch不能同时缩放和拖动，会导致（缩放中心点）坐标炸掉，所以这里不允许拖拽
     } else {
       return originalDrag.call(this, currentDragDeltaXY);
     }

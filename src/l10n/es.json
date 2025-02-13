@@ -263,5 +263,5 @@
   "plugins.mobileCodeBatchSelect.zoomStage": "Zoom en el Escenario",
   "plugins.mobileCodeBatchSelect.zoomStage.description": "Pellizca en un área vacía en el espacio de trabajo del script para acercar o alejar.",
   "plugins.mobileCodeBatchSelect.boxSelect": "Selección de Bloques en Caja",
-  "plugins.mobileCodeBatchSelect.boxSelect.description": "Toca dos veces y mantén presionado con uno o dos dedos en un área vacía, luego arrastra para seleccionar varios bloques."
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Toca dos veces y mantén presionado con uno o dos dedos en un área vacía, luego arrastra para seleccionar varios bloques. Toca dos veces en un área vacía para deseleccionar."
 }

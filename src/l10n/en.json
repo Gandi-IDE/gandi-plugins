@@ -266,5 +266,5 @@
   "plugins.mobileCodeBatchSelect.zoomStage": "Zoom Stage",
   "plugins.mobileCodeBatchSelect.zoomStage.description": "Pinch on an empty area in the script workspace to zoom in and out.",
   "plugins.mobileCodeBatchSelect.boxSelect": "Box Select Blocks",
-  "plugins.mobileCodeBatchSelect.boxSelect.description": "Double-tap and hold with one or two fingers on an empty area, then drag to select multiple blocks."
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Double-tap and hold with one or two fingers on an empty area, then drag to select multiple blocks. Double-tap on an empty area to deselect."
 }

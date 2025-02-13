@@ -263,5 +263,5 @@
   "plugins.mobileCodeBatchSelect.zoomStage": "Масштабирование сцены",
   "plugins.mobileCodeBatchSelect.zoomStage.description": "Сожмите два пальца на пустой области в рабочем пространстве, чтобы изменить масштаб.",
   "plugins.mobileCodeBatchSelect.boxSelect": "Выбор блоков рамкой",
-  "plugins.mobileCodeBatchSelect.boxSelect.description": "Дважды коснитесь и удерживайте одним или двумя пальцами на пустой области, затем переместите палец, чтобы выделить несколько блоков."
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Дважды коснитесь и удерживайте одним или двумя пальцами на пустой области, затем переместите палец, чтобы выделить несколько блоков. Дважды коснитесь пустой области, чтобы снять выделение."
 }

@@ -266,5 +266,5 @@
   "plugins.mobileCodeBatchSelect.zoomStage": "Zum Kawasan Peringkat",
   "plugins.mobileCodeBatchSelect.zoomStage.description": "Cubit pada kawasan kosong dalam ruang kerja skrip untuk mengezum masuk dan keluar.",
   "plugins.mobileCodeBatchSelect.boxSelect": "Pilih Blok dengan Kotak",
-  "plugins.mobileCodeBatchSelect.boxSelect.description": "Ketuk dua kali dan tahan dengan satu atau dua jari di kawasan kosong, kemudian seret untuk memilih berbilang blok."
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Ketuk dua kali dan tahan dengan satu atau dua jari di kawasan kosong, kemudian seret untuk memilih berbilang blok. Ketuk dua kali di kawasan kosong untuk nyahpilih."
 }

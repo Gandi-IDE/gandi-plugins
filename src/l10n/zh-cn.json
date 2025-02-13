@@ -266,5 +266,5 @@
   "plugins.mobileCodeBatchSelect.zoomStage": "缩放脚本区",
   "plugins.mobileCodeBatchSelect.zoomStage.description": "在脚本区空白处双指按下缩放，即可缩放脚本区积木大小。",
   "plugins.mobileCodeBatchSelect.boxSelect": "框选积木",
-  "plugins.mobileCodeBatchSelect.boxSelect.description": "在脚本区空白处双击并按住单/双指，拖动手指就可以选中多个积木。"
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "在脚本区空白处双击并按住单/双指，拖动手指就可以选中多个积木，在空白处双击取消选中。"
 }
