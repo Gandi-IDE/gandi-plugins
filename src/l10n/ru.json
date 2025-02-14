@@ -255,5 +255,13 @@
   "plugins.dataCategoryTweaks.title": "Настройки категории данных",
   "plugins.dataCategoryTweaks.separateLocalVariables": "Отдельные переменные только для спрайтов",
   "plugins.dataCategoryTweaks.moveReportersDown": "Переместить блоки данных выше списка переменных",
-  "plugins.dataCategoryTweaks.separateListCategory": "Отдельная категория списков"
+  "plugins.dataCategoryTweaks.separateListCategory": "Отдельная категория списков",
+  "plugins.mobileCodeBatchSelect.title": "Совместимость с Gandi Mobile",
+  "plugins.mobileCodeBatchSelect.description": "Обеспечивает более удобные способы работы со скриптами на мобильных устройствах.",
+  "plugins.mobileCodeBatchSelect.fastCopy": "Быстрое копирование блоков",
+  "plugins.mobileCodeBatchSelect.fastCopy.description": "Нажмите на блок, затем перед перетаскиванием нажмите вторым пальцем. Перетащенный блок будет копией.",
+  "plugins.mobileCodeBatchSelect.zoomStage": "Масштабирование сцены",
+  "plugins.mobileCodeBatchSelect.zoomStage.description": "Сожмите два пальца на пустой области в рабочем пространстве, чтобы изменить масштаб.",
+  "plugins.mobileCodeBatchSelect.boxSelect": "Выбор блоков рамкой",
+  "plugins.mobileCodeBatchSelect.boxSelect.description": "Дважды коснитесь и удерживайте одним или двумя пальцами на пустой области, затем переместите палец, чтобы выделить несколько блоков. Дважды коснитесь пустой области, чтобы снять выделение."
 }
