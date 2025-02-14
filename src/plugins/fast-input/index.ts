@@ -1,93 +1,158 @@
-import WorkspaceQuerier from "./WorkspaceQuerier.js";
+import WorkspaceQuerier, { QueryResult } from "./WorkspaceQuerier.js";
 import renderBlock, { getBlockHeight } from "./BlockRenderer.js";
-import { BlockTypeInfo } from "./BlockTypeInfo.js";
+import { BlockInstance, BlockTypeInfo } from "./BlockTypeInfo.js";
 import { onClearTextWidthCache } from "./module.js";
 import "./compatibility.css";
 import "./styles.css";
 import FastInputIcon from "assets/icon--fast-input.svg";
 import React from "react";
+import VirtualScroller, { ItemData, RenderItemFunc } from "./VirtualScroller";
 
-const FastInput = (apis: PluginContext) => {
-  const Blockly = apis.blockly;
-  const vm = apis.vm;
+interface MenuItem {
+  block: BlockInstance;
+  autocompleteFactory?: (endOnly: boolean) => string;
+}
 
-  const PREVIEW_LIMIT = 50;
+interface Position {
+  x: number;
+  y: number;
+}
 
-  const popupRoot = document.body.appendChild(document.createElement("div"));
-  popupRoot.classList.add("sa-mcp-root");
-  popupRoot.dir = "ltr";
-  popupRoot.style.display = "none";
+interface Elements {
+  popupRoot: HTMLDivElement;
+  popupContainer: HTMLDivElement;
+  popupInput: HTMLInputElement;
+  popupInputContainer: HTMLDivElement;
+  popupInputSuggestion: HTMLInputElement;
+  popupPreviewContainer: HTMLDivElement;
+  popupPreviewBlocks: SVGSVGElement;
+  popupPreviewScrollbarSVG: SVGSVGElement;
+  popupPreviewScrollbarBackground: SVGRectElement;
+}
 
-  const popupContainer = popupRoot.appendChild(document.createElement("div"));
-  popupContainer.classList.add("sa-mcp-container");
+interface CleanupFunction {
+  (): void;
+}
 
-  const popupInputContainer = popupContainer.appendChild(document.createElement("div"));
-  popupInputContainer.classList.add("sa-mcp-input-wrapper");
+interface FastInputPlugin {
+  dispose: () => void;
+}
 
-  const popupInputSuggestion = popupInputContainer.appendChild(document.createElement("input"));
-  popupInputSuggestion.classList.add("sa-mcp-input-suggestion");
+const PREVIEW_LIMIT = 50;
 
-  const popupInput = popupInputContainer.appendChild(document.createElement("input"));
-  popupInput.classList.add("sa-mcp-input");
-  popupInput.setAttribute("autocomplete", "off");
+const FastInput = ({ blockly: Blockly, vm, msg, registerSettings }: PluginContext): FastInputPlugin => {
+  const cleanupListeners: Set<CleanupFunction> = new Set();
+  let mousePosition: Position = { x: 0, y: 0 };
 
-  const popupPreviewContainer = popupContainer.appendChild(document.createElement("div"));
-  popupPreviewContainer.classList.add("sa-mcp-preview-container");
+  const createElement = (): Elements => {
+    const popupRoot = document.createElement("div");
+    document.body.appendChild(popupRoot);
+    popupRoot.classList.add("sa-mcp-root");
+    popupRoot.dir = "ltr";
+    popupRoot.style.display = "none";
 
-  const popupPreviewScrollbarSVG = popupContainer.appendChild(
-    document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-  );
-  popupPreviewScrollbarSVG.classList.add(
-    "sa-mcp-preview-scrollbar",
-    "blocklyScrollbarVertical",
-    "blocklyMainWorkspaceScrollbar",
-  );
-  popupPreviewScrollbarSVG.style.display = "none";
+    const popupContainer = document.createElement("div");
+    popupRoot.appendChild(popupContainer);
+    popupContainer.classList.add("sa-mcp-container");
 
-  const popupPreviewScrollbarBackground = popupPreviewScrollbarSVG.appendChild(
-    document.createElementNS("http://www.w3.org/2000/svg", "rect"),
-  );
-  popupPreviewScrollbarBackground.setAttribute("width", "11");
-  popupPreviewScrollbarBackground.classList.add("blocklyScrollbarBackground");
+    const popupInputContainer = document.createElement("div");
+    popupContainer.appendChild(popupInputContainer);
+    popupInputContainer.classList.add("sa-mcp-input-wrapper");
 
-  const popupPreviewScrollbarHandle = popupPreviewScrollbarSVG.appendChild(
-    document.createElementNS("http://www.w3.org/2000/svg", "rect"),
-  );
-  popupPreviewScrollbarHandle.setAttribute("rx", "3");
-  popupPreviewScrollbarHandle.setAttribute("ry", "3");
-  popupPreviewScrollbarHandle.setAttribute("width", "6");
-  popupPreviewScrollbarHandle.setAttribute("x", "2.5");
-  popupPreviewScrollbarHandle.classList.add("blocklyScrollbarHandle");
+    const popupInputSuggestion = document.createElement("input");
+    popupInputContainer.appendChild(popupInputSuggestion);
+    popupInputSuggestion.classList.add("sa-mcp-input-suggestion");
 
-  const popupPreviewBlocks = popupPreviewContainer.appendChild(
-    document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-  );
-  popupPreviewBlocks.classList.add("sa-mcp-preview-blocks");
+    const popupInput = document.createElement("input");
+    popupInputContainer.appendChild(popupInput);
+    popupInput.classList.add("sa-mcp-input");
+    popupInput.setAttribute("autocomplete", "off");
 
-  const querier = new WorkspaceQuerier();
+    const popupPreviewContainer = document.createElement("div");
+    popupContainer.appendChild(popupPreviewContainer);
+    popupPreviewContainer.classList.add("sa-mcp-preview-container");
 
-  let mousePosition = { x: 0, y: 0 };
-  document.addEventListener("mousemove", (e) => {
+    const popupPreviewScrollbarSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    popupContainer.appendChild(popupPreviewScrollbarSVG);
+    popupPreviewScrollbarSVG.classList.add(
+      "sa-mcp-preview-scrollbar",
+      "blocklyScrollbarVertical",
+      "blocklyMainWorkspaceScrollbar",
+    );
+    popupPreviewScrollbarSVG.style.display = "none";
+
+    const popupPreviewScrollbarBackground = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    popupPreviewScrollbarSVG.appendChild(popupPreviewScrollbarBackground);
+    popupPreviewScrollbarBackground.setAttribute("width", "11");
+    popupPreviewScrollbarBackground.classList.add("blocklyScrollbarBackground");
+
+    const popupPreviewBlocks = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    popupPreviewContainer.appendChild(popupPreviewBlocks);
+    popupPreviewBlocks.classList.add("sa-mcp-preview-blocks");
+
+    return {
+      popupRoot,
+      popupContainer,
+      popupInput,
+      popupInputContainer,
+      popupInputSuggestion,
+      popupPreviewContainer,
+      popupPreviewBlocks,
+      popupPreviewScrollbarSVG,
+      popupPreviewScrollbarBackground,
+    };
+  };
+
+  // 创建所有DOM元素
+  const elements = createElement();
+
+  const {
+    popupRoot,
+    popupContainer,
+    popupInput,
+    popupInputContainer,
+    popupInputSuggestion,
+    popupPreviewContainer,
+    popupPreviewBlocks,
+    popupPreviewScrollbarSVG,
+    popupPreviewScrollbarBackground,
+  } = elements;
+
+  const virtualScroller = new VirtualScroller(popupPreviewBlocks);
+
+  // 添加事件监听器的辅助函数
+  const addCleanupListener = <K extends keyof HTMLElementEventMap>(
+    element: HTMLElement | Document,
+    event: K,
+    handler: (ev: HTMLElementEventMap[K]) => void,
+  ): void => {
+    element.addEventListener(event, handler);
+    cleanupListeners.add(() => element.removeEventListener(event, handler));
+  };
+
+  // 添加事件监听器的辅助函数 (SVG元素版本)
+  const addCleanupListenerSVG = <K extends keyof SVGElementEventMap>(
+    element: SVGElement,
+    event: K,
+    handler: (ev: SVGElementEventMap[K]) => void,
+  ): void => {
+    element.addEventListener(event, handler);
+    cleanupListeners.add(() => element.removeEventListener(event, handler));
+  };
+
+  // 替换原有的事件监听器添加方式
+  addCleanupListener(document, "mousemove", (e: MouseEvent) => {
     mousePosition = { x: e.clientX, y: e.clientY };
   });
 
+  const querier = new WorkspaceQuerier();
+
   onClearTextWidthCache(closePopup);
 
-  /**
-   * @typedef ResultPreview
-   * @property {BlockInstance} block
-   * @property {((endOnly: boolean) => string)?} autocompleteFactory
-   * @property {BlockComponent} renderedBlock
-   * @property {SVGGElement} svgBlock
-   * @property {SVGRectElement} svgBackground
-   */
-  /** @type {ResultPreview[]} */
-  const queryPreviews = [];
-  /** @type {QueryResult | null} */
-  let queryIllegalResult = null;
+  const queryPreviews: ItemData[] = [];
+  let queryIllegalResult: QueryResult | null = null;
   let selectedPreviewIdx = 0;
-  /** @type {BlockTypeInfo[]?} */
-  let blockTypes = null;
+  let blockTypes: BlockTypeInfo[] | null = null;
   let limited = false;
 
   let allowMenuClose = true;
@@ -103,20 +168,12 @@ const FastInput = (apis: PluginContext) => {
   const previewMinHeight = 0;
   let previewMaxHeight = 0;
 
-  let disabled = false;
-
   let settingPopupScale = 48;
   let settingPopupWidth = 25;
   let settingPopupMaxHeight = 40;
 
   function openPopup() {
-    if (disabled) return;
-
-    // Don't show the menu if we're not in the code editor
-    // if (addon.tab.editorMode !== "editor") return;
-    // if (addon.tab.redux.state.scratchGui.editorTab.activeTabIndex !== 0) return;
-
-    blockTypes = BlockTypeInfo.getBlocks(Blockly, vm, Blockly.getMainWorkspace(), apis.msg);
+    blockTypes = BlockTypeInfo.getBlocks(Blockly, vm, Blockly.getMainWorkspace(), msg);
     querier.indexWorkspace([...blockTypes]);
     blockTypes.sort((a, b) => {
       const prio = (block) => ["operators", "data"].indexOf(block.category.name) - block.id.startsWith("data_");
@@ -136,6 +193,8 @@ const FastInput = (apis: PluginContext) => {
     updateInput();
   }
 
+  addCleanupListener(popupInput, "focusout", closePopup);
+
   function closePopup() {
     if (allowMenuClose) {
       popupOrigin = null;
@@ -146,18 +205,69 @@ const FastInput = (apis: PluginContext) => {
     }
   }
 
-  popupInput.addEventListener("input", updateInput);
+  const getResultItemIdx = (target: SVGAElement | HTMLElement) => {
+    let index = -1;
+    while (target) {
+      if (target.getAttribute("data-fastInputSearchResultItemIdx")) {
+        index = Number(target.getAttribute("data-fastInputSearchResultItemIdx"));
+        break;
+      } else {
+        target = target.parentElement as HTMLElement;
+      }
+    }
+    return index;
+  };
 
-  function updateInput() {
-    /**
-     * @typedef MenuItem
-     * @property {BlockInstance} block
-     * @property {(endOnly: boolean) => string} [autocompleteFactory]
-     */
-    /** @type {MenuItem[]} */
-    const blockList = [];
+  const mouseMoveListener = (e: MouseEvent) => {
+    const index = getResultItemIdx(e.target as SVGAElement);
+    if (index !== -1) {
+      updateSelection(index);
+    }
+  };
 
-    if (popupInput.value.trim().length === 0) {
+  const mouseDownListener = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const index = getResultItemIdx(e.target as SVGAElement);
+    if (index !== -1) {
+      updateSelection(index);
+      allowMenuClose = !e.shiftKey;
+      selectBlock();
+      allowMenuClose = true;
+      if (e.shiftKey) popupInput.focus();
+    }
+  };
+
+  addCleanupListenerSVG(popupPreviewBlocks, "mousemove", mouseMoveListener);
+  addCleanupListenerSVG(popupPreviewBlocks, "mousedown", mouseDownListener);
+
+  const renderPreviewItem: RenderItemFunc = ({ block, blockHeight, blockPositionY, blockIndex }) => {
+    const blockBackground = popupPreviewBlocks.appendChild(
+      document.createElementNS("http://www.w3.org/2000/svg", "rect"),
+    );
+    blockBackground.setAttribute("data-fastInputSearchResultItemIdx", String(blockIndex));
+    blockBackground.setAttribute("height", blockHeight * previewScale + "px");
+    blockBackground.setAttribute("transform", `translate(0, ${(blockPositionY + blockHeight / 10) * previewScale})`);
+    blockBackground.classList.add("sa-mcp-preview-block-bg");
+
+    const blockContent = popupPreviewBlocks.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "g"));
+    blockContent.classList.add("sa-mcp-preview-block");
+
+    const renderedBlock = renderBlock(block, blockContent);
+    blockContent.setAttribute("data-fastInputSearchResultItemIdx", String(blockIndex));
+    blockContent.setAttribute(
+      "transform",
+      `translate(5, ${(blockPositionY + 30) * previewScale}) scale(${previewScale})`,
+    );
+
+    return { blockBackground, blockContent, renderedBlock };
+  };
+
+  async function updateInput() {
+    const blockList: MenuItem[] = [];
+    const value = popupInput.value.trim();
+
+    if (value.length === 0) {
       queryIllegalResult = null;
       if (blockTypes)
         for (const blockType of blockTypes) {
@@ -167,8 +277,12 @@ const FastInput = (apis: PluginContext) => {
         }
       limited = false;
     } else {
+      if (querier.workspaceIndexed !== true) {
+        requestAnimationFrame(updateInput);
+        return;
+      }
       // Get the list of blocks to display using the input content
-      const queryResultObj = querier.queryWorkspace(popupInput.value);
+      const queryResultObj = querier.queryWorkspace(value);
       const queryResults = queryResultObj.results;
       queryIllegalResult = queryResultObj.illegalResult;
       limited = queryResultObj.limited;
@@ -183,58 +297,24 @@ const FastInput = (apis: PluginContext) => {
       }
     }
 
-    // @ts-ignore Delete the old previews
-    while (popupPreviewBlocks.firstChild) popupPreviewBlocks.removeChild(popupPreviewBlocks.lastChild);
-
-    // Create the new previews
+    // 清空已渲染的选项和数据
+    popupPreviewBlocks.innerHTML = "";
     queryPreviews.length = 0;
+
     let y = 0;
-    for (let resultIdx = 0; resultIdx < blockList.length; resultIdx++) {
-      const result = blockList[resultIdx];
-
-      const mouseMoveListener = () => {
-        updateSelection(resultIdx);
-      };
-
-      const mouseDownListener = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        updateSelection(resultIdx);
-        allowMenuClose = !e.shiftKey;
-        selectBlock();
-        allowMenuClose = true;
-        if (e.shiftKey) popupInput.focus();
-      };
-
-      const svgBackground = popupPreviewBlocks.appendChild(
-        document.createElementNS("http://www.w3.org/2000/svg", "rect"),
-      );
-
-      const height = getBlockHeight(result.block);
-      svgBackground.setAttribute("transform", `translate(0, ${(y + height / 10) * previewScale})`);
-      svgBackground.setAttribute("height", height * previewScale + "px");
-      svgBackground.classList.add("sa-mcp-preview-block-bg");
-      svgBackground.addEventListener("mousemove", mouseMoveListener);
-      svgBackground.addEventListener("mousedown", mouseDownListener);
-
-      const svgBlock = popupPreviewBlocks.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "g"));
-      svgBlock.addEventListener("mousemove", mouseMoveListener);
-      svgBlock.addEventListener("mousedown", mouseDownListener);
-      svgBlock.classList.add("sa-mcp-preview-block");
-
-      const renderedBlock = renderBlock(result.block, svgBlock);
-
+    for (let index = 0; index < blockList.length; index++) {
+      const { block, autocompleteFactory } = blockList[index];
+      const height = getBlockHeight(block);
       queryPreviews.push({
-        block: result.block,
-        autocompleteFactory: result.autocompleteFactory ?? null,
-        renderedBlock,
-        svgBlock,
-        svgBackground,
+        block,
+        autocompleteFactory: autocompleteFactory ?? null,
+        blockHeight: height,
+        blockPositionY: y,
+        blockIndex: index,
       });
 
       y += height;
     }
-
     const height = (y + 8) * previewScale;
 
     if (height < previewMinHeight) previewHeight = previewMinHeight;
@@ -254,6 +334,12 @@ const FastInput = (apis: PluginContext) => {
     if (popupBottom > window.innerHeight) {
       popupPosition.y -= popupBottom - window.innerHeight;
     }
+    virtualScroller.init({
+      containerHeight: previewHeight,
+      itemScale: previewScale,
+      itemDataList: queryPreviews,
+      renderItem: renderPreviewItem,
+    });
 
     popupRoot.style.top = popupPosition.y + "px";
     popupRoot.style.left = popupPosition.x + "px";
@@ -261,36 +347,25 @@ const FastInput = (apis: PluginContext) => {
     selectedPreviewIdx = -1;
     updateSelection(0);
     updateCursor();
-    updateScrollbar();
   }
 
-  function updateSelection(newIdx) {
+  addCleanupListener(popupInput, "input", updateInput);
+
+  function updateSelection(newIdx: number) {
     if (selectedPreviewIdx === newIdx) return;
 
-    const oldSelection = queryPreviews[selectedPreviewIdx];
-    if (oldSelection) {
-      oldSelection.svgBackground.classList.remove("sa-mcp-preview-block-bg-selection");
-      oldSelection.svgBlock.classList.remove("sa-mcp-preview-block-selection");
-    }
+    const inputValue = popupInput.value;
 
     if (queryPreviews.length === 0 && queryIllegalResult) {
-      popupInputSuggestion.value =
-        popupInput.value + queryIllegalResult.toText(true).substring(popupInput.value.length);
+      popupInputSuggestion.value = inputValue + queryIllegalResult.toText(true).substring(inputValue.length);
       return;
     }
 
     const newSelection = queryPreviews[newIdx];
     if (newSelection && newSelection.autocompleteFactory) {
-      newSelection.svgBackground.classList.add("sa-mcp-preview-block-bg-selection");
-      newSelection.svgBlock.classList.add("sa-mcp-preview-block-selection");
+      virtualScroller.selectItem(newIdx);
 
-      newSelection.svgBackground.scrollIntoView({
-        block: "nearest",
-        behavior: Math.abs(newIdx - selectedPreviewIdx) > 1 ? "smooth" : "auto",
-      });
-
-      popupInputSuggestion.value =
-        popupInput.value + newSelection.autocompleteFactory(true).substring(popupInput.value.length);
+      popupInputSuggestion.value = inputValue + newSelection.autocompleteFactory(true).substring(inputValue.length);
     } else {
       popupInputSuggestion.value = "";
     }
@@ -298,47 +373,24 @@ const FastInput = (apis: PluginContext) => {
     selectedPreviewIdx = newIdx;
   }
 
-  // @ts-ignore
-  document.addEventListener("selectionchange", updateCursor);
+  addCleanupListener(document, "selectionchange", updateCursor);
 
   function updateCursor() {
     const cursorPos = popupInput.selectionStart ?? 0;
     const cursorPosRel = popupInput.value.length === 0 ? 0 : cursorPos / popupInput.value.length;
 
-    let y = 0;
     for (let previewIdx = 0; previewIdx < queryPreviews.length; previewIdx++) {
       const preview = queryPreviews[previewIdx];
 
       let blockX = 5;
-      if (blockX + preview.renderedBlock.width > previewWidth / previewScale)
+      if (preview.renderedBlock && blockX + preview.renderedBlock.width > previewWidth / previewScale) {
         blockX += (previewWidth / previewScale - blockX - preview.renderedBlock.width) * previewScale * cursorPosRel;
-      const blockY = (y + 30) * previewScale;
-
-      preview.svgBlock.setAttribute("transform", `translate(${blockX}, ${blockY}) scale(${previewScale})`);
-
-      y += getBlockHeight(preview.block);
+        const oldAttribute = preview.blockContent.getAttribute("transform");
+        preview.blockContent.setAttribute("transform", oldAttribute.replace("translate(5,", `translate(${blockX},`));
+      }
     }
 
     popupInputSuggestion.scrollLeft = popupInput.scrollLeft;
-  }
-
-  popupPreviewContainer.addEventListener("scroll", updateScrollbar);
-
-  function updateScrollbar() {
-    const scrollTop = popupPreviewContainer.scrollTop;
-    const scrollY = popupPreviewContainer.scrollHeight;
-
-    if (scrollY <= previewHeight) {
-      popupPreviewScrollbarSVG.style.display = "none";
-      return;
-    }
-
-    const scrollbarHeight = (previewHeight / scrollY) * previewHeight;
-    const scrollbarY = (scrollTop / scrollY) * previewHeight;
-
-    popupPreviewScrollbarSVG.style.display = "";
-    popupPreviewScrollbarHandle.setAttribute("height", "" + scrollbarHeight);
-    popupPreviewScrollbarHandle.setAttribute("y", "" + scrollbarY);
   }
 
   function selectBlock() {
@@ -376,9 +428,9 @@ const FastInput = (apis: PluginContext) => {
       clientX: mousePosition.x,
       clientY: mousePosition.y,
       type: "mousedown",
-      stopPropagation: function () { },
-      preventDefault: function () { },
-      target: selectedPreview.svgBlock,
+      stopPropagation: function () {},
+      preventDefault: function () {},
+      target: selectedPreview.blockContent,
     };
     if (workspace.getGesture(fakeEvent)) {
       workspace.startDragWithFakeEvent(fakeEvent, newBlock);
@@ -396,7 +448,9 @@ const FastInput = (apis: PluginContext) => {
     updateInput();
   }
 
-  popupInput.addEventListener("keydown", (e) => {
+  addCleanupListener(popupInput, "keydown", handleInputKeydown);
+
+  function handleInputKeydown(e: KeyboardEvent) {
     switch (e.key) {
       case "Escape":
         // If there's something in the input, clear it
@@ -434,30 +488,22 @@ const FastInput = (apis: PluginContext) => {
         e.preventDefault();
         break;
     }
-  });
+  }
 
-  popupInput.addEventListener("focusout", closePopup);
+  // 保存原始的 Blockly 方法
+  const originalDoWorkspaceClick = Blockly.Gesture.prototype.doWorkspaceClick_;
+  const originalIsDeleteArea = Blockly.WorkspaceSvg.prototype.isDeleteArea;
 
-  // // Open on ctrl + space
-  // document.addEventListener("keydown", (e) => {
-  //   if (e.key === " " && (e.ctrlKey || e.metaKey)) {
-  //     openPopup();
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //   }
-  // });
-
-  // Open on mouse wheel button
-  const _doWorkspaceClick_ = Blockly.Gesture.prototype.doWorkspaceClick_;
-  Blockly.Gesture.prototype.doWorkspaceClick_ = function () {
-    if (this.mostRecentEvent_.button === 1 || this.mostRecentEvent_.shiftKey) openPopup();
+  // 修改 Blockly 方法
+  Blockly.Gesture.prototype.doWorkspaceClick_ = function (this: { mostRecentEvent_: MouseEvent }): void {
+    if (this.mostRecentEvent_.button === 1 || this.mostRecentEvent_.shiftKey) {
+      openPopup();
+    }
     mousePosition = { x: this.mostRecentEvent_.clientX, y: this.mostRecentEvent_.clientY };
-    _doWorkspaceClick_.call(this);
+    originalDoWorkspaceClick.call(this);
   };
 
-  // The popup should delete blocks dragged ontop of it
-  const _isDeleteArea = Blockly.WorkspaceSvg.prototype.isDeleteArea;
-  Blockly.WorkspaceSvg.prototype.isDeleteArea = function (e) {
+  Blockly.WorkspaceSvg.prototype.isDeleteArea = function (this: unknown, e: MouseEvent): boolean {
     if (popupPosition) {
       if (
         e.clientX > popupPosition.x &&
@@ -468,21 +514,21 @@ const FastInput = (apis: PluginContext) => {
         return Blockly.DELETE_AREA_TOOLBOX;
       }
     }
-    return _isDeleteArea.call(this, e);
+    return originalIsDeleteArea.call(this, e);
   };
 
-  const register = apis.registerSettings(
-    apis.msg("plugins.fastInput.title"),
+  const register = registerSettings(
+    msg("plugins.fastInput.title"),
     "plugin-fast-input",
     [
       {
         key: "fastInput",
-        label: apis.msg("plugins.fastInput.title"),
-        description: apis.msg("plugins.fastInput.description"),
+        label: msg("plugins.fastInput.title"),
+        description: msg("plugins.fastInput.description"),
         items: [
           {
             key: "popup_scale",
-            label: apis.msg("plugins.fastInput.popup_scale"),
+            label: msg("plugins.fastInput.popup_scale"),
             type: "input",
             inputProps: {
               type: "number",
@@ -494,7 +540,7 @@ const FastInput = (apis: PluginContext) => {
           },
           {
             key: "popup_width",
-            label: apis.msg("plugins.fastInput.popup_width"),
+            label: msg("plugins.fastInput.popup_width"),
             type: "input",
             inputProps: {
               type: "number",
@@ -506,7 +552,7 @@ const FastInput = (apis: PluginContext) => {
           },
           {
             key: "popup_max_height",
-            label: apis.msg("plugins.fastInput.popup_max_height"),
+            label: msg("plugins.fastInput.popup_max_height"),
             type: "input",
             inputProps: {
               type: "number",
@@ -524,7 +570,29 @@ const FastInput = (apis: PluginContext) => {
 
   return {
     dispose: () => {
-      disabled = true;
+      // 恢复原始的 Blockly 方法
+      Blockly.Gesture.prototype.doWorkspaceClick_ = originalDoWorkspaceClick;
+      Blockly.WorkspaceSvg.prototype.isDeleteArea = originalIsDeleteArea;
+
+      // 移除所有事件监听器
+      cleanupListeners.forEach((cleanup) => cleanup());
+      cleanupListeners.clear();
+
+      virtualScroller.dispose();
+
+      // 移除所有创建的DOM元素
+      if (popupRoot.parentNode) {
+        popupRoot.parentNode.removeChild(popupRoot);
+      }
+
+      // 清理缓存
+      blockTypes = null;
+      querier.clearWorkspaceIndex();
+
+      popupPosition = null;
+      popupOrigin = null;
+      queryPreviews.length = 0;
+      queryIllegalResult = null;
       register.dispose();
     },
   };

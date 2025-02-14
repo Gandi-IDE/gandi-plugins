@@ -210,7 +210,7 @@ function createBlockComponent(container, shape, categoryClass, fill, stroke, wid
   try {
     const safeClass = categoryClass.trim().replace(/\s+/g, "-");
     if (safeClass) {
-      container.classList.add("sa-block-color", categoryClass);
+      container.classList.add("sa-block-color", safeClass);
     }
   } catch (error) {
     console.error("Failed to add class:", error);
@@ -249,7 +249,7 @@ function createBackedTextedComponent(text, container, shape, categoryClass, fill
  * @returns {BlockComponent} The rendered block
  */
 export default function renderBlock(block, container) {
-  var blockComponent = _renderBlock(block, container, block.typeInfo.category, true);
+  const blockComponent = _renderBlock(block, container, block.typeInfo.category, true);
   blockComponent.dom.classList.add("sa-block-color");
   blockComponent.dom.setAttribute("transform", `translate(${blockComponent.padding}, 0)`);
   return blockComponent;

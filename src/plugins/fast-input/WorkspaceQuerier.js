@@ -457,7 +457,7 @@ class TokenTypeStringEnum extends TokenType {
           }
         }
       }
-      const abbrs = _hz2abbr(lower);
+      const abbrs = hz2abbr(lower);
       this.values.push({ lower, parts, value, abbrs });
     }
   }
@@ -711,6 +711,16 @@ function _hz2abbr(str) {
   return _flatPolyphone(abbrs);
 }
 
+const _convertResultCache = new Map();
+const hz2abbr = (str) => {
+  if (_convertResultCache.has(str)) {
+    return _convertResultCache.get(str);
+  }
+  const functionOutput = _hz2abbr(str);
+  _convertResultCache.set(str, functionOutput);
+  return functionOutput;
+};
+
 /**
  * The token type for a block, like 'say Hello' or '1 + 1'.
  */
@@ -801,7 +811,7 @@ class TokenTypeBlock extends TokenType {
     for (const stringForm of this.stringForms) {
       const abbrs = [];
       for (const string of stringForm.strings) {
-        const abbr = _hz2abbr(string);
+        const abbr = hz2abbr(string);
         abbrs.push(abbr);
       }
       stringForm["abbrs"] = abbrs;
@@ -1237,7 +1247,6 @@ export default class WorkspaceQuerier {
     this._queryCounter = 0;
     this._createTokenGroups();
     this._populateTokenGroups(blocks);
-    this.workspaceIndexed = true;
   }
 
   /**
@@ -1246,7 +1255,7 @@ export default class WorkspaceQuerier {
    * @returns {{results: QueryResult[], illegalResult: QueryResult | null, limited: boolean}} A list of the results of the query, sorted by their relevance.
    */
   queryWorkspace(queryStr) {
-    if (!this.workspaceIndexed) throw new Error("A workspace must be indexed before it can be queried!");
+    if (this.workspaceIndexed !== true) throw new Error("A workspace must be indexed before it can be queried!");
     if (queryStr.trim().length === 0) return { results: [], illegalResult: null, limited: false };
 
     const query = new QueryInfo(this, queryStr, this._queryCounter++);
@@ -1271,12 +1280,12 @@ export default class WorkspaceQuerier {
       }
       ++query.resultCount;
       if (!limited && query.resultCount >= WorkspaceQuerier.MAX_RESULTS) {
-        console.log("Warning: Workspace query exceeded maximum result count.");
+        console.warn("Warning: Workspace query exceeded maximum result count.");
         limited = true;
       }
 
       if (!query.canCreateMoreTokens()) {
-        console.log("Warning: Workspace query exceeded maximum token count.");
+        console.warn("Warning: Workspace query exceeded maximum token count.");
         limited = true;
         break;
       }
@@ -1417,6 +1426,7 @@ export default class WorkspaceQuerier {
    * @private
    */
   _populateTokenGroups(blocks) {
+    if (typeof this.workspaceIndexed === "number") cancelAnimationFrame(this.workspaceIndexed);
     // Apply order of operations
     for (const block of blocks) {
       block.precedence = WorkspaceQuerier.ORDER_OF_OPERATIONS.indexOf(block.id);
@@ -1433,8 +1443,12 @@ export default class WorkspaceQuerier {
       }
     }
 
-    for (const block of blocks) {
-      // console.log("block", typeof block, block);
+    let index = 0;
+    let time = Date.now();
+
+    const handler = () => {
+      if (!this.tokenGroupRoundBlocks) return;
+      const block = blocks[index];
       const blockTokenType = new TokenTypeBlock(this, block);
       switch (block.shape) {
         case BlockShape.Round:
@@ -1451,7 +1465,22 @@ export default class WorkspaceQuerier {
           this.tokenGroupHatBlocks.pushProviders([blockTokenType]);
           break;
       }
-    }
+      index++;
+      if (index < blocks.length) {
+        if (Date.now() - time < 100) {
+          handler();
+        } else {
+          this.workspaceIndexed = requestAnimationFrame(() => {
+            time = Date.now();
+            handler();
+          });
+        }
+      } else {
+        this.workspaceIndexed = true;
+      }
+    };
+
+    this.workspaceIndexed = requestAnimationFrame(handler);
   }
 
   /**
