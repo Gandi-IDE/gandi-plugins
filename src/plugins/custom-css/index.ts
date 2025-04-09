@@ -4,11 +4,7 @@ import React from "react";
 import presetThemes from "./presetThemes.less";
 
 const CustomCss = ({ registerSettings, msg }: PluginContext) => {
-
-  let presets = [
-    "turbowarpDark",
-    "penguinmodDark",
-  ]
+  let presets = ["frostBlueIce", "turbowarpDark", "darkPurpleApricot", "penguinmodDark", "beanGreenDarkPurple"];
 
   const linkDom = document.createElement("link");
   linkDom.type = "text/css";
@@ -16,19 +12,39 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
   linkDom.id = "custom-css";
   document.getElementsByTagName("head")[0].appendChild(linkDom);
 
+  // 检查当前是否已经应用了主题
+  const checkAndSetThemeAttribute = () => {
+    for (const preset of presets) {
+      if (document.body.classList.contains(presetThemes[preset])) {
+        if (preset === "frostBlueIce") {
+          document.documentElement.setAttribute("theme", "light");
+          return;
+        } else if (["turbowarpDark", "darkPurpleApricot", "penguinmodDark", "beanGreenDarkPurple"].includes(preset)) {
+          document.documentElement.setAttribute("theme", "dark");
+          return;
+        }
+      }
+    }
+  };
+
+  // 初始化时检查并设置主题
+  checkAndSetThemeAttribute();
+
   const removeAllStyles = () => {
     for (let i in presets) {
-      document.body.classList.remove(presetThemes[presets[i]])
+      document.body.classList.remove(presetThemes[presets[i]]);
     }
-  }
+    // ！踩雷：不可以移除该属性！
+    // document.documentElement.removeAttribute("theme");
+  };
 
   const generateOptions = () => {
-    let options = [{ label: msg('plugins.customCss.theme.none'), value: "none" }]
+    let options = [{ label: msg("plugins.customCss.theme.none"), value: "none" }];
     for (let i in presets) {
-      options.push({ label: msg(`plugins.customCss.theme.${presets[i]}`), value: presets[i] })
+      options.push({ label: msg(`plugins.customCss.theme.${presets[i]}`), value: presets[i] });
     }
-    return options
-  }
+    return options;
+  };
 
   const register = registerSettings(
     msg("plugins.customCss.title"),
@@ -40,19 +56,31 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
         description: msg("plugins.customCss.description"),
         items: [
           {
-            key: 'presetThemes',
-            type: 'select',
-            label: msg('plugins.customCss.theme'),
+            key: "presetThemes",
+            type: "select",
+            label: msg("plugins.customCss.theme"),
             value: "none",
             options: generateOptions(),
             onChange: (value) => {
-              switch(value) {
+              switch (value) {
                 default:
-                  removeAllStyles()
-                  document.body.classList.add(presetThemes[value as any])
+                  removeAllStyles();
+                  document.body.classList.add(presetThemes[value as any]);
+                  // 设置theme属性
+                  if (value === "frostBlueIce") {
+                    document.documentElement.setAttribute("theme", "light");
+                  } else if (
+                    ["turbowarpDark", "darkPurpleApricot", "penguinmodDark", "beanGreenDarkPurple"].includes(
+                      value as string,
+                    )
+                  ) {
+                    document.documentElement.setAttribute("theme", "dark");
+                  }
                   break;
                 case "none":
-                  removeAllStyles()
+                  removeAllStyles();
+                  // 重置为默认主题
+                  document.documentElement.removeAttribute("theme");
                   break;
               }
             },
