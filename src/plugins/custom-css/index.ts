@@ -500,7 +500,6 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
               if (value === "none") {
                 // 重置为默认主题
                 removeAllStyles();
-                document.documentElement.removeAttribute("theme");
               } else if (isPresetTheme(value)) {
                 removeAllStyles();
                 document.body.classList.add(presetThemes[value as any]);
