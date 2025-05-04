@@ -48,7 +48,8 @@
         "react-dom": "^18.2.0",
         "react-draggable": "^4.4.5",
         "react-hot-toast": "^2.4.1",
-        "react-intl": "^6.1.1"
+        "react-intl": "^6.1.1",
+        "react-markdown": "^10.1.0"
     },
     "devDependencies": {
         "@babel/core": "^7.19.3",
