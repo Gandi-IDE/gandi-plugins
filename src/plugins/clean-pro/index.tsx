@@ -35,7 +35,7 @@ const CleanPro: React.FC<PluginContext> = ({ intl, vm, workspace, registerSettin
                 for (const id of topBlocks) {
                   const block = workspace.getBlockById(id);
                   if (block) {
-                    const isHat = block.type.includes("when") || block.type.includes("event");
+                    const isHat = block.startHat_;
                     const hasNextBlock = block.getNextBlock() !== null;
 
                     if (!isHat || (isHat && !hasNextBlock)) {
@@ -59,10 +59,10 @@ const CleanPro: React.FC<PluginContext> = ({ intl, vm, workspace, registerSettin
         return items;
       },
       {
-        targetNames: ["workspace"], // 可以是 "workspace", "blocks", "frame", "comment" 等
+        targetNames: ["workspace"],
       },
     );
-    // 注册设置项
+
     const register = registerSettings(
       msg("plugins.cleanPro.title"),
       "plugin-clean-pro",
