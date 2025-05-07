@@ -21,6 +21,7 @@ import blockSharing from "plugins/block-sharing/manifest";
 import costumePiskel from "src/plugins/costume-piskel/manifest";
 import dataCategoryTweaks from "plugins/data-category-tweaks/manifest";
 import mobileCodeBatchSelect from "src/plugins/mobile-code-batch-select/manifest";
+import cleanPro from "src/plugins/clean-pro/manifest";
 
 export default {
   folder,
@@ -46,4 +47,5 @@ export default {
   "costume-piskel": costumePiskel,
   "data-category-tweaks": dataCategoryTweaks,
   "mobile-code-batch-select": mobileCodeBatchSelect,
+  "clean-pro": cleanPro,
 };
