@@ -6,7 +6,7 @@ const CleanPro: React.FC<PluginContext> = ({ intl, vm, workspace, registerSettin
   React.useEffect(() => {
     const menuItemId = window.Blockly.ContextMenu.addDynamicMenuItem(
       (items, target) => {
-        items.push({
+        items.splice(4, 0, {
           id: "cleanPro",
           text: msg("plugins.cleanPro.cleanHeadlessBlocks"),
           enabled: true,
