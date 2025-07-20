@@ -26,4 +26,5 @@ export default {
   "data-category-tweaks": () => import(/* webpackChunkName: "plugin-data-category-tweaks" */ "plugins/data-category-tweaks"),
   "mobile-code-batch-select": () => import(/* webpackChunkName: "plugin-mobile-code-batch-select" */ "src/plugins/mobile-code-batch-select"),
   "clean-pro": () => import(/* webpackChunkName: "plugin-clean-pro" */ "src/plugins/clean-pro"),
+  "find-definition": () => import(/* webpackChunkName: "plugin-find-definition" */ "src/plugins/find-definition"),
 } as const;

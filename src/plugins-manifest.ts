@@ -22,6 +22,7 @@ import costumePiskel from "src/plugins/costume-piskel/manifest";
 import dataCategoryTweaks from "plugins/data-category-tweaks/manifest";
 import mobileCodeBatchSelect from "src/plugins/mobile-code-batch-select/manifest";
 import cleanPro from "src/plugins/clean-pro/manifest";
+import findDefinition from "src/plugins/find-definition/manifest";
 
 export default {
   folder,
@@ -48,4 +49,5 @@ export default {
   "data-category-tweaks": dataCategoryTweaks,
   "mobile-code-batch-select": mobileCodeBatchSelect,
   "clean-pro": cleanPro,
+  "find-definition": findDefinition,
 };
