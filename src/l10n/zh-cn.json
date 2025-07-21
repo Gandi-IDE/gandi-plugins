@@ -285,7 +285,7 @@
   "plugins.cleanPro.docs": "###### 插件使用方法\n在代码区按下【右键】，点击【清理无头块】即可删除当前角色内全部【没有头积木拼接的积木】和【没有后续拼接的头积木】\n###### 插件使用背景\n1.减少测试块堆积，以减少卡顿\n2.增加代码可读性\n3.便于分享，减少工程文件体积\n4.制作作品热更新时，可用于净化作品文件，防止无头块干扰\n 5.……",
   "plugins.cleanPro.cleanHeadlessBlocks": "清理无头块",
   "plugins.cleanPro.docs.title": "插件文档",
-  "plugins.findDefinition.name": "查找自定义块的定义位置",
+  "plugins.findDefinition.title": "查找自定义块的定义位置",
   "plugins.findDefinition.description": "在代码区右键单击自定义块，选择【跳转到定义】即可跳转到该自定义块的定义位置。",
   "plugins.findDefinition.goToDefinition": "跳转到定义"
 }
