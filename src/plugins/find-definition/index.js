@@ -135,7 +135,14 @@ const FindDefinition = ({ blockly, vm, registerSettings, msg }) => {
 				return;
 			}
 			refreshBlocksWithOpcodes(blockly, [CALL_OPCODE, CALL_RETURN_OPCODE]);
-			// TODO: 移除跳转事件
+			// workspace.clearUndo(); 我不想使用这个，因为会清除所有撤销记录
+			// 可能导致用户无法撤销之前的操作
+			// 但可以通过遍历undoStack并删除的方式来清除跳转事件
+			const new_undo_stack = workspace.undoStack_.filter(event => event.type !== 'GOTO_DEF');
+			workspace.undoStack_ = new_undo_stack;
+			//同时，也需要删除redoStack
+			const new_redo_stack = workspace.redoStack_.filter(event => event.type !== 'GOTO_DEF');
+			workspace.redoStack_ = new_redo_stack;
 			register.dispose();
 		},
 	};
