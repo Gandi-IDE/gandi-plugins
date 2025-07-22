@@ -40,10 +40,8 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
 	const src_target_id = vm.editingTarget.id;
 	const dst_target_id = targetId;
 	if (targetId !== vm.editingTarget.id) {
-		console.log("切换目标", targetId);
 		vm.setEditingTarget(targetId);
 	}
-	console.log("prototype block", getBlockInMainWorkspace(blockly, prototypeBlockInTarget.id));
 	const prototypeBlock = getBlockInMainWorkspace(blockly, prototypeBlockInTarget.id);
 	const defineBlock = prototypeBlock.parentBlock_;
 	scrollBlockIntoView(defineBlock, workspace);
@@ -75,7 +73,6 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
 };
 const handleGoToDefinition = function (vm, blockly) {
 	const procCode = this.procCode_;
-	console.log("被点了", procCode);
 	debugger
 	if (!procCode) {
 		console.warn("没有procCode，无法跳转");
@@ -86,14 +83,12 @@ const handleGoToDefinition = function (vm, blockly) {
 const refreshBlocksWithOpcodes = (blockly, opcodes) => {
 	for (let block of blockly.getMainWorkspace().getAllBlocks()) {
 		if (opcodes.includes(block.type)) {
-			console.log("刷新块", block);
 			block.customContextMenu = CTX_MENU_EXT.customContextMenu
 		}
 	}
 	blockly.getMainWorkspace().getToolbox().showAll_()
 }
 const FindDefinition = ({ blockly, vm, registerSettings, msg }) => {
-	console.log(blockly, vm, registerSettings);
 	if (blockly.Blocks[blockly.PROCEDURES_CALL_BLOCK_TYPE]) {
 		console.log("检测到自定义快，可以替换blockly");
 		PROTOTYPE_OPCODE = blockly.PROCEDURES_PROTOTYPE_BLOCK_TYPE;
@@ -103,7 +98,7 @@ const FindDefinition = ({ blockly, vm, registerSettings, msg }) => {
 		CTX_MENU_EXT._orig = CTX_MENU_EXT.customContextMenu;
 		CTX_MENU_EXT.customContextMenu = function (menuOptions) {
 			if (CTX_MENU_EXT._orig === undefined) {
-				console.warn("菜单需刷新");
+				console.warn("菜单未刷新，可尝试切换角色");
 				return;
 			}
 			CTX_MENU_EXT._orig.call(this, menuOptions);
