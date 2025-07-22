@@ -16,16 +16,16 @@ const getBlockInMainWorkspace = (blockly, blockId) => {
 const goToDefinition = (call_block, vm, workspace, blockly) => {
 	const procCode = call_block.procCode_
 	let prototypeBlockInTarget, targetId;
-	for (let target of vm.runtime.targets) {
+	for (let target of vm.runtime.targets) {//遍历每一个角色，在模块或当前角色中搜索自制积木的定义块
 		if (target.id !== vm.editingTarget.id && !target.sprite.name.startsWith("#modules/")) {
 			continue;
 		}
 		console.log(target.blocks);
 		for (let block of Object.values(target.blocks._blocks)) {
 			if (
-				block.opcode === PROTOTYPE_OPCODE &&
-				(block.mutation.isglobal === 'true' || target.id === vm.editingTarget.id) &&
-				block.mutation.proccode === procCode
+				block.opcode === PROTOTYPE_OPCODE &&//如果是定义块
+				(block.mutation.isglobal === 'true' || target.id === vm.editingTarget.id) &&//并且是全局的或当前角色
+				block.mutation.proccode === procCode//并且定义块的procCode与调用块的procCode相同
 			) {
 				prototypeBlockInTarget = block;
 				targetId = target.id;
@@ -37,13 +37,13 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
 		console.warn("没有找到定义块，无法跳转");
 		return;
 	}
-	const src_target_id = vm.editingTarget.id;
-	const dst_target_id = targetId;
+	const src_target_id = vm.editingTarget.id;//记录调用自制积木的角色id
+	const dst_target_id = targetId;//记录定义自制积木的角色id
 	if (targetId !== vm.editingTarget.id) {
 		vm.setEditingTarget(targetId);
 	}
 	const prototypeBlock = getBlockInMainWorkspace(blockly, prototypeBlockInTarget.id);
-	const defineBlock = prototypeBlock.parentBlock_;
+	const defineBlock = prototypeBlock.parentBlock_;//prototype无法进行跳转，所以需要获取其父块definition
 	scrollBlockIntoView(defineBlock, workspace);
 	class MoveWorkspaceEvent extends blockly.Events.Abstract {
 		constructor(src_target_id, src_block_id, dst_target_id, dst_block_id, workspace) {
@@ -54,22 +54,20 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
 			this.dst_target_id = dst_target_id
 			this.dst_block_id = dst_block_id
 			this.workspace = workspace
-			this.recordUndo = true
+			this.recordUndo = true//记录撤销
 		}
 		run(redo) {
-			console.log(redo, this)
 			if (redo) {
 				vm.setEditingTarget(this.dst_target_id);
-				scrollBlockIntoView(getBlockInMainWorkspace(blockly, this.dst_block_id), this.workspace)
+				scrollBlockIntoView(getBlockInMainWorkspace(blockly, this.dst_block_id), this.workspace)//跳转至定义(要通过id获取,否则跨角色会获取失败)
 			}
 			else {
 				vm.setEditingTarget(this.src_target_id);
-				scrollBlockIntoView(getBlockInMainWorkspace(blockly, this.src_block_id), this.workspace)
+				scrollBlockIntoView(getBlockInMainWorkspace(blockly, this.src_block_id), this.workspace)//跳转回引用
 			}
 		}
 	}
-	console.log(blockly.Events.isEnabled())
-	workspace.fireChangeListener(new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, defineBlock.id, workspace))
+	workspace.fireChangeListener(new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, defineBlock.id, workspace))//记录跳转事件
 };
 const handleGoToDefinition = function (vm, blockly) {
 	const procCode = this.procCode_;
@@ -98,11 +96,11 @@ const FindDefinition = ({ blockly, vm, registerSettings, msg }) => {
 		CTX_MENU_EXT._orig = CTX_MENU_EXT.customContextMenu;
 		CTX_MENU_EXT.customContextMenu = function (menuOptions) {
 			if (CTX_MENU_EXT._orig === undefined) {
-				console.warn("菜单未刷新，可尝试切换角色");
+				console.warn("菜单未刷新，可尝试切换角色");//一般不会运行，因为删除插件时会刷新
 				return;
 			}
-			CTX_MENU_EXT._orig.call(this, menuOptions);
-			menuOptions.push({
+			CTX_MENU_EXT._orig.call(this, menuOptions);//调用原有菜单
+			menuOptions.push({//加入自定义菜单项
 				text: msg("plugins.findDefinition.goToDefinition"),
 				enabled: true,
 				callback: handleGoToDefinition.bind(this, vm, blockly),
@@ -137,6 +135,7 @@ const FindDefinition = ({ blockly, vm, registerSettings, msg }) => {
 				return;
 			}
 			refreshBlocksWithOpcodes(blockly, [CALL_OPCODE, CALL_RETURN_OPCODE]);
+			// TODO: 移除跳转事件
 			register.dispose();
 		},
 	};
