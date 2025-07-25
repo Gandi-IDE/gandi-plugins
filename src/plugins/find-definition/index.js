@@ -67,7 +67,6 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
     }
     const src_target_id = vm.editingTarget.id;//记录调用自制积木的角色id
     const dst_target_id = targetId;//记录定义自制积木的角色id
-    console.timeEnd('goToDef')
     if (targetId !== vm.editingTarget.id) {
         vm.setEditingTarget(targetId);
     }
@@ -99,7 +98,6 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
     workspace.fireChangeListener(new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, defineBlock.id, workspace))//记录跳转事件
 };
 const handleGoToDefinition = function (vm, blockly) {
-    console.time('goToDef')
     if (!this.getProcCode) {
         console.warn("没有procCode，无法跳转");
         return;
