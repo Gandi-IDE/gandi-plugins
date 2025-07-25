@@ -70,9 +70,7 @@ const goToDefinition = (call_block, vm, workspace, blockly) => {
 	workspace.fireChangeListener(new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, defineBlock.id, workspace))//记录跳转事件
 };
 const handleGoToDefinition = function (vm, blockly) {
-	const procCode = this.procCode_;
-	debugger
-	if (!procCode) {
+	if (!this.getProcCode) {
 		console.warn("没有procCode，无法跳转");
 		return;
 	}
