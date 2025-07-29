@@ -29,7 +29,7 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			root: [
 				[/\/\/.*$/, { token: "comment.line.wpp" }],//WPP语法1:不支持多行注释，注释应以//开头
 				[/((if|elif|for|while|return|task|on)(?=\()|else(?={))/, { token: "keyword.wpp" }],//WPP语法:if,elif,for,while后加()为内置函数,else直接加{
-				[/[a-zA-z0-9\s]+(?=\(.*\)\s*{)/,{ token: "entity.name.function.wpp" }],
+				[/[a-zA-z0-9_]+(?=\s*\(.*\)\s*{)/,{ token: "entity.name.function.wpp" }],
 				[/[{}]+/,{token:'delimiter.curly'}],
 				[/[\(\)]+/,{token:'delimiter.parenthesis'}],
 				[/[\[\]]+/,{token:'delimiter.square'}],
