@@ -16,3 +16,5 @@
 *.less.d.ts
 
 temp-wrapper.jsx
+#ignore for branch-typeDefiniton
+/src/plugins/wpp-monaco
