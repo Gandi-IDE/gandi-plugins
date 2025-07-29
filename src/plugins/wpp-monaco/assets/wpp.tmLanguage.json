@@ -1,0 +1,119 @@
+{
+  "scopeName": "source.wpp",
+  "patterns": [
+    {
+      "name": "comment.line.wpp",
+      "match": "//.*$"
+    },
+    {
+      "name": "comment.line.escape.wpp",
+      "match": "(?<=^|[^\\\\])\\\\(?!\\\\)"
+    },
+    {
+      "name": "markup.italic.description.wpp",
+      "match": "(?<=\\})\\s*(?!\\s*//)[^\\s\\r\\n].*?(?=\\s*//|$)",
+      "comment": "描述文本，但排除行尾注释"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "(?:^\\s*|(?<=:))(if|elif|else|for|while)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword",
+      "match": "(?:^\\s*|(?<=:))(on|return|task)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "(?:^\\s*|(?<=:))[a-zA-Z_][a-zA-Z0-9_]*(?=\\s*\\()"
+    },
+    {
+      "name": "storage.type",
+      "match": "\\blet\\b"
+    },
+    {
+      "name": "punctuation.section.parens.wpp",
+      "match": "[\\{\\}]"
+    },
+    {
+      "name": "punctuation.section.parens.wpp",
+      "match": "[()]"
+    },
+    {
+      "begin": "\\(",
+      "end": "\\)",
+      "name": "meta.expression.wpp",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.parens.wpp"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.parens.wpp"
+        }
+      },
+      "patterns": []
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#expression-content"
+    }
+  ],
+  "repository": {
+    "expression-content": {
+      "patterns": [
+        {
+          "name": "entity.name.function",
+          "match": "(?:^\\s*|(?<=:))[a-zA-Z_][a-zA-Z0-9_]*(?=\\s*\\()"
+        },
+        {
+          "include": "#variables"
+        },
+        {
+          "name": "punctuation.separator.comma.wpp",
+          "match": ","
+        },
+        {
+          "name": "constant.numeric.wpp",
+          "match": "\\b\\d+\\b"
+        },
+        {
+          "name": "keyword",
+          "match": "==|!=|>=|<=|>|<"
+        },
+        {
+          "name": "keyword",
+          "match": "[+\\-*/]"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "match": "\\$(this\\.)([a-zA-Z_\\u4e00-\\u9fa5][a-zA-Z0-9_\\u4e00-\\u9fa5]*)\\$",
+          "captures": {
+            "1": {
+              "name": "variable.language.object.wpp"
+            },
+            "2": {
+              "name": "variable.other.wpp"
+            }
+          }
+        },
+        {
+          "match": "\\$([a-zA-Z_\\u4e00-\\u9fa5][a-zA-Z0-9_\\u4e00-\\u9fa5]*)\\$",
+          "captures": {
+            "1": {
+              "name": "variable.other.wpp"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "fileTypes": [
+    "wpp"
+  ]
+}

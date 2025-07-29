@@ -1,0 +1,48 @@
+import * as vscode from 'vscode';
+
+export function activate(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.languages.registerDocumentFormattingEditProvider('wpp', {
+      provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+        const edits: vscode.TextEdit[] = [];
+        let indentLevel = 0;
+
+        for (let i = 0; i < document.lineCount; i++) {
+          const line = document.lineAt(i);
+          const original = line.text;
+          let text = original.trim();
+
+          // Adjust indent level before writing line
+          if (text.startsWith('}')) indentLevel = Math.max(0, indentLevel - 1);
+
+          // 1. Add indent (2 spaces per level)
+          let formatted = '  '.repeat(indentLevel) + text;
+
+          // 2. let a=1 → let a = 1
+          formatted = formatted.replace(/\blet\s+(\S+)\s*=\s*(\S+)/, 'let $1 = $2');
+
+          // 3. func(a,b) → func(a, b)
+          formatted = formatted.replace(/\(([^)]*)\)/g, (_, args) => {
+            return '(' + args.split(',').map((s: string) => s.trim()).join(', ') + ')';
+          });
+
+          // 4. ){} → ) {}
+          formatted = formatted.replace(/\)\s*\{/, ') {');
+
+          // 5. }后面如果是描述（非空行、非注释），插入一个空格
+          formatted = formatted.replace(/\}(\S)/, '} $1');
+
+          if (formatted !== original) {
+            edits.push(vscode.TextEdit.replace(line.range, formatted));
+          }
+
+          if (text.endsWith('{')) indentLevel++;
+        }
+
+        return edits;
+      }
+    })
+  );
+}
+
+export function deactivate() {}
