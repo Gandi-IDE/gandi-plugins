@@ -21,7 +21,6 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 	);
 	const monaco = window.monaco
 	console.log(monaco)
-	debugger
 	monaco.languages.register({ id: 'wpp', extensions: ['.wpp'], mimetypes: ['text/plain'] })
 	monaco.languages.setMonarchTokensProvider('wpp', {
 		keywords:['if'],
@@ -29,10 +28,15 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			root: [
 				[/\/\/.*$/, { token: "comment.line.wpp" }],//WPP语法1:不支持多行注释，注释应以//开头
 				[/((if|elif|for|while|return|task|on)(?=\()|else(?={))/, { token: "keyword.wpp" }],//WPP语法:if,elif,for,while后加()为内置函数,else直接加{
-				[/[a-zA-z0-9_]+(?=\s*\(.*\)\s*{)/,{ token: "entity.name.function.wpp" }],
+				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\w*(?=\s*\(.*\)\s*{)/,{ token: "entity.name.function.wpp" }],
 				[/[{}]+/,{token:'delimiter.curly'}],
 				[/[\(\)]+/,{token:'delimiter.parenthesis'}],
 				[/[\[\]]+/,{token:'delimiter.square'}],
+				[/let(?=\s+[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\s*=)/, { token: "keyword.wpp" }],
+				[/this*/, { token: "keyword.wpp"}],
+				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*/, { token: "identifier.wpp"}],
+				[/(=|==|>=|<=|>|<|\+|\-|\*|\/)/, { token: ''}],
+				[/(?<![a-zA-z\u4e00-\u9fa5])\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}]
 			]
 		}
 	})
@@ -46,13 +50,6 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			{ open: '{', close: '}' },
 			{ open: '[', close: ']' },
 			{ open: '(', close: ')' }
-		]
-	})
-	monaco.editor.defineTheme('wpp-theme',{
-		base:'vs-dark',
-		inherit: true,
-		rules:[
-			{token:'entity.name.function.wpp',foreground:'#21b3bd'}
 		]
 	})
 	return {
