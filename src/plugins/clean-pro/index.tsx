@@ -98,7 +98,7 @@ const CleanPro: React.FC<PluginContext> = ({ intl, vm, workspace, registerSettin
     };
   }, [vm, workspace]);
 
-  return <React.Fragment>{"Clean Pro Plugin"}</React.Fragment>;
+  return null;
 };
 
 CleanPro.displayName = "CleanPro";
