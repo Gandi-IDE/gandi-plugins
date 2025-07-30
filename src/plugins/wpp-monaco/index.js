@@ -36,7 +36,8 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 				[/this*/, { token: "keyword.wpp"}],
 				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*/, { token: "identifier.wpp"}],
 				[/(=|==|>=|<=|>|<|\+|\-|\*|\/)/, { token: ''}],
-				[/(?<![a-zA-z\u4e00-\u9fa5])\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}]
+				[/(?<![a-zA-z\u4e00-\u9fa5])\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}],
+				[/(\'|\").*?\1/, {token: 'string.wpp'}]
 			]
 		}
 	})
