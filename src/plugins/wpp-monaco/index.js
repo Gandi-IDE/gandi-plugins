@@ -27,17 +27,21 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 		tokenizer: {
 			root: [
 				[/\/\/.*$/, { token: "comment.line.wpp" }],//WPP语法1:不支持多行注释，注释应以//开头
-				[/((if|elif|for|while|return|task|on)(?=\()|else(?={))/, { token: "keyword.wpp" }],//WPP语法:if,elif,for,while后加()为内置函数,else直接加{
-				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\w*(?=\s*\(.*\)\s*{)/,{ token: "entity.name.function.wpp" }],
+				[/((if|elif|for|while|return|task|on|rmtask)(?=\()|else(?={))/, { token: "keyword.wpp" }],//WPP语法:if,elif,for,while后加()为内置函数,else直接加{
+				[/(break|continue)/, { token: "keyword.wpp" }],
+				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\w*(?=\s*\(.*\))/,{ token: "entity.name.function.wpp" }],
+				// [/(?<=.)[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*/, {token: 'string.wpp'}], //monaco不支持正向后行断言
+				[/let(?=\s+[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\s*=)/, { token: "keyword.wpp" }],
+				[/this*/, { token: "keyword.wpp"}],
+				[/\$[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\$/, { token: "identifier.wpp"}],
+				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*(?=\s*=)/, { token: "identifier.wpp"}],
+				[/(=|==|>=|<=|>|<|\+|\-|\*|\/)/, { token: ''}],
+				// [/(?<![a-zA-z\u4e00-\u9fa5])\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}], //负向也没有
+				[/\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}],
+				[/(\'|\").*?\1/, {token: 'string.wpp'}],
 				[/[{}]+/,{token:'delimiter.curly'}],
 				[/[\(\)]+/,{token:'delimiter.parenthesis'}],
 				[/[\[\]]+/,{token:'delimiter.square'}],
-				[/let(?=\s+[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*\s*=)/, { token: "keyword.wpp" }],
-				[/this*/, { token: "keyword.wpp"}],
-				[/[a-zA-z\u4e00-\u9fa5][\w\u4e00-\u9fa5]*/, { token: "identifier.wpp"}],
-				[/(=|==|>=|<=|>|<|\+|\-|\*|\/)/, { token: ''}],
-				[/(?<![a-zA-z\u4e00-\u9fa5])\d+\.?\d*(?![a-zA-z\u4e00-\u9fa5])/, {token: 'number.wpp'}],
-				[/(\'|\").*?\1/, {token: 'string.wpp'}]
 			]
 		}
 	})
@@ -45,7 +49,9 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 		autoClosingPairs: [
 			{ open: '{', close: '}' },
 			{ open: '[', close: ']' },
-			{ open: '(', close: ')' }
+			{ open: '(', close: ')' },
+			{ open: '\'', close: '\'' },
+			{ open: '\"', close: '\"' },
 		],
 		surroundingPairs: [
 			{ open: '{', close: '}' },
