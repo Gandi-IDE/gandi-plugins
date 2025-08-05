@@ -119,4 +119,4 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 	};
 };
 
-export default WppMonaco;
+window.Scratch.plugins.register(WppMonaco,"Monaco for wpp")
