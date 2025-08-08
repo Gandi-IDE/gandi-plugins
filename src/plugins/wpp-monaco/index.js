@@ -1,3 +1,4 @@
+import { after } from "node:test";
 
 const WppMonaco = ({ vm, registerSettings, msg }) => {
 	const supportedAssetTypes = vm.runtime.gandi.supportedAssetTypes
@@ -57,22 +58,32 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			{ open: '{', close: '}' },
 			{ open: '[', close: ']' },
 			{ open: '(', close: ')' }
+		],
+		onEnterRules: [
+			{
+				beforeText: /{$/,
+				action: { indentAction: monaco.languages.IndentAction.Indent }
+			},
+			{
+				beforeText: /}/,
+				action: { indentAction: monaco.languages.IndentAction.Outdent }
+			}
 		]
 	})
 	const keyword_suggestions = [
 		{
 			label: 'let VAR = DATA',
-			insertText: 'let  = ',
+			insertText: 'let $1 = ',
 			detail: '赋值或修改一个变量,VAR为变量名,DATA为数据'
 		},
 		{
-			label: 'if(COND){}',
-			insertText: 'if(){}',
+			label: 'if(COND) {}',
+			insertText: 'if($1) {}',
 			detail: '当条件成立时，执行此分支'
 		},
 		{
-			label: 'elif(COND){}',
-			insertText: 'elif(){}',
+			label: 'elif(COND) {}',
+			insertText: 'elif($1) {}',
 			detail: '当if分支不成立时，检查条件是否成立，成立则进行此分支'
 		},
 		{
@@ -100,17 +111,51 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			console.log(lineText)
 			console.log(charPos)
 			const suggestions = [];
-			keyword_suggestions.map(m=>{
+			keyword_suggestions.map(suggestion=>{
+				const m = JSON.parse(JSON.stringify(suggestion));
 				m.range = new monaco.Range(
 					position.lineNumber,charPos+1,
 					position.lineNumber,position.column
 				)
 				suggestions.push(m);
 			})
+			if(lineText.trim().startsWith('}')){
+				let indentLevel = 0;
+				for(let lineCount = position.lineNumber - 1; lineCount >= 1; lineCount--){
+					/**
+					 * @type{string}
+					 */
+					const firstLineText = model.getLineContent(lineCount);
+					if(firstLineText.trim().endsWith('{')){
+						if(indentLevel > 0){
+							indentLevel--;
+						}else{
+							console.log(firstLineText)
+							if(firstLineText.trim().startsWith('if')|| firstLineText.trim().search('elif') !== -1){
+								suggestions.map(m=>{
+									if(m.label.startsWith('else') || m.label.startsWith('elif')){
+										m.insertText = ' '+m.insertText
+										m.range = new monaco.Range(
+											position.lineNumber,lineText.lastIndexOf('}')+2,
+											position.lineNumber,position.column
+										)
+									}
+								})
+							}
+							break
+						}
+					}else if(firstLineText.trim().startsWith('}')){
+						indentLevel++;
+					}
+
+				}
+			}
 			console.log(suggestions)
 			return { suggestions:suggestions};
 		}
 	});
+	// monaco.languages.registerDocumentFormattingEditProvider('wpp', {
+    //   provideDocumentFormattingEdits(
 	return {
 		dispose: () => {
 			/** Remove some side effects */
