@@ -1,5 +1,3 @@
-import { after } from "node:test";
-
 const WppMonaco = ({ vm, registerSettings, msg }) => {
 	const supportedAssetTypes = vm.runtime.gandi.supportedAssetTypes
 	const wpp_asset = { contentType: 'text/plain', name: 'Wpp', runtimeFormat: 'wpp', immutable: true }
@@ -22,6 +20,20 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 	);
 	const monaco = window.monaco
 	console.log(monaco)
+	console.log(vm.runtime)
+	let warnLimit = 3
+	vm.runtime.on('TARGET_BLOCKS_CHANGED',()=>{
+		if(!vm.runtime?.['ext_WitCatInterpreter']){
+			if(warnLimit>0){
+				console.warn('未加载白猫的wpp,方法解释补全不可用')
+				warnLimit--
+			}
+			return
+		}
+		const wpp = vm.runtime['ext_WitCatInterpreter']
+		console.log(wpp)
+	})
+
 	monaco.languages.register({ id: 'wpp', extensions: ['.wpp'], mimetypes: ['text/plain'] })
 	monaco.languages.setMonarchTokensProvider('wpp', {
 		keywords: ['if'],
@@ -90,6 +102,41 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 			label: 'else{}',
 			insertText: 'else{}',
 			detail: '当if分支和elif分支都不成立时，进行此分支'
+		},
+		{
+			label: 'task()',
+			insertText: 'task($1)',
+			detail: '传入一个参数，线程名。此代码将会调用一个线程，若不存在指定线程将不会执行，此代码返回调用的线程的返回值，若没有返回值，返回 null'
+		},
+		{
+			label:'on(){}',
+			insertText: 'on($1){}',
+			detail: '传入一个参数，线程名。此代码将会创建一个线程，线程可以被调用执行。'
+		},
+		{
+			label:'break',
+			insertText: 'break',
+			detail: '在循环里面调用，退出循环，在线程中调用，退出线程'
+		},
+		{
+			label:'continue',
+			insertText: 'continue',
+			detail: ' 在循环里面调用，下一次循环，在线程中调用，退出线程'
+		},
+		{
+			label:'rmtask()',
+			insertText: 'rmtask($1)',
+			detail: '传入一个参数，线程名。 移除某个使用task指定的线程缓存'
+		},
+		{
+			label:'while() {}',
+			insertText: 'while() {}',
+			detail: '如果第一个参数的返回值为true，则继续重复执行，否则，停止循环继续执行下面的'
+		},
+		{
+			label:'for() {}',
+			insertText: 'for($1) {}',
+			detail: '传入三个参数，初始值，终值，步长。在循环开始时执行初始值，每次循环结束后执行步长，每次循环开始时，通过终值等于true来判断是否继续循环还是退出循环执行下面的'
 		}
 	]
 	keyword_suggestions.map(m=>{
@@ -147,7 +194,6 @@ const WppMonaco = ({ vm, registerSettings, msg }) => {
 					}else if(firstLineText.trim().startsWith('}')){
 						indentLevel++;
 					}
-
 				}
 			}
 			console.log(suggestions)
