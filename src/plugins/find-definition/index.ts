@@ -45,7 +45,6 @@ const getBlockInMainWorkspace = (blockly: IBlockly, blockId: string) => {
  * @param call_block 右键菜单的块
  */
 const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, workspace: Blockly.WorkspaceSvg, blockly: IBlockly) => {
-  console.log(call_block)
   const procCode = call_block.procCode_;
   let prototypeBlockInTarget:Scratch.BlockState, targetId:string;
   for (let block of Object.values(vm.editingTarget.blocks._blocks)) {
@@ -70,7 +69,6 @@ const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, works
       }
       return false
     })
-    console.log(moduleName,vm,moduleTargets)
     for (let target of moduleTargets) {
       //遍历每一个模块，搜索自制积木的定义块
       if (target.isModule) {
