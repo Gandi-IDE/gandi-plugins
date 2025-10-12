@@ -24,7 +24,6 @@ import mobileCodeBatchSelect from "src/plugins/mobile-code-batch-select/manifest
 import cleanPro from "src/plugins/clean-pro/manifest";
 import findDefinition from "src/plugins/find-definition/manifest";
 // import extensionTypeDefinition from "plugins/extension-type-definition/manifest";
-import wppMonaco from "src/plugins/wpp-monaco/manifest";
 
 export default {
   folder,
@@ -53,5 +52,4 @@ export default {
   "clean-pro": cleanPro,
   "find-definition": findDefinition,
   // "extension-type-definition": extensionTypeDefinition,
-  "wpp-monaco": wppMonaco,
 };
