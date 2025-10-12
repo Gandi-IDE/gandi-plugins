@@ -151,7 +151,6 @@ const handleGoToDefinition = function (vm, blockly) {
     console.warn("没有procCode，无法跳转");
     return;
   }
-  console.log(this)
   goToDefinition(this, vm, blockly.getMainWorkspace(), blockly);
 };
 
