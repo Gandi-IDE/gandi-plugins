@@ -283,5 +283,7 @@
   "plugins.cleanPro.description": "Clean Blocks Pro! Quickly clean headless blocks~",
   "plugins.cleanPro.docs": "###### Plugin Usage Instructions\nRight-click in the code area, select【Clean Headless Blocks】to delete all【blocks without head connections】and【head blocks without subsequent connections】in the current character\n###### Plugin Usage Background\n1.Reduce test block accumulation to reduce lag\n2.Increase code readability\n3.Facilitate sharing, reduce project file size\n4.When creating a hot update for a work, it can be used to purify the work file, preventing headless blocks from interfering\n 5.……",
   "plugins.cleanPro.cleanHeadlessBlocks": "Clean Headless Blocks",
-  "plugins.cleanPro.docs.title": "Plugin Doc"
+  "plugins.cleanPro.docs.title": "Plugin Doc",
+  "plugins.witcatInfiniteCanvas.title": "Infinite Canvas by Witcat",
+  "plugins.witcatInfiniteCanvas.open": "Enable Infinite Canvas"
 }

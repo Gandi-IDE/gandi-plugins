@@ -284,5 +284,7 @@
   "plugins.cleanPro.description": "整理积木 Pro！快速清理无头积木~",
   "plugins.cleanPro.docs": "###### 插件使用方法\n在代码区按下【右键】，点击【清理无头块】即可删除当前角色内全部【没有头积木拼接的积木】和【没有后续拼接的头积木】\n###### 插件使用背景\n1.减少测试块堆积，以减少卡顿\n2.增加代码可读性\n3.便于分享，减少工程文件体积\n4.制作作品热更新时，可用于净化作品文件，防止无头块干扰\n 5.……",
   "plugins.cleanPro.cleanHeadlessBlocks": "清理无头块",
-  "plugins.cleanPro.docs.title": "插件文档"
+  "plugins.cleanPro.docs.title": "插件文档",
+  "plugins.witcatInfiniteCanvas.title": "白猫的无限画布",
+  "plugins.witcatInfiniteCanvas.open": "启用无限画布"
 }
