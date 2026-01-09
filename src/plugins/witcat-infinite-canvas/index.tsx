@@ -18,7 +18,7 @@ const WitcatInfiniteCanvas: React.FC<PluginContext> = ({ registerSettings, msg }
             {
               key: "open",
               type: "switch",
-              label: "启用无限画布",
+              label: msg("plugins.witcatInfiniteCanvas.open"),
               value: false,
               onChange(v: boolean) {
                 console.log(v);
