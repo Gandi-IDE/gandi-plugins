@@ -6,7 +6,6 @@ declare const window: Window & {
 };
 
 const WitcatInfiniteCanvas: React.FC<PluginContext> = ({ registerSettings, msg }) => {
-  console.log("witcat");
   React.useEffect(() => {
     const register = registerSettings(
       msg("plugins.witcatInfiniteCanvas.title"),
