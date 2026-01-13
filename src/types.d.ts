@@ -10,6 +10,11 @@ declare module "*.svg" {
   export default src;
 }
 
+declare module "*.asset" {
+  const data:string
+  export default data;
+}
+
 declare module "*.svg?url" {
   const src: string;
   export default src;
