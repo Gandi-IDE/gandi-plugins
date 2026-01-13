@@ -16,5 +16,3 @@
 *.less.d.ts
 
 temp-wrapper.jsx
-#ignore for branch-wppMonaco
-/src/plugins/extension-type-definition
