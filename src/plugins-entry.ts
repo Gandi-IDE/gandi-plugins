@@ -27,5 +27,4 @@ export default {
   "mobile-code-batch-select": () => import(/* webpackChunkName: "plugin-mobile-code-batch-select" */ "src/plugins/mobile-code-batch-select"),
   "clean-pro": () => import(/* webpackChunkName: "plugin-clean-pro" */ "src/plugins/clean-pro"),
   "find-definition": () => import(/* webpackChunkName: "plugin-find-definition" */ "src/plugins/find-definition"),
-  // "extension-type-definition": () => import(/* webpackChunkName: "plugin-extension-type-definition" */ "plugins/extension-type-definition"),
 } as const;

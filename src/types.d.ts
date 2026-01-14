@@ -11,7 +11,7 @@ declare module "*.svg" {
 }
 
 declare module "*.asset" {
-  const data:string
+  const data: string;
   export default data;
 }
 
