@@ -6,19 +6,19 @@ type ContextMenuFunction = (options: Array<BlockMenuOption>) => void;
 interface BlockMenuOption {
   text: string;
   enabled: boolean;
-  callback: Function;
+  callback: (e: Event) => void;
 }
 
-interface IBlockly{
+interface IBlockly {
   getMainWorkspace(): Blockly.WorkspaceSvg;
   Events: {
-    Abstract:any
-  }
+    Abstract: any;
+  };
 }
 
-interface ProcedureBlockSVG extends Blockly.BlockSvg{
-  isGlobal_:boolean; //是否为全局块
-  procCode_:string; //对应的积木名称
+interface ProcedureBlockSVG extends Blockly.BlockSvg {
+  isGlobal_: boolean; //是否为全局块
+  procCode_: string; //对应的积木名称
 }
 //---
 
@@ -44,10 +44,15 @@ const getBlockInMainWorkspace = (blockly: IBlockly, blockId: string) => {
 /**
  * @param call_block 右键菜单的块
  */
-const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, workspace: Blockly.WorkspaceSvg, blockly: IBlockly) => {
+const goToDefinition = (
+  call_block: ProcedureBlockSVG,
+  vm: VirtualMachine,
+  workspace: Blockly.WorkspaceSvg,
+  blockly: IBlockly,
+) => {
   const procCode = call_block.procCode_;
-  let prototypeBlockInTarget:Scratch.BlockState, targetId:string;
-  for (let block of Object.values(vm.editingTarget.blocks._blocks)) {
+  let prototypeBlockInTarget: Scratch.BlockState, targetId: string;
+  for (const block of Object.values(vm.editingTarget.blocks._blocks)) {
     //在当前角色中寻找
     if (
       block.opcode === PROTOTYPE_OPCODE && //如果是定义块
@@ -62,17 +67,18 @@ const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, works
     !prototypeBlockInTarget && //在当前角色中未找到
     call_block.isGlobal_ //可能在全局中
   ) {
-    const moduleName = call_block.procCode_.split('.')[0]
-    const moduleTargets = vm.runtime.targets.filter((t)=>{
-      if(t.sprite.name.endsWith('/'+moduleName) && t.isModule){//这可能导致不是指定模块的模块被整进来,但还是比遍历每一个快多了
-        return true
+    const moduleName = call_block.procCode_.split(".")[0];
+    const moduleTargets = vm.runtime.targets.filter((t) => {
+      if (t.sprite.name.endsWith("/" + moduleName) && t.isModule) {
+        //这可能导致不是指定模块的模块被整进来,但还是比遍历每一个快多了
+        return true;
       }
-      return false
-    })
-    for (let target of moduleTargets) {
+      return false;
+    });
+    for (const target of moduleTargets) {
       //遍历每一个模块，搜索自制积木的定义块
       if (target.isModule) {
-        for (let block of Object.values(target.blocks._blocks)) {
+        for (const block of Object.values(target.blocks._blocks)) {
           if (
             block.opcode === PROTOTYPE_OPCODE && //如果是定义块
             block.mutation.proccode === procCode && //并且定义块的procCode与调用块的procCode相同
@@ -99,16 +105,16 @@ const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, works
   }
 
   const prototypeBlock = getBlockInMainWorkspace(blockly, prototypeBlockInTarget.id);
-  const definitionBlock:Blockly.Block = prototypeBlock.parentBlock_; //prototype无法进行跳转，所以需要获取其父块definition
+  const definitionBlock: Blockly.Block = prototypeBlock.parentBlock_; //prototype无法进行跳转，所以需要获取其父块definition
   scrollBlockIntoView(definitionBlock, workspace);
   class MoveWorkspaceEvent extends blockly.Events.Abstract {
-    type: 'GOTO_DEF';
+    type: "GOTO_DEF";
     src_target_id: string;
     src_block_id: string;
     dst_target_id: string;
     dst_block_id: string;
     workspace: Blockly.WorkspaceSvg;
-    recordUndo:boolean;
+    recordUndo: boolean;
     constructor(
       src_target_id: string,
       src_block_id: string,
@@ -129,7 +135,7 @@ const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, works
      * 执行撤销或重做
      * @param redo 为重做?
      */
-    run(redo:boolean) {
+    run(redo: boolean) {
       if (redo) {
         vm.setEditingTarget(this.dst_target_id);
         scrollBlockIntoView(getBlockInMainWorkspace(blockly, this.dst_block_id), this.workspace); //跳转至定义(要通过id获取,否则跨角色会获取失败)
@@ -140,9 +146,7 @@ const goToDefinition = (call_block: ProcedureBlockSVG, vm: VirtualMachine, works
     }
   }
   workspace.fireChangeListener(
-    (
-      new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, definitionBlock.id, workspace)as any
-    ),
+    new MoveWorkspaceEvent(src_target_id, call_block.id, dst_target_id, definitionBlock.id, workspace) as any,
   ); //记录跳转事件
 };
 
@@ -157,15 +161,14 @@ const handleGoToDefinition = function (vm, blockly) {
 function refreshBlocksMenuWithOpcodes(
   blockly: typeof Blockly & { getMainWorkspace: () => Blockly.WorkspaceSvg },
   opcodes: Array<string>,
-  newCtxFunc: (options:Array<BlockMenuOption>)=>void
+  newCtxFunc: (options: Array<BlockMenuOption>) => void,
 ) {
-  for (let block of blockly.getMainWorkspace().getAllBlocks()) {
+  for (const block of blockly.getMainWorkspace().getAllBlocks()) {
     if (opcodes.includes(block.type)) {
-      (block as Blockly.Block & { customContextMenu: ContextMenuFunction}).customContextMenu =
-        newCtxFunc;
+      (block as Blockly.Block & { customContextMenu: ContextMenuFunction }).customContextMenu = newCtxFunc;
     }
   }
-  (blockly.getMainWorkspace().getToolbox() as Blockly.Toolbox & {showAll_:()=>void}).showAll_();
+  (blockly.getMainWorkspace().getToolbox() as Blockly.Toolbox & { showAll_: () => void }).showAll_();
 }
 
 function FindDefinition({ blockly, vm, registerSettings, msg }: PluginContext): { dispose: () => void } {
@@ -208,8 +211,8 @@ function FindDefinition({ blockly, vm, registerSettings, msg }: PluginContext): 
     dispose: () => {
       /** Remove some side effects */
       const ctxMenuClass: { customContextMenu: ContextMenuFunction } =
-      blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU;
-      ctxMenuClass.customContextMenu = ORIGIN_CONTEXT_MENU
+        blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU;
+      ctxMenuClass.customContextMenu = ORIGIN_CONTEXT_MENU;
       ORIGIN_CONTEXT_MENU = undefined;
       const workspace = blockly.getMainWorkspace();
       if (!workspace) {

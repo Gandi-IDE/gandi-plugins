@@ -5,7 +5,7 @@ export default {
   credits: [
     {
       name: "BenPaoDeXiaoZhi @ CCW",
-      link:"https://www.ccw.site/student/63c2807d669fa967f17f5559"
+      link: "https://www.ccw.site/student/63c2807d669fa967f17f5559",
     },
   ],
 };
