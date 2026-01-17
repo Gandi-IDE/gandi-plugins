@@ -32,7 +32,7 @@
 
   ### 🖊️ 创建新的插件
 
-  项目支持通过 createPlugin 命令快捷创建插件。
+  项目支持通过 createPlugin 命令快捷创建插件。社区的插件不允许默认加载，不要修改 `src/plugins/plugins-manager/index.tsx` 中的 DEFAULT_INJECT_PLUGINS。
   ```console
   $ pnpm createPlugin
   ```

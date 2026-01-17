@@ -287,4 +287,11 @@
   "plugins.cleanPro.docs.title": "插件文档",
   "plugins.witcatInfiniteCanvas.title": "白猫的无限画布",
   "plugins.witcatInfiniteCanvas.open": "启用无限画布"
+  "plugins.findDefinition.title": "查找自定义块的定义位置",
+  "plugins.findDefinition.description": "在代码区右键单击自定义块，选择【跳转到定义】即可跳转到该自定义块的定义位置。",
+  "plugins.findDefinition.goToDefinition": "跳转到定义",
+  "plugins.extensionTypeDefinition.title": "为拓展开发提供自动补全",
+  "plugins.extensionTypeDefinition.description": "加载之后，会自动提供类型标注，使用jsdoc语法标注了变量类型后可以提供自动补全，如\n/**\n* @type{Runtime}\n*/\nlet runtime;\n键入\"runtime.\"后会提示runtime支持的方法",
+  "plugins.wppMonaco.title": "为白猫的解释器语言提供高亮与补全",
+  "plugins.wppMonaco.description": "在文件管理中新建wpp文件，立享补全与高亮！"
 }

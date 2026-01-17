@@ -23,6 +23,7 @@ import dataCategoryTweaks from "plugins/data-category-tweaks/manifest";
 import mobileCodeBatchSelect from "src/plugins/mobile-code-batch-select/manifest";
 import cleanPro from "src/plugins/clean-pro/manifest";
 import witcatInfiniteCanvas from "src/plugins/witcat-infinite-canvas/manifest";
+import findDefinition from "src/plugins/find-definition/manifest";
 
 export default {
   folder,
@@ -50,4 +51,5 @@ export default {
   "mobile-code-batch-select": mobileCodeBatchSelect,
   "clean-pro": cleanPro,
   "witcat-infinite-canvas": witcatInfiniteCanvas,
+  "find-definition": findDefinition,
 };
