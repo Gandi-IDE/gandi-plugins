@@ -21,7 +21,6 @@ const WitcatInfiniteCanvas: React.FC<PluginContext> = ({ registerSettings, msg }
               label: msg("plugins.witcatInfiniteCanvas.open"),
               value: false,
               onChange(v: boolean) {
-                console.log(v);
                 window.scratchPaintInfiniteCanvas = v;
               },
             },
