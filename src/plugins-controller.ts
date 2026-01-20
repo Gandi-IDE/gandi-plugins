@@ -93,14 +93,17 @@ class PluginsController {
    * @returns {IntlShape} The internationalization instance.
    */
   createIntl(locale: string): IntlShape {
-    // If the language is not supported yet, it will default to displaying English.
+    const defaultLocale = "en";
+    const defaultMessages = pluginsL10n[defaultLocale];
     if (!pluginsL10n[locale]) {
-      locale = "en";
+      locale = defaultLocale;
     }
+    const localeMessages = pluginsL10n[locale];
+    const messages = locale === defaultLocale ? defaultMessages : { ...defaultMessages, ...localeMessages };
     return createIntl(
       {
         locale,
-        messages: pluginsL10n[locale],
+        messages,
       },
       createIntlCache(),
     );
