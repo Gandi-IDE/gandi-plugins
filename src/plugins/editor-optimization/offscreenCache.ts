@@ -256,21 +256,21 @@ export function restoreTargetFromOffscreen(
       origRecordCachedAreas = mainWs.recordCachedAreas;
     }
     mainWs.recordCachedAreas = function() {};
-
-    // 注册首次交互时恢复完整布局
-    const handler = () => {
-      endFastRestorePhase(mainWs);
-      canvas?.removeEventListener('mousedown', handler, true);
-      canvas?.removeEventListener('touchstart', handler, true);
-    };
-    canvas?.addEventListener('mousedown', handler, true);
-    canvas?.addEventListener('touchstart', handler, true);
-    interactionCleanup = () => {
-      canvas?.removeEventListener('mousedown', handler, true);
-      canvas?.removeEventListener('touchstart', handler, true);
-    };
-    
-        // ▼▼▼ 1. 先重建连接数据库（修复拖拽连接报错的问题）▼▼▼
+    //直接更新，避免坐标出错。
+    endFastRestorePhase(mainWs);
+    // 自动居中，消除镜头闪现
+    if (typeof mainWs.scrollCenter === 'function') {
+      queueMicrotask(() => {
+        try {
+          if (mainWs.rendered) {
+            mainWs.scrollCenter();
+          }
+        } catch (e) {
+          // 忽略
+        }
+      });
+    }
+        //重建连接数据库（修复拖拽连接报错的问题）
     if (mainWs.connectionDBList) {
       mainWs.connectionDBList.forEach((db: any) => {
         if (db) db.connections_ = [];
@@ -286,7 +286,7 @@ export function restoreTargetFromOffscreen(
       });
     }
 
-    // ▼▼▼ 2. 强制将所有积木重置为可见，以便 Observer 重新检测 ▼▼▼
+    // 强制将所有积木重置为可见，以便 Observer 重新检测
     const allBlocks = mainWs.getAllBlocks(false);
     allBlocks.forEach((b: any) => {
       b.intersects_ = true;
@@ -294,7 +294,7 @@ export function restoreTargetFromOffscreen(
       if (svgRoot) svgRoot.style.display = '';
     });
 
-    // ▼▼▼ 3. 将顶层积木加入观察列表，并立即执行一次离屏检查 ▼▼▼
+    //将顶层积木加入观察列表，并立即执行一次离屏检查
     const topBlocks = mainWs.getTopBlocks(false);
     if (mainWs.intersectionObserver) {
       topBlocks.forEach((b: any) => {
@@ -406,10 +406,13 @@ export function endFastRestorePhase(mainWs: any) {
     mainWs.recordCachedAreas = origRecordCachedAreas;
     origRecordCachedAreas = null;
   }
-  if (mainWs.resize && typeof mainWs.resize === 'function') {
+  // 使用原型上的 resize 避免被实例屏蔽
+  const proto = Object.getPrototypeOf(mainWs);
+  if (proto && typeof proto.resize === 'function') {
+    proto.resize.call(mainWs);
+  } else if (typeof mainWs.resize === 'function') {
     mainWs.resize();
   }
-  // 强制 IntersectionObserver 刷新，隐藏视口外积木
   if (mainWs.intersectionObserver) {
     mainWs.intersectionObserver.checkForIntersections();
   }

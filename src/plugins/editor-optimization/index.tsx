@@ -40,6 +40,7 @@ declare global {
     __FAST_DRAG_MODE__?: boolean;
     __IN_FULLSCREEN_MODE__?: boolean;
     __ENABLE_FULLSCREEN_OPTIMIZATION__?: boolean;
+    __SKIP_TEXT_TO_DOM__?: boolean;
   }
 }
 
@@ -185,7 +186,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
               key: 'enableDragOptimize',
               type: 'switch',
               label: '[实验]启用拖拽优化',
-              description: '替换拖拽算法，可能优化拖拽积木区时的效率。不建议开启，不如原生算法稳定。',
+              description: '替换拖拽算法，可能优化拖拽积木区时的效率。可能存在问题，不建议开启。',
               value: false,
               onChange: (v: boolean) => {
                 window.__ENABLE_DRAG_OPTIMIZE__ = v;
@@ -199,6 +200,16 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
               value: false,
               onChange: (v: boolean) => {
                 window.__ENABLE_FULLSCREEN_OPTIMIZATION__ = v;
+              }
+            },
+            {
+              key: 'enableTrimDecorations',
+              type: 'switch',
+              label: '[实验]移除积木装饰',
+              description: '移除部分冗余的积木装饰，减少加载的元素数量，适当提高切入性能。积木部分装饰可能会改变，但不影响功能。',
+              value: false,
+              onChange: (v: boolean) => {
+                (window as any).__ENABLE_TRIM_DECORATIONS__ = v;
               }
             }
           ]
@@ -270,6 +281,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             newTargetId, tw, blockly, activeId,
             getBlockGroup, ALL_GROUPS_ID
           );
+          window.__SKIP_TEXT_TO_DOM__ = true;
           //frame处理
           cleanupFramesAfterLoad(tw);
           setTimeout(() => refreshGroups(), 20);
@@ -635,6 +647,45 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       if (utils && origRemoveClass) utils.removeClass = origRemoveClass;
     };
   }, [blockly, workspace]);
+// 移除一些用处不大的DOM元素，会影响积木样式，但不影响功能。
+React.useEffect(() => {
+  if (!blockly || !workspace) return;
+
+  const cleanBlock = (block: any) => {
+    const root = block.getSvgRoot();
+    if (!root) return;
+    if (!(window as any).__ENABLE_TRIM_DECORATIONS__) return;
+    // 移除字段装饰：白色背景矩形
+    root.querySelectorAll('.blocklyEditableText rect.blocklyBlockBackground').forEach((r: Element) => r.remove());
+    // 移除无用的隐藏空路径（outlinePath），但保留有 data-argument-type 的动态占位符
+    const hiddenEmptyPaths = root.querySelectorAll('path[style*="visibility: hidden"]');
+    hiddenEmptyPaths.forEach((p: Element) => {
+      const d = p.getAttribute('d');
+      if ((!d || d.trim() === '') && !p.hasAttribute('data-argument-type')) {
+        p.remove();
+      }
+    });
+  };
+
+  // 清理所有积木
+  workspace.getAllBlocks(false).forEach(cleanBlock);
+
+  // 劫持 render，每次渲染后清理
+  const BlockSvgProto = (blockly as any).BlockSvg?.prototype;
+  const origRender = BlockSvgProto?.render;
+  if (BlockSvgProto && origRender) {
+    BlockSvgProto.render = function (opt_bubble?: boolean) {
+      const ret = origRender.call(this, opt_bubble);
+      cleanBlock(this);
+      return ret;
+    };
+  }
+
+  return () => {
+    if (BlockSvgProto) BlockSvgProto.render = origRender;
+  };
+}, [blockly, workspace]);
+
 
   // 性能测量与序列化过滤
   React.useEffect(() => {
@@ -695,191 +746,210 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       window.requestAnimationFrame = origRAF;
     };
   }, [blockly, workspace]);
-  //拖拽镜头优化：开关控制 + 边界缓存 + 安全调用
-  React.useEffect(() => {
-    if (!blockly || !workspace) return;
+  //拖拽镜头优化
+React.useEffect(() => {
+  if (!blockly || !workspace) return;
 
-    const isDragOptimizeEnabled = (window as any).__ENABLE_DRAG_OPTIMIZE__ === true;
-    if (!isDragOptimizeEnabled) {
-      return;
+  const BlocklyAny = blockly as any;
+  const WorkspaceDragger = BlocklyAny.WorkspaceDragger?.prototype;
+  const ScrollbarPair = BlocklyAny.ScrollbarPair?.prototype;
+  const Scrollbar = BlocklyAny.Scrollbar?.prototype;
+  const WorkspaceSvg = BlocklyAny.WorkspaceSvg?.prototype;
+
+  if (!WorkspaceDragger || !ScrollbarPair || !WorkspaceSvg) return;
+
+  const origStartDrag = WorkspaceDragger.startDrag;
+  const origDrag = WorkspaceDragger.drag;
+  const origEndDrag = WorkspaceDragger.endDrag;
+  const origScrollbarPairSet = ScrollbarPair.set;
+  const origSetHandlePosition = Scrollbar?.setHandlePosition;
+  const origSetTopLevelMetrics = WorkspaceSvg.setTopLevelWorkspaceMetrics_;
+  const origGetMetrics = WorkspaceSvg.getMetrics;
+  const origGetBlocksBoundingBox = WorkspaceSvg.getBlocksBoundingBox;
+  const origGetContentDimensions_ = WorkspaceSvg.getContentDimensions_;
+  const origGetContentDimensionsExact_ = WorkspaceSvg.getContentDimensionsExact_;
+  const origResize = workspace.resize.bind(workspace);
+
+  const canvas = workspace.getCanvas() as HTMLElement | null;
+  const observer = (workspace as any).intersectionObserver;
+
+  if (typeof window.__FAST_DRAG_MODE__ === 'undefined') {
+    window.__FAST_DRAG_MODE__ = false;
+  }
+
+  let cachedMetrics: any = null;
+  let cachedBoundingBox: any = null;
+  let lastCheckTime = 0;
+
+  WorkspaceDragger.startDrag = function() {
+    const ws = this.workspace_;
+    if (!ws) return;
+
+    // 预缓存布局数据
+    if (origGetMetrics) cachedMetrics = origGetMetrics.call(ws);
+    if (origGetBlocksBoundingBox) cachedBoundingBox = origGetBlocksBoundingBox.call(ws);
+
+    // 先执行一次隐藏，保证当前视口外积木不可见（减少绘制压力）
+    if (observer) observer.checkForIntersections();
+
+    // 提升画布为合成层
+    if (canvas) {
+      canvas.style.willChange = 'transform';
     }
 
-    const BlocklyAny = blockly as any;
-    const WorkspaceDragger = BlocklyAny.WorkspaceDragger?.prototype;
-    const ScrollbarPair = BlocklyAny.ScrollbarPair?.prototype;
-    const Scrollbar = BlocklyAny.Scrollbar?.prototype;
-    const WorkspaceSvg = BlocklyAny.WorkspaceSvg?.prototype;
+    // 禁用 resize，避免意外重排
+    ws.setResizesEnabled(false);
 
-    if (!WorkspaceDragger || !ScrollbarPair || !WorkspaceSvg) {
-      return;
+    window.__FAST_DRAG_MODE__ = true;
+    origStartDrag?.call(this);
+  };
+
+  WorkspaceDragger.drag = function(currentDragDeltaXY: any) {
+    if (!window.__FAST_DRAG_MODE__) {
+      return origDrag?.call(this, currentDragDeltaXY);
     }
 
-    const origStartDrag = WorkspaceDragger.startDrag;
-    const origDrag = WorkspaceDragger.drag;
-    const origEndDrag = WorkspaceDragger.endDrag;
-    const origScrollbarPairSet = ScrollbarPair.set;
-    const origSetHandlePosition = Scrollbar?.setHandlePosition;
-    const origSetTopLevelMetrics = WorkspaceSvg.setTopLevelWorkspaceMetrics_;
-    const origGetMetrics = WorkspaceSvg.getMetrics;
-    const origGetBlocksBoundingBox = WorkspaceSvg.getBlocksBoundingBox;
-    const origGetContentDimensions_ = WorkspaceSvg.getContentDimensions_;
-    const origGetContentDimensionsExact_ = WorkspaceSvg.getContentDimensionsExact_;
+    const ws = this.workspace_;
+    const metrics = this.startDragMetrics_;
+    const startScroll = this.startScrollXY_;
 
-    if (typeof window.__FAST_DRAG_MODE__ === 'undefined') {
-      window.__FAST_DRAG_MODE__ = false;
-    }
-
-    let cachedMetrics: any = null;
-    let cachedBoundingBox: any = null;
-
-    WorkspaceDragger.startDrag = function() {
-      const ws = this.workspace_;
-      if (ws) {
-        if (origGetMetrics) {
-          cachedMetrics = origGetMetrics.call(ws);
-        }
-        if (origGetBlocksBoundingBox) {
-          cachedBoundingBox = origGetBlocksBoundingBox.call(ws);
-        }
-      }
-      window.__FAST_DRAG_MODE__ = true;
-      workspace.getInjectionDiv()?.classList.add('gandi-fast-drag');
-      if (origStartDrag) {
-        return origStartDrag.call(this);
-      }
+    const newXY = {
+      x: startScroll.x + currentDragDeltaXY.x + 325,
+      y: startScroll.y + currentDragDeltaXY.y
     };
 
-    WorkspaceDragger.drag = function(currentDragDeltaXY: any) {
-      if (!window.__FAST_DRAG_MODE__) {
-        if (origDrag) return origDrag.call(this, currentDragDeltaXY);
+    let x = Math.max(-newXY.x, metrics.contentLeft);
+    let y = Math.max(-newXY.y, metrics.contentTop);
+    x = Math.min(x, -metrics.viewWidth + metrics.contentLeft + metrics.contentWidth);
+    y = Math.min(y, -metrics.viewHeight + metrics.contentTop + metrics.contentHeight);
+
+    ws.translate(-x, -y);
+    if (ws.grid_) {
+      ws.grid_.moveTo(-x, -y);
+    }
+
+    // 节流调用离屏检测，让新进入视口的积木及时显示
+    const now = performance.now();
+    if (observer && now - lastCheckTime > 100) {
+      observer.checkForIntersections();
+      lastCheckTime = now;
+    }
+  };
+
+  WorkspaceDragger.endDrag = function(currentDragDeltaXY: any) {
+    window.__FAST_DRAG_MODE__ = false;
+    const ws = this.workspace_;
+
+    // 移除合成层属性
+    if (canvas) {
+      canvas.style.willChange = 'auto';
+    }
+
+    // 恢复被劫持的查询方法
+    ScrollbarPair.set = origScrollbarPairSet;
+    if (Scrollbar && origSetHandlePosition) Scrollbar.setHandlePosition = origSetHandlePosition;
+    WorkspaceSvg.setTopLevelWorkspaceMetrics_ = origSetTopLevelMetrics;
+    WorkspaceSvg.getMetrics = origGetMetrics;
+    WorkspaceSvg.getBlocksBoundingBox = origGetBlocksBoundingBox;
+    WorkspaceSvg.getContentDimensions_ = origGetContentDimensions_;
+    WorkspaceSvg.getContentDimensionsExact_ = origGetContentDimensionsExact_;
+
+    let result;
+    if (origEndDrag) {
+      result = origEndDrag.call(this, currentDragDeltaXY);
+    }
+
+    // 恢复 resize 并执行完整布局
+    if (ws) {
+      ws.setResizesEnabled(true);
+      requestAnimationFrame(() => {
+        origResize();
+      });
+    }
+
+    // 最后强制刷新一次可见性
+    if (observer) observer.checkForIntersections();
+
+    cachedMetrics = null;
+    cachedBoundingBox = null;
+    lastCheckTime = 0;
+    return result;
+  };
+
+  // 其余劫持（与之前相同，确保拖拽期间不触发布局查询）
+  ScrollbarPair.set = function(x: number, y: number) {
+    if (window.__FAST_DRAG_MODE__) return;
+    origScrollbarPairSet.call(this, x, y);
+  };
+
+  if (Scrollbar && origSetHandlePosition) {
+    Scrollbar.setHandlePosition = function(newPosition: number) {
+      if (window.__FAST_DRAG_MODE__) {
+        this.handlePosition_ = newPosition;
         return;
       }
-
-      const ws = this.workspace_;
-      const metrics = this.startDragMetrics_;
-      const startScroll = this.startScrollXY_;
-
-      const newXY = {
-        x: startScroll.x + currentDragDeltaXY.x + 325,
-        y: startScroll.y + currentDragDeltaXY.y
-      };
-
-      let x = Math.max(-newXY.x, metrics.contentLeft);
-      let y = Math.max(-newXY.y, metrics.contentTop);
-      x = Math.min(x, -metrics.viewWidth + metrics.contentLeft + metrics.contentWidth);
-      y = Math.min(y, -metrics.viewHeight + metrics.contentTop + metrics.contentHeight);
-
-      const translateX = -x - 0 * metrics.contentLeft;
-      const translateY = -y - 0 * metrics.contentTop;
-
-      ws.translate(translateX, translateY);
-      if (ws.grid_) {
-        ws.grid_.moveTo(translateX, translateY);
-      }
+      origSetHandlePosition.call(this, newPosition);
     };
+  }
 
-    WorkspaceDragger.endDrag = function(currentDragDeltaXY: any) {
-      window.__FAST_DRAG_MODE__ = false;
-      workspace.getInjectionDiv()?.classList.remove('gandi-fast-drag');
-      cachedMetrics = null;
-      cachedBoundingBox = null;
+  WorkspaceSvg.setTopLevelWorkspaceMetrics_ = function(xyRatio: any) {
+    if (window.__FAST_DRAG_MODE__) return;
+    origSetTopLevelMetrics.call(this, xyRatio);
+  };
 
-      if (origScrollbarPairSet) ScrollbarPair.set = origScrollbarPairSet;
-      if (Scrollbar && origSetHandlePosition) Scrollbar.setHandlePosition = origSetHandlePosition;
+  WorkspaceSvg.getMetrics = function() {
+    if (window.__FAST_DRAG_MODE__ && cachedMetrics) return cachedMetrics;
+    return origGetMetrics.call(this);
+  };
 
-      let result;
-      if (origEndDrag) {
-        result = origEndDrag.call(this, currentDragDeltaXY);
-      }
+  WorkspaceSvg.getBlocksBoundingBox = function() {
+    if (window.__FAST_DRAG_MODE__ && cachedBoundingBox) return cachedBoundingBox;
+    return origGetBlocksBoundingBox.call(this);
+  };
 
-      ScrollbarPair.set = function(x: number, y: number) {
-        if (window.__FAST_DRAG_MODE__) return;
-        if (origScrollbarPairSet) return origScrollbarPairSet.call(this, x, y);
-      };
-      if (Scrollbar && origSetHandlePosition) {
-        Scrollbar.setHandlePosition = function(newPosition: number) {
-          if (window.__FAST_DRAG_MODE__) {
-            this.handlePosition_ = newPosition;
-            return;
-          }
-          return origSetHandlePosition.call(this, newPosition);
-        };
-      }
-
-      return result;
-    };
-
-    ScrollbarPair.set = function(x: number, y: number) {
-      if (window.__FAST_DRAG_MODE__) return;
-      if (origScrollbarPairSet) return origScrollbarPairSet.call(this, x, y);
-    };
-
-    if (Scrollbar && origSetHandlePosition) {
-      Scrollbar.setHandlePosition = function(newPosition: number) {
-        if (window.__FAST_DRAG_MODE__) {
-          this.handlePosition_ = newPosition;
-          return;
-        }
-        return origSetHandlePosition.call(this, newPosition);
+  WorkspaceSvg.getContentDimensions_ = function() {
+    if (window.__FAST_DRAG_MODE__ && cachedMetrics) {
+      return {
+        width: cachedMetrics.contentWidth,
+        height: cachedMetrics.contentHeight,
+        left: cachedMetrics.contentLeft,
+        top: cachedMetrics.contentTop
       };
     }
+    return origGetContentDimensions_.call(this);
+  };
 
-    WorkspaceSvg.setTopLevelWorkspaceMetrics_ = function(xyRatio: any) {
-      if (window.__FAST_DRAG_MODE__) return;
-      if (origSetTopLevelMetrics) return origSetTopLevelMetrics.call(this, xyRatio);
-    };
+  WorkspaceSvg.getContentDimensionsExact_ = function() {
+    if (window.__FAST_DRAG_MODE__ && cachedMetrics) {
+      return {
+        left: cachedMetrics.contentLeft,
+        right: cachedMetrics.contentLeft + cachedMetrics.contentWidth,
+        top: cachedMetrics.contentTop,
+        bottom: cachedMetrics.contentTop + cachedMetrics.contentHeight
+      };
+    }
+    return origGetContentDimensionsExact_.call(this);
+  };
 
-    WorkspaceSvg.getMetrics = function() {
-      if (window.__FAST_DRAG_MODE__ && cachedMetrics) return cachedMetrics;
-      if (origGetMetrics) return origGetMetrics.call(this);
-    };
+  return () => {
+    WorkspaceDragger.startDrag = origStartDrag;
+    WorkspaceDragger.drag = origDrag;
+    WorkspaceDragger.endDrag = origEndDrag;
+    ScrollbarPair.set = origScrollbarPairSet;
+    if (Scrollbar && origSetHandlePosition) Scrollbar.setHandlePosition = origSetHandlePosition;
+    WorkspaceSvg.setTopLevelWorkspaceMetrics_ = origSetTopLevelMetrics;
+    WorkspaceSvg.getMetrics = origGetMetrics;
+    WorkspaceSvg.getBlocksBoundingBox = origGetBlocksBoundingBox;
+    WorkspaceSvg.getContentDimensions_ = origGetContentDimensions_;
+    WorkspaceSvg.getContentDimensionsExact_ = origGetContentDimensionsExact_;
 
-    WorkspaceSvg.getBlocksBoundingBox = function() {
-      if (window.__FAST_DRAG_MODE__ && cachedBoundingBox) return cachedBoundingBox;
-      if (origGetBlocksBoundingBox) return origGetBlocksBoundingBox.call(this);
-    };
-
-    WorkspaceSvg.getContentDimensions_ = function() {
-      if (window.__FAST_DRAG_MODE__ && cachedMetrics) {
-        return {
-          width: cachedMetrics.contentWidth,
-          height: cachedMetrics.contentHeight,
-          left: cachedMetrics.contentLeft,
-          top: cachedMetrics.contentTop
-        };
-      }
-      if (origGetContentDimensions_) return origGetContentDimensions_.call(this);
-    };
-
-    WorkspaceSvg.getContentDimensionsExact_ = function() {
-      if (window.__FAST_DRAG_MODE__ && cachedMetrics) {
-        return {
-          left: cachedMetrics.contentLeft,
-          right: cachedMetrics.contentLeft + cachedMetrics.contentWidth,
-          top: cachedMetrics.contentTop,
-          bottom: cachedMetrics.contentTop + cachedMetrics.contentHeight
-        };
-      }
-      if (origGetContentDimensionsExact_) return origGetContentDimensionsExact_.call(this);
-    };
-
-    return () => {
-      WorkspaceDragger.startDrag = origStartDrag;
-      WorkspaceDragger.drag = origDrag;
-      WorkspaceDragger.endDrag = origEndDrag;
-      ScrollbarPair.set = origScrollbarPairSet;
-      if (Scrollbar && origSetHandlePosition) Scrollbar.setHandlePosition = origSetHandlePosition;
-      WorkspaceSvg.setTopLevelWorkspaceMetrics_ = origSetTopLevelMetrics;
-      WorkspaceSvg.getMetrics = origGetMetrics;
-      WorkspaceSvg.getBlocksBoundingBox = origGetBlocksBoundingBox;
-      WorkspaceSvg.getContentDimensions_ = origGetContentDimensions_;
-      WorkspaceSvg.getContentDimensionsExact_ = origGetContentDimensionsExact_;
-
-      workspace.getInjectionDiv()?.classList.remove('gandi-fast-drag');
-      window.__FAST_DRAG_MODE__ = false;
-    };
-  }, [blockly, workspace]);
-
+    if (canvas) {
+      canvas.style.willChange = 'auto';
+    }
+    window.__FAST_DRAG_MODE__ = false;
+    workspace.setResizesEnabled(true);
+  };
+}, [blockly, workspace]);
   //  切入优化- 延迟布局计算 
   React.useEffect(() => {
     if (!blockly || !workspace) return;
