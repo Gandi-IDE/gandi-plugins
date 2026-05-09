@@ -165,7 +165,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableFastClear',
               type: 'switch',
-              label: '[实验]启用切出优化',
+              label: '[实验] 启用切出优化',
               description: '极大优化切出大型角色时的效率。',
               value: false,
               onChange: (v: boolean) => {
@@ -175,7 +175,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableFastLoad',
               type: 'switch',
-              label: '[实验]启用切入优化',
+              label: '[实验] 启用切入优化',
               description: '适当优化切入大型角色时的效率。',
               value: false,
               onChange: (v: boolean) => {
@@ -185,7 +185,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableDragOptimize',
               type: 'switch',
-              label: '[实验]启用拖拽优化',
+              label: '[实验] 启用拖拽优化',
               description: '替换拖拽算法，可能优化拖拽积木区时的效率。可能存在问题，不建议开启。',
               value: false,
               onChange: (v: boolean) => {
@@ -195,7 +195,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableFullscreenOptimize',
               type: 'switch',
-              label: '[实验]启用全屏优化',
+              label: '[实验] 启用全屏优化',
               description: '在舞台全屏时隐藏积木区，减少不必要的积木区渲染开销',
               value: false,
               onChange: (v: boolean) => {
@@ -205,11 +205,21 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableTrimDecorations',
               type: 'switch',
-              label: '[实验]移除积木装饰',
+              label: '[实验] 移除积木装饰',
               description: '移除部分冗余的积木装饰，减少加载的元素数量，适当提高切入性能。积木部分装饰可能会改变，但不影响功能。',
               value: false,
               onChange: (v: boolean) => {
                 (window as any).__ENABLE_TRIM_DECORATIONS__ = v;
+              }
+            },
+            {
+              key: 'enableContentVisibility',
+              type: 'switch',
+              label: '[实验] 启用积木懒加载',
+              description: '加载时仅在根积木暴露时动态加载积木，以大幅提高切入速度。注意：长串积木必须要其根积木暴露于镜头下才会应用整体显示。',
+              value: false,
+              onChange: (v: boolean) => {
+                (window as any).__ENABLE_CONTENT_VISIBILITY__ = v;
               }
             }
           ]
@@ -219,7 +229,101 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     );
     return () => dispose.dispose();
   }, [registerSettings]);
+  // 根据全局开关为所有积木添加/移除 content-visibility: auto
+React.useEffect(() => {
+  if (!workspace || !blockly) return;
 
+  const BlockSvgProto = (blockly as any).BlockSvg?.prototype;
+  if (!BlockSvgProto) return;
+
+  const applyToBlock = (block: any) => {
+    const enabled = !!(window as any).__ENABLE_CONTENT_VISIBILITY__;
+    const root = block.getSvgRoot?.();
+    if (!root) return;
+
+    if (enabled) {
+      // 插入尺寸锚点（仅第一次）
+      if (!root.querySelector('rect[data-cv-anchor]')) {
+        const size = block.getHeightWidth?.();
+        if (size) {
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('data-cv-anchor', 'true');
+          rect.setAttribute('fill', 'none');
+          rect.setAttribute('stroke', 'none');
+          rect.setAttribute('pointer-events', 'none');
+          rect.setAttribute('width', size.width);
+          rect.setAttribute('height', size.height);
+          root.insertBefore(rect, root.firstChild);
+        }
+      }
+      root.style.contentVisibility = 'auto';
+      // 提供固有尺寸，防止滚动条跳动
+      const size = block.getHeightWidth?.();
+      if (size) {
+        root.style.containIntrinsicSize = `${size.width}px ${size.height}px`;
+      }
+    } else {
+      // 移除锚点和样式
+      const rect = root.querySelector('rect[data-cv-anchor]');
+      if (rect) rect.remove();
+      root.style.contentVisibility = '';
+      root.style.containIntrinsicSize = '';
+    }
+  };
+
+  const applyAll = () => {
+    workspace.getAllBlocks(false).forEach(applyToBlock);
+  };
+
+  // 初始应用
+  applyAll();
+
+  // 劫持 render 以更新尺寸（当积木重新渲染后）
+  const origRender = BlockSvgProto.render;
+  BlockSvgProto.render = function (opt_bubble?: boolean) {
+    const ret = origRender.call(this, opt_bubble);
+    if ((window as any).__ENABLE_CONTENT_VISIBILITY__) {
+      applyToBlock(this);
+    }
+    return ret;
+  };
+
+  // 监听新创建的积木
+  const handleCreate = (e: any) => {
+    if (e.type === blockly.Events.BLOCK_CREATE) {
+      const block = workspace.getBlockById(e.blockId);
+      if (block && (window as any).__ENABLE_CONTENT_VISIBILITY__) {
+        applyToBlock(block);
+      }
+    }
+  };
+  workspace.addChangeListener(handleCreate);
+
+  // 轮询开关变化
+  let lastState = !!(window as any).__ENABLE_CONTENT_VISIBILITY__;
+  const interval = setInterval(() => {
+    const current = !!(window as any).__ENABLE_CONTENT_VISIBILITY__;
+    if (current !== lastState) {
+      lastState = current;
+      applyAll();
+    }
+  }, 200);
+
+  return () => {
+    clearInterval(interval);
+    BlockSvgProto.render = origRender;
+    workspace.removeChangeListener(handleCreate);
+    // 清理所有痕迹
+    workspace.getAllBlocks(false).forEach((block: any) => {
+      const root = block.getSvgRoot?.();
+      if (!root) return;
+      const rect = root.querySelector('rect[data-cv-anchor]');
+      if (rect) rect.remove();
+      root.style.contentVisibility = '';
+      root.style.containIntrinsicSize = '';
+    });
+  };
+}, [workspace, blockly]);
   //核心劫持：clearWorkspaceAndLoadFromXml（集成离屏缓存）
   React.useEffect(() => {
     if (!blockly || !workspace || !vm) return;
@@ -481,6 +585,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       }
     };
   }, [blockly, workspace, vm, refreshGroups]);
+
 
   //切出优化-快速清理 (保持不变)
   React.useEffect(() => {
@@ -746,6 +851,7 @@ React.useEffect(() => {
       window.requestAnimationFrame = origRAF;
     };
   }, [blockly, workspace]);
+  
   //拖拽镜头优化
 React.useEffect(() => {
   if (!blockly || !workspace) return;
@@ -950,6 +1056,7 @@ React.useEffect(() => {
     workspace.setResizesEnabled(true);
   };
 }, [blockly, workspace]);
+
   //  切入优化- 延迟布局计算 
   React.useEffect(() => {
     if (!blockly || !workspace) return;

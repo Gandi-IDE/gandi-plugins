@@ -5,7 +5,7 @@
  * - 移除无用的 refreshFramesOnWorkspace
  */
 import toast from "react-hot-toast";
-
+import fastdom from 'fastdom';
 const hiddenWorkspaceCache = new Map<string, any>();
 
 export function createHiddenWorkspace(blockly: any, mainWorkspace: any) {
@@ -90,7 +90,6 @@ function updateWorkspaceRefRecursive(
     updateWorkspaceRefRecursive(child, srcWs, dstWs, blockly)
   );
 }
-
 // 准备搬运一棵积木树：更新引用、连接数据库，但不移动 SVG
 function prepareBlockTreeForMove(rootBlock: any, srcWs: any, dstWs: any, blockly: any) {
   rootBlock.unplug(false);
@@ -259,6 +258,7 @@ export function restoreTargetFromOffscreen(
     //直接更新，避免坐标出错。
     endFastRestorePhase(mainWs);
     // 自动居中，消除镜头闪现
+    /*改用fastdom了所以暂时注掉
     if (typeof mainWs.scrollCenter === 'function') {
       queueMicrotask(() => {
         try {
@@ -269,7 +269,7 @@ export function restoreTargetFromOffscreen(
           // 忽略
         }
       });
-    }
+    }*/
         //重建连接数据库（修复拖拽连接报错的问题）
     if (mainWs.connectionDBList) {
       mainWs.connectionDBList.forEach((db: any) => {
@@ -307,10 +307,9 @@ export function restoreTargetFromOffscreen(
   } finally {
     blockly.Events.enable();
   }
-
   return true;
 }
-
+//
 export function switchGroup(
   targetId: string,
   newGroupId: string,
@@ -402,20 +401,29 @@ export function beginFastRestorePhase(mainWs: any) {
  * 结束快速恢复阶段：恢复 recordCachedAreas，执行一次正常的 resize
  */
 export function endFastRestorePhase(mainWs: any) {
+  // 恢复 recordCachedAreas 的原貌
   if (origRecordCachedAreas) {
     mainWs.recordCachedAreas = origRecordCachedAreas;
     origRecordCachedAreas = null;
   }
-  // 使用原型上的 resize 避免被实例屏蔽
-  const proto = Object.getPrototypeOf(mainWs);
-  if (proto && typeof proto.resize === 'function') {
-    proto.resize.call(mainWs);
-  } else if (typeof mainWs.resize === 'function') {
-    mainWs.resize();
-  }
-  if (mainWs.intersectionObserver) {
-    mainWs.intersectionObserver.checkForIntersections();
-  }
+
+  // 将 resize 交给 fastdom，在 mutate 阶段执行
+  // 这样 resize 内部可能触发的强制布局（如 getBoundingClientRect）就不会阻塞当前同步代码
+  fastdom.mutate(() => {
+    const proto = Object.getPrototypeOf(mainWs);
+    if (proto && typeof proto.resize === 'function') {
+      proto.resize.call(mainWs);
+    }
+    if (typeof mainWs.scrollCenter === 'function') {
+    mainWs.scrollCenter();
+    }
+    // resize 完成后，立即检查一次离屏积木的可见性
+    if (mainWs.intersectionObserver) {
+      mainWs.intersectionObserver.checkForIntersections();
+    }
+  });
+
+  // 清理临时交互监听器 (如果存在的话)
   if (interactionCleanup) {
     interactionCleanup();
     interactionCleanup = null;
