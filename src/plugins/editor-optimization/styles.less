@@ -1,8 +1,9 @@
 .container {
-  padding: 8px;
+  padding: 12px; // 增加内边距，让内容不贴边
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 8px; // 统一间距
 }
 
 .groupList {
@@ -15,18 +16,19 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 6px; // 略大圆角，与 Gandi 风格统一
   margin-bottom: 2px;
   cursor: pointer;
   transition: background-color 0.2s;
+  color: var(--theme-text-primary); // 自适应文字颜色
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: var(--theme-color-100); // 使用主题色 hover
   }
 
   &.active {
-    background-color: rgba(25, 118, 210, 0.08);
-    border-left: 3px solid #1976d2;
+    background-color: var(--theme-color-200);
+    border-left: 3px solid var(--theme-primary-color);
   }
 }
 
@@ -48,101 +50,142 @@
 
 .divider {
   height: 1px;
-  background-color: rgba(0, 0, 0, 0.12);
+  background-color: var(--theme-border-color);
   margin: 8px 0;
 }
 
 .addGroup {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-top: 1px solid var(--theme-border-color, rgba(0, 0, 0, 0.12));
+  align-items: center;
+  width: 100%;
+}
+
+.addGroupRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  /* 统一行内元素高度为 40px */
+  > * {
+    height: 40px;
+    box-sizing: border-box;
+  }
+
+  /* 让输入框占满第一行 */
+  &:first-child {
+    justify-content: stretch;
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  /* 针对 Gandi Input 组件内部的 input 元素设置圆角 */
+  input {
+    border-radius: 4px;
+    padding: 0 12px;
+    line-height: 1.5;
+  }
 }
 
 .addButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 6px 12px;
+  padding: 0 16px; /* 左右内边距比之前稍大，文字更舒展 */
   background-color: #1976d2;
   color: white;
-  border: none;
+  border: 1px solid #1565c0;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  min-width: fit-content;
+  height: 40px; /* 与行高统一 */
+  box-sizing: border-box;
 
   &:hover {
     background-color: #1565c0;
   }
 }
-
 .icon {
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 4px;
+  //color: var(--theme-text-secondary); // 使用次级文字色，深度/浅度自动适配
+  transition: background-color 0.2s, color 0.2s;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: var(--theme-color-100);
+    color: var(--theme-text-primary);
   }
 }
+
+// 以下为原有性能优化辅助样式，保持不变
 .gandi-fastload-contain {
   contain: strict;
   will-change: transform;
-  pointer-events: none; // 新增：分帧加载期间禁止交互
+  pointer-events: none;
 }
-  // 临时禁用阴影，降低绘制开销
-.blocklyDraggable {
-    filter: none !important;
-  }
-.blocklyBlockBackground {
-    filter: none !important;
-  }
 
-.blocklyPath {
-    fill: #c0c0c0 !important;  // 统一纯色背景
-   }
+.blocklyDraggable {
+  filter: none !important;
+}
 .blocklyBlockBackground {
-    fill: #c0c0c0 !important;  // 统一纯色背景
-   }
-   
+  filter: none !important;
+}
+.blocklyPath {
+  fill: #c0c0c0 !important;
+}
+.blocklyBlockBackground {
+  fill: #c0c0c0 !important;
+}
 
 .blocklySvg {
   contain: layout style paint;
 }
+
 .gandi-fast-drag {
-  // 拖拽时强制画布使用独立合成层
   .blocklyBlockCanvas {
     will-change: transform;
   }
-  // 隐藏滚动条手柄以减少重绘
   .blocklyScrollbarHandle {
     opacity: 0 !important;
   }
 }
+
 .gandi-fast-zoom {
   .blocklyScrollbar {
-    opacity: 0 !important; // 缩放时隐藏滚动条，减少重绘
+    opacity: 0 !important;
   }
   .blocklyBlockCanvas {
-    will-change: transform; // 提示浏览器优化
+    will-change: transform;
   }
 }
+
 .gandi-fullscreen-paused {
-  // 强制隐藏画布，或者使其完全不参与渲染
   .blocklyBlockCanvas,
   .blocklyBubbleCanvas {
     visibility: hidden !important;
-    // 或者 display: none，但可能导致退出全屏时重新布局耗时
   }
-  // 也可以仅设置 opacity: 0，保留占位但减少绘制开销
   opacity: 0;
   pointer-events: none;
 }
+
 .gandi_stage-selector_title_1UlNu,
 .gandi_stage_frame_OVq5G {
   animation: none !important;

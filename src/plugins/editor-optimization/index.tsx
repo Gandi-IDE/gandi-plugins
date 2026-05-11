@@ -17,6 +17,7 @@ import {
   switchGroup,
   getOffscreenWorkspace,
   moveBlockTreeToWorkspace,
+  disposeOffscreenCache,
 } from "./offscreenCache";
 
 const AddIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>);
@@ -24,7 +25,7 @@ const DeleteIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="
 const CheckIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>);
 const GroupIcon = () => (<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>);
 
-const DEFAULT_CONTAINER_INFO = { width: 280, height: 400, translateX: 72, translateY: 60 };
+const DEFAULT_CONTAINER_INFO = { width: 229, height: 360, translateX: 72, translateY: 60 };
 
 declare global {
   interface Window {
@@ -1319,6 +1320,9 @@ React.useEffect(() => {
   const portal = document.querySelector('.plugins-wrapper');
   if (!portal) return null;
 
+  // 在顶部导入中加入 disposeOffscreenCache
+  // import { ..., disposeOffscreenCache } from "./offscreenCache";
+
   return (
     <>
       {ReactDOM.createPortal(
@@ -1330,8 +1334,8 @@ React.useEffect(() => {
           <ExpansionBox
             title="积木分组"
             id="block-groups"
-            minWidth={280}
-            minHeight={400}
+            minWidth={229}
+            minHeight={360}
             borderRadius={8}
             stayOnTop
             onClose={() => setVisible(false)}
@@ -1357,7 +1361,6 @@ React.useEffect(() => {
                           onBlur={saveEdit}
                           onKeyDown={(e: any) => e.key === 'Enter' && saveEdit()}
                           autoFocus
-                          size="sm"
                           onClick={(e: any) => e.stopPropagation()}
                         />
                       ) : (
@@ -1374,15 +1377,38 @@ React.useEffect(() => {
                 ))}
               </div>
               <div className={styles.addGroup}>
-                <Input
-                  placeholder="新分组名称"
-                  value={newGroupName}
-                  onChange={(e: any) => setNewGroupName(e.target.value)}
-                  size="sm"
-                />
-                <button className={styles.addButton} onClick={handleAddGroup}>
-                  <AddIcon />新建
-                </button>
+                {/* 新分组输入框单独一行 */}
+                <div className={styles.addGroupRow}>
+                  <Input
+                    placeholder="新分组名称"
+                    value={newGroupName}
+                    onChange={(e: any) => setNewGroupName(e.target.value)}
+                  />
+                </div>
+                {/* 按钮行：新建 + 刷新 */}
+                <div className={styles.addGroupRow}>
+                  <button className={styles.addButton} onClick={handleAddGroup}>
+                    <AddIcon />新建
+                  </button>
+                  <button
+                    className={styles.addButton}
+                    onClick={async () => {
+                      if (!targetId) return;
+                      try {
+                        // 1. 先清除离屏缓存，确保下次加载走原始流程
+                        disposeOffscreenCache(targetId);
+                        toast.success('已重置缓存');
+                      } catch (e) {
+                        toast.error('刷新失败');
+                      }
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 4 }}>
+                      <path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    重置缓存
+                  </button>
+                </div>
               </div>
             </Box>
           </ExpansionBox>,
