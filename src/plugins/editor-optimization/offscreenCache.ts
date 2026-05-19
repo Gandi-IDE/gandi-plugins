@@ -212,6 +212,20 @@ export function restoreTargetFromOffscreen(
     }
   });
   if (toMove.length === 0) return false;
+  // 如果启用了 Pixi 渲染，设置 contentVisibility: hidden 以绕过重排
+
+  if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
+    const setContentVisibilityHidden = (block: any) => {
+      if (block.svgGroup_) {
+        (block.svgGroup_.style as any).contentVisibility = 'hidden';
+      }
+      const children = block.getChildren(false);
+      for (let i = 0; i < children.length; i++) {
+        setContentVisibilityHidden(children[i]);
+      }
+    };
+    toMove.forEach((b: any) => setContentVisibilityHidden(b));
+  }
   blockly.Events.disable();
   try {
     toMove.forEach((block: any) => prepareBlockTreeForMove(block, hiddenWs, mainWs, blockly));
@@ -286,23 +300,25 @@ export function restoreTargetFromOffscreen(
       });
     }
 
-    // 强制将所有积木重置为可见，以便 Observer 重新检测
-    const allBlocks = mainWs.getAllBlocks(false);
-    allBlocks.forEach((b: any) => {
-      b.intersects_ = true;
-      const svgRoot = b.getSvgRoot();
-      if (svgRoot) svgRoot.style.display = '';
-    });
-
-    //将顶层积木加入观察列表，并立即执行一次离屏检查
-    const topBlocks = mainWs.getTopBlocks(false);
-    if (mainWs.intersectionObserver) {
-      topBlocks.forEach((b: any) => {
-        if (!mainWs.intersectionObserver.observing.includes(b)) {
-          mainWs.intersectionObserver.observe(b);
-        }
+    if (!(window as any).__ENABLE_PIXI_OPTIMIZATION__) {
+      // 强制将所有积木重置为可见，以便 Observer 重新检测
+      const allBlocks = mainWs.getAllBlocks(false);
+      allBlocks.forEach((b: any) => {
+        b.intersects_ = true;
+        const svgRoot = b.getSvgRoot();
+        if (svgRoot) svgRoot.style.display = '';
       });
-      mainWs.intersectionObserver.checkForIntersections();
+
+      //将顶层积木加入观察列表，并立即执行一次离屏检查
+      const topBlocks = mainWs.getTopBlocks(false);
+      if (mainWs.intersectionObserver) {
+        topBlocks.forEach((b: any) => {
+          if (!mainWs.intersectionObserver.observing.includes(b)) {
+            mainWs.intersectionObserver.observe(b);
+          }
+        });
+        mainWs.intersectionObserver.checkForIntersections();
+      }
     }
   } finally {
     blockly.Events.enable();
@@ -418,7 +434,7 @@ export function endFastRestorePhase(mainWs: any) {
     mainWs.scrollCenter();
     }
     // resize 完成后，立即检查一次离屏积木的可见性
-    if (mainWs.intersectionObserver) {
+    if (!(window as any).__ENABLE_PIXI_OPTIMIZATION__ && mainWs.intersectionObserver) {
       mainWs.intersectionObserver.checkForIntersections();
     }
   });
