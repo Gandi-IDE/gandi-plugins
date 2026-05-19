@@ -159,6 +159,7 @@ export function ensureOffscreenWorkspace(
   blockly: any,
   mainWorkspace: any
 ) {
+  if ((window as any).__IS_COLLABORATION__) return undefined; // 不创建
   if (hiddenWorkspaceCache.has(targetId)) return hiddenWorkspaceCache.get(targetId);
   const hiddenWs = createHiddenWorkspace(blockly, mainWorkspace);
   hiddenWorkspaceCache.set(targetId, hiddenWs);
@@ -170,6 +171,7 @@ export function saveTargetToOffscreen(
   mainWs: any,
   blockly: any
 ) {
+   if ((window as any).__IS_COLLABORATION__) return; // 协作不缓存
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   copyVariables(mainWs, hiddenWs, blockly);
 

@@ -43,6 +43,7 @@ declare global {
     __IN_FULLSCREEN_MODE__?: boolean;
     __SKIP_TEXT_TO_DOM__?: boolean;
     __ENABLE_PIXI_OPTIMIZATION__?: boolean; // 新增全局标志（可选）
+    __IS_COLLABORATION__?: boolean;//是否为协作。别问我怎么判断的。
   }
 }
 
@@ -117,7 +118,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       if (pixiEnabled) {
         requestAnimationFrame(() => {
           (window as any).__PIXI_REFRESH_OVERLAY__?.();
-          console.log('__PIXI_REFRESH_OVERLAY__')
+          //console.log('__PIXI_REFRESH_OVERLAY__')
           });
       }
     if (getOffscreenWorkspace(targetId)) {
@@ -213,7 +214,15 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     );
     return () => dispose.dispose();
   }, [registerSettings]);
-
+  // 因为我根本不知道协作是否有状态标识，所以我们直接检测是否存在协作特有的GUI按钮。
+  if (!window.hasOwnProperty('__IS_COLLABORATION__')) {
+    (window as any).__IS_COLLABORATION__ = !!document.querySelector(
+      'div.gandi_teamwork-log_log-icon-btn_3XmSR'
+    );
+    if ((window as any).__IS_COLLABORATION__) {
+      console.log('[editor-optimization]检测到是协作环境,已禁用离屏缓存。')
+    }
+  }
   // ========== 以下为原 EditorOptimization 的全部 useEffect（切出优化、核心劫持、全屏优化、注释处理、Frame 禁用等）保持不变 ==========
   // 核心劫持：clearWorkspaceAndLoadFromXml（集成离屏缓存）
   React.useEffect(() => {
@@ -282,7 +291,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
           setTimeout(() => refreshGroups(), 20);
           return tw;
         } catch (e) {
-          console.error('[离屏缓存] 恢复失败，回退到 XML 加载', e);
+            console.error('[离屏缓存] 恢复失败，回退到 XML 加载', e);
         }
       }
 
@@ -338,9 +347,23 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
           ALL_GROUPS_ID
         );
       } catch (e) {
-        console.error('[离屏缓存] 初始化失败', e);
+          if (!(window as any).__IS_COLLABORATION__) {
+            console.error('[离屏缓存] 初始化失败', e);
+        }  
       }
+      try {
+      origClear.call(this, xml, ...args);
+    } finally {
+      setActiveGroupId(newTargetId, originalActiveId);
+    }
+    cleanupFramesAfterLoad(tw);
 
+    // 触发 Pixi 刷新（若已开启）
+    if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
+      requestAnimationFrame(() => {
+        (window as any).__PIXI_REFRESH_OVERLAY__?.();
+      });
+    }
       setTimeout(() => refreshGroups(), 20);
       return tw;
     };
@@ -1203,7 +1226,7 @@ const workerRef = useRef<Worker | null>(null);
         let index = 0;
           const drawNext = () => {
             if (index >= drawTasks.length) {
-              console.log(`[Pixi] Baked ${chunkCache.length} chunks (async)`);
+              //console.log(`[Pixi] Baked ${chunkCache.length} chunks (async)`);
               resolve();
               return;
             }
