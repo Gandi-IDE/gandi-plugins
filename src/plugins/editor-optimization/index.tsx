@@ -173,7 +173,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         {
           key: 'group',
           label: '积木分组&编辑器优化',
-          description: '提供角色积木分组功能，同时优化编辑器性能。默认开启角色积木区缓存，从第二次进入角色开始提升约100%-200%切换效率。注意：本插件会忽略代码框，并禁用其创建功能；可能影响协作。',
+          description: '提供角色积木分组功能，同时优化编辑器性能。默认开启角色积木区缓存，从第二次进入角色开始提升约100%-200%切换效率。注意：本插件会忽略代码框，并禁用其创建功能；目前已兼容协作，但积木区缓存会被禁用。',
           items: [
             {
               key: 'enableFastClear',
