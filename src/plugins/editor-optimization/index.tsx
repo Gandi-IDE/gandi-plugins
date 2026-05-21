@@ -251,7 +251,16 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
 
       const activeId = getActiveGroupId(newTargetId);
       const tw = workspace || this;
-
+      // 如果是同一个编辑目标且工作区已有积木，说明是视图切换引起的多余调用，直接保留现状
+      if (lastTargetIdRef.current === newTargetId && tw.getTopBlocks(false).length > 0) {
+          if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
+            requestAnimationFrame(() => {
+        (window as any).__PIXI_REFRESH_OVERLAY__?.();
+      });
+    }
+        return tw;
+      }
+      lastTargetIdRef.current = newTargetId;
       // 尝试从离屏恢复
       if (getOffscreenWorkspace(newTargetId)) {
         try {
@@ -1060,7 +1069,7 @@ const workerRef = useRef<Worker | null>(null);
               else if (db === "hanging") anchorY = 0;
             }
             const finalX = fx + textX;
-            const finalY = fy + textY;
+            const finalY = fy + textY - 2 ;//减去2可以让文字更好贴近原生DOM渲染的效果
             fields.push({
               text: field.getText(),
               x: finalX, y: finalY,

@@ -172,6 +172,8 @@ export function saveTargetToOffscreen(
   blockly: any
 ) {
    if ((window as any).__IS_COLLABORATION__) return; // 协作不缓存
+  // 如果主工作区已无积木，说明可能正在切换视图，放弃缓存
+  if (!mainWs || mainWs.getTopBlocks(false).length === 0) return;
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   copyVariables(mainWs, hiddenWs, blockly);
 
