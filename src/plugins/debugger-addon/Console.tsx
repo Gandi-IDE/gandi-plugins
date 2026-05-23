@@ -1,9 +1,7 @@
 import * as React from "react";
 import TerminalIcon from "assets/icon--terminal.svg";
 import TrashIcon from "assets/icon--trashcan.svg";
-import style from "./styles.less";
 import styleConsole from "./style-console.less";
-import Anser from "anser";
 import { WindowContext } from ".";
 import { scrollBlockIntoView } from "utils/block-helper";
 

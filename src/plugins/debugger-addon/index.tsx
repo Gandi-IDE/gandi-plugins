@@ -57,15 +57,15 @@ const MainWindow: React.FC<{
     console.log(vm);
     vm.extensionManager.loadExtensionURL("GandiTerminal");
   }, [context]);
-  const [containerInfo, setContainerInfo] = React.useState({ width: 400, height: 300, translateX: 80, translateY: 80 });
+  const [containerInfo, setContainerInfo] = React.useState({ width: 480, height: 320, translateX: 80, translateY: 80 });
 
   const pages: [React.ReactNode, React.ReactNode][] = [
     [
-      <ConsoleButton label={msg("plugins.debuggerAddon.performance")} key="console-button" />,
+      <ConsoleButton label={msg("plugins.debuggerAddon.console")} key="console-button" />,
       <ConsoleWindow key="console-window" context={context} />,
     ],
     [
-      <PerformanceButton label={msg("plugins.debuggerAddon.console")} key="performance-button" />,
+      <PerformanceButton label={msg("plugins.debuggerAddon.performance")} key="performance-button" />,
       <PerformanceWindow key="performance-window" context={context} />,
     ],
   ];
@@ -74,8 +74,8 @@ const MainWindow: React.FC<{
     <ExpansionBox
       title={msg("plugins.debuggerAddon.title")}
       id="debuggerAddon"
-      minHeight={300}
-      minWidth={400}
+      minHeight={320}
+      minWidth={480}
       borderRadius={8}
       containerInfo={containerInfo}
       onClose={onClose}

@@ -335,6 +335,7 @@ declare namespace Scratch {
         hatParam?: unknown;
       },
     ) => void;
+    _step(): void;
 
     sequencer: Sequencer;
   }
