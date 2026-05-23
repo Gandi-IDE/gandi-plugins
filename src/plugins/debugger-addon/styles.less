@@ -1,0 +1,37 @@
+.icon {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.navButton {
+  color: var(--theme-color-g400);
+  background-color: transparent;
+  transition: 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--theme-color-50);
+  margin-bottom: -1px;
+}
+
+.navButton:hover,
+.navButton[data-active="true"] {
+  color: var(--theme-text-primary);
+  border-bottom: solid var(--theme-brand-color) 1px;
+}
+
+nav {
+  border-bottom: 1px solid var(--theme-color-50);
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  margin-top: 0px;
+  margin-bottom: auto;
+  flex-shrink: 0;
+  flex-grow: 0;
+}

@@ -332,5 +332,11 @@
   "plugins.todoList.memberPicker.selectedCount": "{count} selected",
   "plugins.todoList.reminder.halfTime": "Task Half-Time Reminder",
   "plugins.todoList.reminder.dueSoon": "Task Due Soon",
-  "plugins.todoList.reminder.overdue": "Task Overdue"
+  "plugins.todoList.reminder.overdue": "Task Overdue",
+  "plugins.debuggerAddon.title": "Debugger",
+  "plugins.debuggerAddon.description": "Debug happily in Gandi!",
+  "plugins.debuggerAddon.console": "Console",
+  "plugins.debuggerAddon.console.maxLines": "Max Display Lines",
+  "plugins.debuggerAddon.console.disableOrigin": "Disable origin console",
+  "plugins.debuggerAddon.performance": "Performance"
 }

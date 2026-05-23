@@ -332,5 +332,11 @@
   "plugins.todoList.memberPicker.selectedCount": "已选择 {count} 人",
   "plugins.todoList.reminder.halfTime": "任务期限已过半",
   "plugins.todoList.reminder.dueSoon": "任务即将到期",
-  "plugins.todoList.reminder.overdue": "任务已过期"
+  "plugins.todoList.reminder.overdue": "任务已过期",
+  "plugins.debuggerAddon.title": "调试器",
+  "plugins.debuggerAddon.description": "在Gandi中快乐地debug吧！",
+  "plugins.debuggerAddon.console": "控制台",
+  "plugins.debuggerAddon.console.maxLines": "最大行数",
+  "plugins.debuggerAddon.console.disableOrigin": "禁用原版控制台",
+  "plugins.debuggerAddon.performance": "性能"
 }

@@ -335,12 +335,24 @@ declare namespace Scratch {
         hatParam?: unknown;
       },
     ) => void;
+
+    sequencer: Sequencer;
   }
+
+  export type Sequencer = {
+    activeThread: Thread;
+    runtime: Runtime;
+    timer: any;
+    stepThread(thread: Thread): void;
+    stepThreads(): void;
+  };
 
   export type Thread = {
     topBlock: string;
     status: number;
     updateMonitor: boolean;
+    peekStack(): string;
+    target: Scratch.RenderTarget;
   };
 
   export interface ExtensionManager {
