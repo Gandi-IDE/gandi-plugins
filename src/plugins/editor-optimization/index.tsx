@@ -237,8 +237,18 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     blockly.Xml.clearWorkspaceAndLoadFromXml = function(xml: any, ...args: any[]) {
       const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
       if (!ct) return origClear.call(this, xml, ...args);
+        //协作模式下通过原生加载
+        if ((window as any).__IS_COLLABORATION__) {
+          const result = origClear.call(this, xml, ...args);
+          // 原生加载后刷新 Pixi（如果开启）
+          if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
+            requestAnimationFrame(() => {
+              (window as any).__PIXI_REFRESH_OVERLAY__?.();
+            });
+          }
+          return result;
+        }
       const newTargetId = ct.id;
-
       // 切出旧角色：保存到离屏
       if (lastTargetIdRef.current && lastTargetIdRef.current !== newTargetId) {
         try {
@@ -950,8 +960,12 @@ const workerRef = useRef<Worker | null>(null);
       { targetNames: ['blocks', 'frame'] }
     );
   }
-    // 辅助函数：获取最大纹理尺寸
+    // 辅助函数：获取最大纹理尺寸。这个函数先前会累积创建冗余的webgl上下文导致堆积，现在改为了缓存。
+    let _cachedMaxTextureSize: number | null = null;
+
     const getMaxTextureSize = (): number => {
+      if (_cachedMaxTextureSize !== null) return _cachedMaxTextureSize;
+      
       let size = 4096;
       try {
         const canvas = document.createElement('canvas');
@@ -959,11 +973,19 @@ const workerRef = useRef<Worker | null>(null);
         if (gl) {
           size = gl.getParameter(gl.MAX_TEXTURE_SIZE);
           size = Math.min(size, 4096);
+          // 立即释放 WebGL 上下文
+          const loseCtx = gl.getExtension('WEBGL_lose_context');
+          if (loseCtx) loseCtx.loseContext();
         }
+        // 帮助 GC
+        canvas.width = 1;
+        canvas.height = 1;
       } catch (e) {
         console.warn('Failed to query MAX_TEXTURE_SIZE, using default 4096');
       }
-      return size;
+      
+      _cachedMaxTextureSize = size;
+      return _cachedMaxTextureSize;
     };
 
     // 初始化 Pixi 应用
@@ -1760,7 +1782,17 @@ const workerRef = useRef<Worker | null>(null);
       wrapper.remove();
     };
   }, [pixiEnabled, blockly, workspace, vm]); // 依赖 pixiEnabled，开关变化时重新执行
+  //此useEffect用于修复一个小Bug：首次加载插件时，立即切换角色会把当前角色的积木工作区里所有元素（包括注释）全部错误地滞留到目标角色。
+  //解决方案就是初始化加载时执行一次分组切换来初始化状态。
+  const hasInitializedRef = React.useRef(false);
 
+  React.useEffect(() => {
+    if (targetId && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      // 模拟一次“全部显示”分组切换，初始化内部状态
+      handleSelectGroup(ALL_GROUPS_ID);
+    }
+  }, [targetId]);
   // ========== 原有分组 UI 保持不变 ==========
   const portal = document.querySelector('.plugins-wrapper');
   if (!portal) return null;
