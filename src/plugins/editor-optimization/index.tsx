@@ -118,7 +118,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       if (pixiEnabled) {
         requestAnimationFrame(() => {
           (window as any).__PIXI_REFRESH_OVERLAY__?.();
-          //console.log('__PIXI_REFRESH_OVERLAY__')
+          console.log('__PIXI_REFRESH_OVERLAY__')
           });
       }
     if (getOffscreenWorkspace(targetId)) {
@@ -1257,7 +1257,7 @@ const workerRef = useRef<Worker | null>(null);
         let index = 0;
           const drawNext = () => {
             if (index >= drawTasks.length) {
-              //console.log(`[Pixi] Baked ${chunkCache.length} chunks (async)`);
+              console.log(`[Pixi] Baked ${chunkCache.length} chunks (async)`);
               resolve();
               return;
             }
@@ -1345,6 +1345,7 @@ const workerRef = useRef<Worker | null>(null);
     const w = app.screen.width / scale;
     const h = app.screen.height / scale;
 
+    
     const visible = new Set<any>();
     for (const chunk of chunkCache) {
       if (chunk.x + chunk.width > x && chunk.x < x + w && chunk.y + chunk.height > y && chunk.y < y + h) visible.add(chunk);
@@ -1370,6 +1371,14 @@ const workerRef = useRef<Worker | null>(null);
         sprite.on('pointerout', () => { (sprite as any)._hoverAlpha.target = 0.5; });
       }
     }
+      // 销毁不可见 sprite
+      for (const chunk of chunkCache) {
+        if (!visible.has(chunk) && chunk.sprite) {
+          worldContainer.removeChild(chunk.sprite);
+          chunk.sprite.destroy({ texture: true, textureSource: true });
+          chunk.sprite = undefined;
+        }
+      }
   };
 
     // 刷新整个 overlay
@@ -1394,11 +1403,11 @@ const workerRef = useRef<Worker | null>(null);
       for (const block of allBlocks) {
         if (block.svgGroup_) block.svgGroup_.style.display = 'none';
       }
-      // 销毁旧纹理
+      // 销毁旧 chunk
       for (const chunk of chunkCache) {
         if (chunk.sprite) {
-          worldContainer.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true });
+          chunk.sprite.destroy({ texture: true, textureSource: true });
+          
         }
       }
       chunkCache = [];
@@ -1419,7 +1428,7 @@ const workerRef = useRef<Worker | null>(null);
       for (const chunk of chunkCache) {
         if (chunk.rootId === rootId && chunk.sprite) {
           worldContainer.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true });
+          chunk.sprite.destroy({ texture: true, textureSource: true });
         }
       }
       chunkCache = chunkCache.filter(c => c.rootId !== rootId);
@@ -1444,7 +1453,7 @@ const workerRef = useRef<Worker | null>(null);
               chunk.canvas.close();
             }
             worldContainer.removeChild(chunk.sprite);
-            chunk.sprite.destroy({ texture: true });
+            chunk.sprite.destroy({ texture: true, textureSource: true });
           }
         }
       }
@@ -1481,7 +1490,7 @@ const workerRef = useRef<Worker | null>(null);
       for (const chunk of chunkCache.filter(c => c.rootId === rootBlock.id)) {
         if (chunk.sprite) {
           if (chunk.sprite.parent) chunk.sprite.parent.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true });
+          chunk.sprite.destroy({ texture: true, textureSource: true });
         }
       }
       chunkCache = chunkCache.filter(c => c.rootId !== rootBlock.id);
@@ -1543,7 +1552,7 @@ const workerRef = useRef<Worker | null>(null);
       for (const c of chunkCache.filter(c => c.rootId === rootId)) {
         if (c.sprite) {
           worldContainer.removeChild(c.sprite);
-          c.sprite.destroy({ texture: true });
+          c.sprite.destroy({ texture: true, textureSource: true });
         }
       }
       chunkCache = chunkCache.filter(c => c.rootId !== rootId);
@@ -1765,7 +1774,7 @@ const workerRef = useRef<Worker | null>(null);
 
       // 销毁所有 sprite 和纹理
       for (const chunk of chunkCache) {
-        if (chunk.sprite) chunk.sprite.destroy({ texture: true });
+        if (chunk.sprite) chunk.sprite.destroy({ texture: true, textureSource: true });
       }
       chunkCache = [];
       
