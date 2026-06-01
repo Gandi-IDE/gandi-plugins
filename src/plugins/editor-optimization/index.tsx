@@ -9,7 +9,7 @@ import * as PIXI from "pixi.js"; // 新增 PixiJS 导入
 import {
   getGroups, getActiveGroupId, setActiveGroupId, addGroup, deleteGroup, renameGroup,
   setBlockGroup, getBlockGroup, restoreBlockGroupFromXml, loadFromLocalStorage,
-  setGlobalVM, ALL_GROUPS_ID, UNGROUPED_ID
+  setGlobalVM, ALL_GROUPS_ID, UNGROUPED_ID,lockCommentWrite 
 } from "./utils";
 import {
   saveTargetToOffscreen,
@@ -17,7 +17,7 @@ import {
   initTargetCacheAndSwitchToGroup,
   switchGroup,
   getOffscreenWorkspace,
-  moveBlockTreeToWorkspace,
+  moveBlockTreeToWorkspace, 
   disposeOffscreenCache,
 } from "./offscreenCache";
 
@@ -348,12 +348,12 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         commentElements.forEach((el: Element) => el.remove());
       }
 
+      // 这个加载并非多余的，它会在如第一次导入角色时强制一次刷新，来避免一些首次加载会出现的问题。
       try {
         origClear.call(this, xml, ...args);
       } finally {
         setActiveGroupId(newTargetId, originalActiveId);
       }
-      //frame处理
       cleanupFramesAfterLoad(tw);
       // 初始化离屏缓存
       try {
@@ -394,7 +394,10 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
       if (!ct) return;
       const activeId = getActiveGroupId(ct.id);
-      setBlockGroup(block, activeId === ALL_GROUPS_ID ? UNGROUPED_ID : activeId, ct.id);
+      // 延迟到下一帧，保证积木已完成布局
+      requestAnimationFrame(() => {
+        setBlockGroup(block, activeId === ALL_GROUPS_ID ? UNGROUPED_ID : activeId, ct.id);
+      });
     };
     workspace.addChangeListener(handleCreate);
 
@@ -475,7 +478,72 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       }
     };
   }, [blockly, workspace, vm, refreshGroups]);
+  //阻止注释生成。这应该比原本的方法更高效。
+  React.useEffect(() => {
+    if (!blockly) return;
 
+    const BlockSvg = blockly.BlockSvg.prototype;
+    const origSetCommentText = BlockSvg.setCommentText;
+
+    BlockSvg.setCommentText = function (text: string) {
+      // 调用原始方法，保证注释对象完整
+      origSetCommentText.call(this, text);
+
+      // 首次创建时即隐藏，并阻止后续显示
+      if (this.comment && !this.comment.__hiddenByPlugin) {
+        this.comment.__hiddenByPlugin = true;
+
+        // 隐藏图标组
+        if (this.comment.iconGroup_) {
+            // 使用 visibility 隐藏但保留布局空间
+            this.comment.iconGroup_.style.visibility = 'hidden';
+            this.comment.iconGroup_.style.pointerEvents = 'none';
+        }
+
+        // 立即关闭气泡（若有）
+        if (this.comment.isVisible()) {
+          this.comment.setVisible(false);
+        }
+
+        // 劫持 setVisible，永远禁止打开
+        const origSetVisible = this.comment.setVisible;
+        this.comment.setVisible = function (visible: boolean) {
+          if (visible) return; // 阻止显示
+          return origSetVisible.call(this, false);
+        };
+      }
+    };
+
+    return () => {
+      BlockSvg.setCommentText = origSetCommentText;
+    };
+  }, [blockly]);
+  //为了推迟新建的积木到enddrag之后，因此需要一些状态描述。
+React.useEffect(() => {
+  if (!blockly) return;
+  const Gesture = (blockly as any).Gesture?.prototype;
+  const BlockDragger = (blockly as any).BlockDragger?.prototype;
+  if (!Gesture || !BlockDragger) return;
+
+  const origStartDraggingBlock = Gesture.startDraggingBlock_;
+  const origEndBlockDrag = BlockDragger.endBlockDrag;
+
+  Gesture.startDraggingBlock_ = function () {
+    lockCommentWrite(true);
+    return origStartDraggingBlock.call(this);
+  };
+
+  BlockDragger.endBlockDrag = function (...args: any[]) {
+    const result = origEndBlockDrag.apply(this, args);
+    lockCommentWrite(false); // 解锁并立即写入队列
+    return result;
+  };
+
+  return () => {
+    Gesture.startDraggingBlock_ = origStartDraggingBlock;
+    BlockDragger.endBlockDrag = origEndBlockDrag;
+  };
+}, [blockly]);
   // 切出优化-快速清理
   React.useEffect(() => {
     if (!blockly || !workspace) return;
@@ -693,7 +761,8 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     };
   }, [blockly, workspace]);*/
 
-  // 注释处理：修复重复显示问题 
+  // 注释处理：修复重复显示问题 。已经过时。
+  /*
   React.useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `g.scratchCommentTopBar { display: none !important; }`;
@@ -770,7 +839,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       }
     };
   }, [workspace]);
-
+*/
   // 全屏优化
   React.useEffect(() => {
     if (!vm || !workspace) return;
@@ -941,7 +1010,7 @@ const workerRef = useRef<Worker | null>(null);
     let originalConnectMarker: any = null;
     let originalDisconnectMarker: any = null;
     let menuItemId: any = null;
-
+    
   if (ContextMenu && typeof ContextMenu.addDynamicMenuItem === 'function') {
     menuItemId = ContextMenu.addDynamicMenuItem(
       (items: any[], block: any) => {

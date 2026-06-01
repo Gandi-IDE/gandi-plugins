@@ -92,12 +92,15 @@ export function setBlockGroup(block: any, groupId: string, targetId?: string) {
     const g = getGroups(targetId).find(g => g.id === groupId);
     groupName = g ? g.name : '未分组';
   }
-  // 仅更新内存映射，不设置注释文本（由调用方处理）
+  const commentText = `${groupId}|EdiOpt|${groupName}`;
+
+  // 延迟写入注释（拖拽期间暂停，拖拽结束后批量写入）
+  scheduleCommentWrite(block.id, commentText, block.workspace);
+
   const map = getBlockGroupMap();
   map.set(block.id, groupId);
   saveBlockMapToLocalStorage();
-  // 返回注释文本供调用方使用
-  return `${groupId}|EdiOpt|${groupName}`;
+  return commentText;
 }
 // 从 XML 注释恢复分组信息
 
@@ -109,10 +112,11 @@ export function restoreBlockGroupFromXml(blockNode: Element, targetId: string) {
   const commentText = commentNode?.textContent || '';
   if (!commentText) return;
   
-  const sepIdx = commentText.indexOf('|EdiOpt|');
-  if (sepIdx <= 0) return;
+  const separator = '|EdiOpt|';
+  const sepIdx = commentText.indexOf(separator);
+  if (sepIdx <= 0) return; // 分隔符必须在第一个字符之后
   const groupId = commentText.substring(0, sepIdx);
-  const groupName = commentText.substring(sepIdx + 3);
+  const groupName = commentText.substring(sepIdx + separator.length);
   
   const map = getBlockGroupMap();
   map.set(blockId, groupId);
@@ -167,4 +171,40 @@ export function loadFromLocalStorage() {
       (window as any)[BLOCK_MAP_KEY] = map;
     }
   } catch(e){}
+}
+// 延迟注释写入队列(如果立即添加会导致积木的子结构布局错误，并且我一直修不好)
+type PendingComment = { blockId: string; commentText: string; workspace: any };
+const pendingCommentWrites: PendingComment[] = [];
+let isCommentWriteLocked = false;
+
+export function lockCommentWrite(locked: boolean) {
+  isCommentWriteLocked = locked;
+  if (!locked && pendingCommentWrites.length > 0) {
+    flushPendingCommentWrites();
+  }
+}
+
+export function scheduleCommentWrite(blockId: string, commentText: string, workspace: any) {
+  if (!blockId || !workspace) return;
+  if (isCommentWriteLocked) {
+    pendingCommentWrites.push({ blockId, commentText, workspace });
+  } else {
+    // 未锁定，直接写入
+    const block = workspace.getBlockById(blockId);
+    if (block?.setCommentText) {
+      block.setCommentText(commentText);
+    }
+  }
+}
+
+function flushPendingCommentWrites() {
+  // 拖拽刚结束，同步写入最安全，不会影响布局
+  for (let i = 0; i < pendingCommentWrites.length; i++) {
+    const { blockId, commentText, workspace } = pendingCommentWrites[i];
+    const block = workspace.getBlockById(blockId);
+    if (block?.setCommentText) {
+      block.setCommentText(commentText); // 此时会触发我们的劫持，图标自动隐藏
+    }
+  }
+  pendingCommentWrites.length = 0;
 }
