@@ -20,6 +20,7 @@ import {
   moveBlockTreeToWorkspace, 
   disposeOffscreenCache,
 } from "./offscreenCache";
+import { PixiBlockRenderer, extractTreeBlocks } from './pixiRenderer';
 
 
 // ... 图标组件定义保持不变 ...
@@ -27,6 +28,7 @@ const AddIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="cur
 const DeleteIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>);
 const CheckIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>);
 const GroupIcon = () => (<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>);
+
 
 
 const DEFAULT_CONTAINER_INFO = { width: 229, height: 360, translateX: 72, translateY: 60 };
@@ -77,7 +79,8 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
   const [editingName, setEditingName] = React.useState("");
   const [containerInfo, setContainerInfo] = React.useState<ExpansionRect>(DEFAULT_CONTAINER_INFO);
   const containerInfoRef = React.useRef(containerInfo);
-  
+  //Pixi引用定义
+  const pixiRendererRef = useRef<PixiBlockRenderer | null>(null);
   // 用于记录上一个编辑目标，以便切出时保存到离屏缓存
   const lastTargetIdRef = React.useRef<string | null>(null);
   React.useEffect(() => { setGlobalVM(vm); }, [vm]);
@@ -173,7 +176,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         {
           key: 'group',
           label: '积木分组&编辑器优化',
-          description: '提供角色积木分组功能，同时优化编辑器性能。默认开启角色积木区缓存，从第二次进入角色开始提升约100%-200%切换效率。注意：本插件会忽略代码框，并禁用其创建功能；目前已兼容协作，但积木区缓存会被禁用。',
+          description: '提供角色积木分组功能，同时优化编辑器性能。默认开启角色积木区缓存，从第二次进入角色开始提升约100%-200%切换效率。注意：本插件会忽略代码框，并禁用其创建功能；目前已兼容协作，但积木区缓存会被禁用，因此不建议在协作环境中启用。',
           items: [
             {
               key: 'enableFastClear',
@@ -530,12 +533,20 @@ React.useEffect(() => {
 
   Gesture.startDraggingBlock_ = function () {
     lockCommentWrite(true);
+    // 拖拽开始时清除该积木树的 Pixi 纹理
+    const block = this.block_ || this.block;
+    if (block && pixiRendererRef.current) {
+      const root = block.getRootBlock();
+      if (root) {
+        pixiRendererRef.current.clearPixiForRoot(root);
+      }
+    }
     return origStartDraggingBlock.call(this);
   };
 
   BlockDragger.endBlockDrag = function (...args: any[]) {
     const result = origEndBlockDrag.apply(this, args);
-    lockCommentWrite(false); // 解锁并立即写入队列
+    lockCommentWrite(false);
     return result;
   };
 
@@ -966,705 +977,103 @@ React.useEffect(() => {
 
 const workerRef = useRef<Worker | null>(null);
 
-  // ========== 新增：Pixi 加速渲染 Effect ==========
-  React.useEffect(() => {
-    if (!pixiEnabled || !blockly || !workspace || !vm) {
-      // 如果未启用或必要对象缺失，不执行任何操作
-      return;
+  //重构后的Pixi渲染器useEffect
+React.useEffect(() => {
+  if (!pixiEnabled || !blockly || !workspace || !vm) {
+    // 清理旧渲染器
+    if (pixiRendererRef.current) {
+      pixiRendererRef.current.destroy();
+      pixiRendererRef.current = null;
     }
-    
-    // 如果 Vite 配置不同，可能需要调整 URL，或者使用 worker-loader 等。确保路径正确。
-    // --- 以下代码源自 OptimizationPro 插件，整合进此 effect ---
-    const workspaceDiv = workspace.getParentSvg()?.parentElement as HTMLElement;
-    if (!workspaceDiv) return;
-
-    // 用于保存原始方法的引用
-    const BlocklyAny = blockly as any;
-    const BlockSvgProto = blockly.BlockSvg.prototype;
-    const WorkspaceDragger = BlocklyAny.WorkspaceDragger?.prototype;
-    const ScrollbarPair = BlocklyAny.ScrollbarPair?.prototype;
-    const BlockDragger = BlocklyAny.BlockDragger?.prototype;
-    const ContextMenu = (window as any).Blockly.ContextMenu;
-
-    // 记录原始方法，以便清理时恢复
-    const originalDrag = WorkspaceDragger?.drag;
-    const originalSetScale = workspace.setScale.bind(workspace);
-    const originalScrollSet = ScrollbarPair?.set;
-    const originalEndDrag = BlockDragger?.endBlockDrag;
-    const originalMoveBy = BlockSvgProto.moveBy;
-    const originalUpdateIntersectionObserver = BlockSvgProto.updateIntersectionObserver;
-    const originalSetEditingTarget = vm.setEditingTarget.bind(vm);
-    const BlocklyXml = BlocklyAny.Xml;
-    const originalDomToBlock = BlocklyXml?.domToBlock;
-    const InsertionMarkerManager = BlocklyAny.InsertionMarkerManager;
-    const Connection = BlocklyAny.Connection?.prototype;
-    const originalConnect_ = Connection?.connect_;
-    const originalDisconnectInternal_ = Connection?.disconnectInternal_;
-
-    // 内部状态变量
-    let app: PIXI.Application;
-    let worldContainer: PIXI.Container;
-    let initialized = false;
-    let chunkCache: any[] = [];
-    let rendering = false;
-    let originalConnectMarker: any = null;
-    let originalDisconnectMarker: any = null;
-    let menuItemId: any = null;
-    
-  if (ContextMenu && typeof ContextMenu.addDynamicMenuItem === 'function') {
-    menuItemId = ContextMenu.addDynamicMenuItem(
-      (items: any[], block: any) => {
-        if (!block || block.workspace.isFlyout) return items;
-        items.push({ separator: true });
-        items.push({
-          text: '切换至 Pixi 渲染',
-          enabled: true,
-          callback: () => {
-            const root = block.getRootBlock();
-            if (root) refreshRootBlock(root);
-          }
-        });
-        return items;
-      },
-      { targetNames: ['blocks', 'frame'] }
-    );
+    return;
   }
-    // 辅助函数：获取最大纹理尺寸。这个函数先前会累积创建冗余的webgl上下文导致堆积，现在改为了缓存。
-    let _cachedMaxTextureSize: number | null = null;
 
-    const getMaxTextureSize = (): number => {
-      if (_cachedMaxTextureSize !== null) return _cachedMaxTextureSize;
-      
-      let size = 4096;
-      try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-        if (gl) {
-          size = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-          size = Math.min(size, 4096);
-          // 立即释放 WebGL 上下文
-          const loseCtx = gl.getExtension('WEBGL_lose_context');
-          if (loseCtx) loseCtx.loseContext();
-        }
-        // 帮助 GC
-        canvas.width = 1;
-        canvas.height = 1;
-      } catch (e) {
-        console.warn('Failed to query MAX_TEXTURE_SIZE, using default 4096');
-      }
-      
-      _cachedMaxTextureSize = size;
-      return _cachedMaxTextureSize;
-    };
+  const workspaceDiv = workspace.getParentSvg()?.parentElement as HTMLElement;
+  if (!workspaceDiv) return;
 
-    // 初始化 Pixi 应用
-    const initPixi = async () => {
-      if (initialized) return;
-      app = new PIXI.Application();
-      await app.init({
-        resizeTo: wrapper,
-        backgroundColor: 0x000000,
-        backgroundAlpha: 0,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
-        preference: 'webgpu',
-        textureGCActive: true, 
-        textureGCMaxIdle: 1800, 
-        textureGCCheckCountMax: 180,
-      });
-      wrapper.appendChild(app.canvas);
-      worldContainer = new PIXI.Container();
-      worldContainer.cullable = true;
-      app.stage.addChild(worldContainer);
-      initialized = true;
-    };
-    PIXI.TextureSource.defaultOptions.scaleMode = 'nearest';
+  // 创建 Pixi wrapper
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;";
+  workspaceDiv.style.position = "relative";
+  workspaceDiv.appendChild(wrapper);
 
-    // 视图同步
-    const syncView = () => {
-      if (!worldContainer) return;
-      const svgCanvas = (workspace as any).svgBlockCanvas_ || workspace.getCanvas();
-      if (!svgCanvas) return;
-      const t = svgCanvas.getAttribute("transform");
-      if (!t) return;
-      const m = t.match(/translate\(([^)]+)\)\s*scale\(([^)]+)\)/);
-      if (m) {
-        const [tx, ty] = m[1].split(",").map(Number);
-        const s = Number(m[2]);
-        worldContainer.position.set(tx, ty);
-        worldContainer.scale.set(s);
-      }
-      updateViewport();
-    };
-
-    // 深度计算
-    const getDepth = (block: any): number => {
-      let depth = 0;
-      let b = block;
-      while (b.parentBlock_) { depth++; b = b.parentBlock_; }
-      return depth;
-    };
-
-    // 获取字段颜色
-    const getFieldFill = (field: any): string => {
-      const root = field.getSvgRoot();
-      if (root) {
-        const textEl = root.querySelector("text");
-        if (textEl) {
-          const fill = textEl.getAttribute("fill");
-          if (fill) return fill;
-        }
-      }
-      if (field instanceof blockly.FieldTextInput) return "#000000";
-      return "#ffffff";
-    };
-
-    // 提取整棵树的数据（用于烘焙）
-    const extractTreeBlocks = (rootBlock: any): any[] => {
-      const list: any[] = [];
-      const stack = [rootBlock];
-      const visited = new Set<string>();
-      while (stack.length > 0) {
-        const block = stack.pop();
-        if (!block || visited.has(block.id)) continue;
-        visited.add(block.id);
-        if (!block.svgPath_) continue;
-        const pos = block.getRelativeToSurfaceXY();
-        const pathD = block.svgPath_.getAttribute("d") || "";
-        const color = (block as any).getColour();
-        const stroke = (block as any).getColourTertiary();
-        const fields: any[] = [];
-        const inputs: any[] = [];
-        for (const input of block.inputList) {
-          for (const field of input.fieldRow) {
-            const root = field.getSvgRoot();
-            if (!root) continue;
-            const transform = root.getAttribute("transform");
-            let fx = 0, fy = 0;
-            if (transform) {
-              const m = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-              if (m) { fx = parseFloat(m[1]); fy = parseFloat(m[2]); }
-            }
-            const textEl = root.querySelector("text") || (root.tagName === "text" ? root : null);
-            let textX = 0, textY = 0;
-            let anchorX = 0, anchorY = 0;
-            if (textEl) {
-              textX = parseFloat(textEl.getAttribute("x") || "0");
-              textY = parseFloat(textEl.getAttribute("y") || "0");
-              const ta = textEl.getAttribute("text-anchor") || "start";
-              if (ta === "middle") anchorX = 0.5;
-              else if (ta === "end") anchorX = 1;
-              const db = textEl.getAttribute("dominant-baseline") || "baseline";
-              if (db === "middle") anchorY = 0.5;
-              else if (db === "hanging") anchorY = 0;
-            }
-            const finalX = fx + textX;
-            const finalY = fy + textY - 2 ;//减去2可以让文字更好贴近原生DOM渲染的效果
-            fields.push({
-              text: field.getText(),
-              x: finalX, y: finalY,
-              fill: getFieldFill(field),
-              fontFamily: "sans-serif", fontSize: 16,
-              anchorX, anchorY
-            });
-          }
-          if (input.outlinePath && !(input.connection && input.connection.targetBlock())) {
-            const op = input.outlinePath;
-            const opTransform = op.getAttribute("transform") || "";
-            let opX = 0, opY = 0;
-            const opM = opTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-            if (opM) { opX = parseFloat(opM[1]); opY = parseFloat(opM[2]); }
-            inputs.push({
-              x: opX, y: opY,
-              pathD: op.getAttribute("d") || "",
-              fill: op.getAttribute("fill") || "#FFFFFF"
-            });
-          }
-        }
-        list.push({
-          id: block.id, type: block.type,
-          x: pos.x, y: pos.y,
-          width: block.width || 0, height: block.height || 0,
-          pathD, color, stroke,
-          opacity: (block as any).getOpacity(),
-          depth: getDepth(block),
-          fields, inputs
-        });
-        if (block.nextConnection) {
-          const next = block.nextConnection.targetBlock();
-          if (next) stack.push(next);
-        }
-        for (const input of block.inputList) {
-          if (input.connection) {
-            const child = input.connection.targetBlock();
-            if (child) stack.push(child);
-          }
-        }
-      }
-      list.sort((a, b) => a.depth - b.depth);
-      return list;
-    };
-
-    // 烘焙 chunk
-    const bakeChunks = (data: any[], rootBlocks: any[], onlyRootId?: string): Promise<void> => {
-      return new Promise((resolve) => {
-        // 先收集所有需要绘制的任务（只计算，不绘制）
-        const drawTasks: Array<{
-          chunkData: any[];
-          dpr: number;
-          minX: number;
-          minY: number;
-          padding: number;
-          canvasWidth: number;
-          canvasHeight: number;
-          rootId: string;
-          depth: number;
-        }> = [];
-
-        const dataMap = new Map<string, any>();
-        for (const item of data) dataMap.set(item.id, item);
-        const topBlocks = rootBlocks;
-        const baseDpr = window.devicePixelRatio || 1;
-        const padding = 24;
-        const MAX_PHYSICAL_SIZE = getMaxTextureSize();
-        const globalVisited = new Set<string>();
-
-        // 原封不动地计算每个 chunk 的参数，但不再创建 canvas 和绘制
-        for (const topBlock of topBlocks) {
-          if (onlyRootId && topBlock.id !== onlyRootId) continue;
-          const rootId = topBlock.id;
-          const blockIds: string[] = [];
-          const stack = [topBlock];
-          while (stack.length > 0) {
-            const block = stack.pop();
-            if (!block || globalVisited.has(block.id)) continue;
-            globalVisited.add(block.id);
-            blockIds.push(block.id);
-            if (block.nextConnection) {
-              const next = block.nextConnection.targetBlock();
-              if (next) stack.push(next);
-            }
-            for (const input of block.inputList) {
-              if (input.connection) {
-                const child = input.connection.targetBlock();
-                if (child) stack.push(child);
-              }
-            }
-          }
-          if (blockIds.length === 0) continue;
-          const groupData = blockIds.map(id => dataMap.get(id)).filter(Boolean);
-          if (groupData.length === 0) continue;
-          groupData.sort((a, b) => a.y - b.y);
-
-          let chunkStart = 0;
-          while (chunkStart < groupData.length) {
-            let minY = groupData[chunkStart].y;
-            let maxY = minY + (groupData[chunkStart].height || 0);
-            let minX = Infinity, maxX = -Infinity;
-            let chunkEnd = chunkStart;
-            minX = Math.min(minX, groupData[chunkStart].x);
-            maxX = Math.max(maxX, groupData[chunkStart].x + (groupData[chunkStart].width || 0));
-
-            let chunkDpr = baseDpr;
-            const getMaxLogicHeight = (dpr: number) => Math.floor(MAX_PHYSICAL_SIZE / dpr) - padding * 2;
-
-            for (let i = chunkStart + 1; i < groupData.length; i++) {
-              const item = groupData[i];
-              const newMinY = Math.min(minY, item.y);
-              const newMaxY = Math.max(maxY, item.y + (item.height || 0));
-              const newMinX = Math.min(minX, item.x);
-              const newMaxX = Math.max(maxX, item.x + (item.width || 0));
-              if (newMaxY - newMinY + padding * 2 <= getMaxLogicHeight(chunkDpr)) {
-                chunkEnd = i;
-                minY = newMinY; maxY = newMaxY;
-                minX = newMinX; maxX = newMaxX;
-              } else break;
-            }
-
-            if (chunkStart === chunkEnd) {
-              const singleHeight = (groupData[chunkStart].height || 0) + padding * 2;
-              if (singleHeight > getMaxLogicHeight(chunkDpr)) {
-                let reducedDpr = chunkDpr * 0.9;
-                while (reducedDpr >= 0.1 && singleHeight > Math.floor(MAX_PHYSICAL_SIZE / reducedDpr) - padding * 2) reducedDpr *= 0.9;
-                if (reducedDpr >= 0.1) { chunkDpr = reducedDpr; }
-                else { chunkStart++; continue; }
-              }
-            }
-
-            const chunkData = groupData.slice(chunkStart, chunkEnd + 1);
-            const canvasWidth = Math.ceil(maxX - minX + padding * 2);
-            const canvasHeight = Math.ceil(maxY - minY + padding * 2);
-            let physWidth = Math.ceil(canvasWidth * chunkDpr);
-            let physHeight = Math.ceil(canvasHeight * chunkDpr);
-
-            if (physWidth > MAX_PHYSICAL_SIZE || physHeight > MAX_PHYSICAL_SIZE) {
-              let reducedDpr = chunkDpr * 0.9;
-              while (reducedDpr >= 0.2 && (Math.ceil(canvasWidth * reducedDpr) > MAX_PHYSICAL_SIZE || Math.ceil(canvasHeight * reducedDpr) > MAX_PHYSICAL_SIZE)) reducedDpr *= 0.9;
-              if (reducedDpr >= 0.2) { chunkDpr = reducedDpr; }
-              else { chunkStart = chunkEnd + 1; continue; }
-            }
-
-            // 只收集任务，不绘制
-            drawTasks.push({
-              chunkData,
-              dpr: chunkDpr,
-              minX,
-              minY,
-              padding,
-              canvasWidth,
-              canvasHeight,
-              rootId,
-              depth: getDepth(topBlock),
-            });
-
-            chunkStart = chunkEnd + 1;
-          }
-        }
-
-        // 分帧绘制
-        let index = 0;
-          const drawNext = () => {
-            if (index >= drawTasks.length) {
-              console.log(`[Pixi] Baked ${chunkCache.length} chunks (async)`);
-              resolve();
-              return;
-            }
-            const frameDeadline = performance.now() + 5; // 本帧最多绘制5ms
-            while (index < drawTasks.length && performance.now() < frameDeadline) {
-              const task = drawTasks[index];
-              const canvas = document.createElement('canvas');
-              const physW = Math.ceil(task.canvasWidth * task.dpr);
-              const physH = Math.ceil(task.canvasHeight * task.dpr);
-              try { canvas.width = physW; canvas.height = physH; } catch (e) { index++; drawNext(); return; }
-              const ctx = canvas.getContext('2d');
-              if (!ctx) { index++; drawNext(); return; }
-              ctx.scale(task.dpr, task.dpr);
-              ctx.translate(-task.minX + task.padding, -task.minY + task.padding);
-
-              // 绘制形状
-              try {
-                for (const item of task.chunkData) {
-                  if (!item.pathD) continue;
-                  ctx.save(); ctx.translate(item.x, item.y);
-                  ctx.fillStyle = item.color; ctx.globalAlpha = 1;
-                  ctx.fill(new Path2D(item.pathD));
-                  if (item.stroke && item.stroke !== item.color) {
-                    ctx.strokeStyle = item.stroke; ctx.lineWidth = 1;
-                    ctx.stroke(new Path2D(item.pathD));
-                  }
-                  ctx.restore();
-                }
-              } catch (e) { console.error('[Pixi] Drawing shapes failed:', e); }
-              // 绘制输入
-              try {
-                for (const item of task.chunkData) {
-                  for (const inp of item.inputs) {
-                    if (!inp.pathD) continue;
-                    ctx.save(); ctx.translate(item.x + inp.x, item.y + inp.y);
-                    ctx.fillStyle = inp.fill; ctx.globalAlpha = 1;
-                    ctx.fill(new Path2D(inp.pathD));
-                    ctx.restore();
-                  }
-                }
-              } catch (e) { console.error('[Pixi] Drawing inputs failed:', e); }
-              // 绘制文字
-              try {
-                for (const item of task.chunkData) {
-                  for (const f of item.fields) {
-                    ctx.save(); ctx.translate(item.x + f.x, item.y + f.y);
-                    ctx.font = `${f.fontSize}px ${f.fontFamily || 'sans-serif'}`;
-                    ctx.fillStyle = f.fill;
-                    ctx.textAlign = f.anchorX === 0.5 ? 'center' : f.anchorX === 1 ? 'right' : 'left';
-                    ctx.textBaseline = f.anchorY === 0.5 ? 'middle' : f.anchorY === 0 ? 'top' : 'bottom';
-                    ctx.fillText(f.text, 0, 0);
-                    ctx.restore();
-                  }
-                }
-              } catch (e) { console.error('[Pixi] Drawing text failed:', e); }
-
-              chunkCache.push({
-                canvas,
-                x: task.minX - task.padding,
-                y: task.minY - task.padding,
-                width: task.canvasWidth,
-                height: task.canvasHeight,
-                rootId: task.rootId,
-                sprite: undefined,
-                depth: task.depth,
-              });
-              index++;
-            }
-            if (index < drawTasks.length) {
-              requestAnimationFrame(drawNext);
-            } else {
-              resolve();
-            }
-          };
-          drawNext();
-      });
-    };
-
-    // 视口更新
-    const updateViewport = () => {
-    if (!worldContainer || chunkCache.length === 0) return;
-    const scale = worldContainer.scale.x;
-    const x = -worldContainer.position.x / scale;
-    const y = -worldContainer.position.y / scale;
-    const w = app.screen.width / scale;
-    const h = app.screen.height / scale;
-
-    
-    const visible = new Set<any>();
-    for (const chunk of chunkCache) {
-      if (chunk.x + chunk.width > x && chunk.x < x + w && chunk.y + chunk.height > y && chunk.y < y + h) visible.add(chunk);
-    }
-    for (const chunk of visible) {
-      if (!chunk.sprite) {
-        const tex = PIXI.Texture.from(chunk.canvas);
-        tex.source.style.scaleMode = 'nearest';
-        const sprite = new PIXI.Sprite(tex);
-        sprite.width = chunk.width;
-        sprite.height = chunk.height;
-        const hitWidth = chunk.width * 0.85;
-        sprite.hitArea = new PIXI.Rectangle(0, 0, hitWidth, chunk.height);
-        sprite.x = chunk.x;
-        sprite.y = chunk.y;
-        worldContainer.addChild(sprite);
-        chunk.sprite = sprite;
-        sprite.eventMode = 'static';
-        sprite.cursor = 'pointer';
-        (sprite as any)._hoverAlpha = { current: 0, target: 0.5 };
-        sprite.alpha = 0;
-        sprite.on('pointerover', () => { (sprite as any)._hoverAlpha.target = 0.8; });
-        sprite.on('pointerout', () => { (sprite as any)._hoverAlpha.target = 0.5; });
-      }
-    }
-      // 销毁不可见 sprite
-      for (const chunk of chunkCache) {
-        if (!visible.has(chunk) && chunk.sprite) {
-          worldContainer.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true, textureSource: true });
-          chunk.sprite = undefined;
-        }
-      }
+  // 初始化渲染器
+  const renderer = new PixiBlockRenderer(wrapper, workspace, blockly, vm);
+  renderer.onRestoreDOM = (rootId: string) => {
+    const rootBlock = workspace.getBlockById(rootId);
+    if (rootBlock) renderer.clearPixiForRoot(rootBlock);
   };
-
-    // 刷新整个 overlay
-    const refreshOverlay = async () => {
-      if (rendering || !initialized) return;
-      rendering = true;
-      syncView();
-      const ct = vm.editingTarget;
-      if (!ct) { rendering = false; return; }
-      const tId = ct.id;
-      const activeId = getActiveGroupId(tId);
-      const topBlocks = workspace.getTopBlocks(false);
-      const filteredTop = activeId === ALL_GROUPS_ID
-        ? topBlocks
-        : topBlocks.filter((b: any) => getBlockGroup(b) === activeId);
-      const data: any[] = [];
-      for (const top of filteredTop) {
-        data.push(...extractTreeBlocks(top));
-      }
-      // 隐藏 DOM
-      const allBlocks = workspace.getAllBlocks(false);
-      for (const block of allBlocks) {
-        if (block.svgGroup_) block.svgGroup_.style.display = 'none';
-      }
-      // 销毁旧 chunk
-      for (const chunk of chunkCache) {
-        if (chunk.sprite) {
-          chunk.sprite.destroy({ texture: true, textureSource: true });
-          
-        }
-      }
-      chunkCache = [];
-
-      // 异步分帧烘焙
-      await bakeChunks(data, filteredTop);
-
-      // 全部绘制完成后再一次性显示
-      updateViewport();
-      rendering = false;
-    };
-
-    // 局部刷新一棵树
-    const refreshRootBlock = (rootBlock: any) => {
-      const rootId = rootBlock.id;
-      const rootData = extractTreeBlocks(rootBlock);
-      const blockIds = rootData.map(item => item.id);
-      for (const chunk of chunkCache) {
-        if (chunk.rootId === rootId && chunk.sprite) {
-          worldContainer.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true, textureSource: true });
-        }
-      }
-      chunkCache = chunkCache.filter(c => c.rootId !== rootId);
-      for (const id of blockIds) {
-        const block = workspace.getBlockById(id);
-        if (block?.svgGroup_) {
-          block.svgGroup_.style.display = 'none';
-          (block.svgGroup_.style as any).contentVisibility = '';
-        }
-      }
-      bakeChunks(rootData, [rootBlock], rootId);
-      updateViewport();
-    };
-
-    // 清理无头 chunk
-    const cleanOrphanChunks = () => {
-      for (const chunk of chunkCache) {
-        const block = workspace.getBlockById(chunk.rootId);
-        if (!block || (block as any).getParent()) {
-          if (chunk.sprite) {
-            if (chunk.canvas instanceof ImageBitmap) {
-              chunk.canvas.close();
-            }
-            worldContainer.removeChild(chunk.sprite);
-            chunk.sprite.destroy({ texture: true, textureSource: true });
-          }
-        }
-      }
-      chunkCache = chunkCache.filter(c => {
-        const block = workspace.getBlockById(c.rootId);
-        return block && !(block as any).getParent();
-      });
-    };
-
-    // 清除 Pixi 并恢复 DOM
-    const clearPixiAndRestoreDOM = (block: any) => {
-      if (!block || block.workspace !== workspace) return;
-      const rootBlock = block.getRootBlock();
-      if (!rootBlock) return;
-      const blockIds: string[] = [];
-      const stack = [rootBlock];
-      const visited = new Set<string>();
-      while (stack.length > 0) {
-        const b = stack.pop();
-        if (!b || visited.has(b.id)) continue;
-        visited.add(b.id);
-        blockIds.push(b.id);
-        if (b.nextConnection) {
-          const next = b.nextConnection.targetBlock();
-          if (next) stack.push(next);
-        }
-        for (const input of b.inputList) {
-          if (input.connection) {
-            const child = input.connection.targetBlock();
-            if (child) stack.push(child);
-          }
-        }
-      }
-      for (const chunk of chunkCache.filter(c => c.rootId === rootBlock.id)) {
-        if (chunk.sprite) {
-          if (chunk.sprite.parent) chunk.sprite.parent.removeChild(chunk.sprite);
-          chunk.sprite.destroy({ texture: true, textureSource: true });
-        }
-      }
-      chunkCache = chunkCache.filter(c => c.rootId !== rootBlock.id);
-      for (const id of blockIds) {
-        const b = workspace.getBlockById(id);
-        if (b?.svgGroup_) {
-          (b.svgGroup_.style as any).contentVisibility = '';
-          b.svgGroup_.style.display = '';
-        }
-      }
-    };
-
-    // 获取工作区坐标
-    const getWorkspacePosFromEvent = (e: MouseEvent) => {
-      if (!worldContainer) return null;
-      const canvas = app.canvas;
-      const rect = canvas.getBoundingClientRect();
-      const relX = e.clientX - rect.left;
-      const relY = e.clientY - rect.top;
-      const x = (relX - worldContainer.position.x) / worldContainer.scale.x;
-      const y = (relY - worldContainer.position.y) / worldContainer.scale.y;
-      return { x, y };
-    };
-
-    // 双击恢复积木
-    const restoreRootBlock = (chunk: any) => {
-      const rootId = chunk.rootId;
+  const handleDoubleClick = (e: MouseEvent) => {
+    if (ignoreNextDoubleClick) return; // 缩放时忽略双击
+    const rootId = renderer.getChunkAt(e.clientX, e.clientY);
+    if (rootId) {
       const rootBlock = workspace.getBlockById(rootId);
-      if (!rootBlock) return;
-      const blockIds: string[] = [];
-      const stack = [rootBlock];
-      const visited = new Set<string>();
-      while (stack.length > 0) {
-        const block = stack.pop();
-        if (!block || visited.has(block.id)) continue;
-        visited.add(block.id);
-        blockIds.push(block.id);
-        if (block.nextConnection) {
-          const next = block.nextConnection.targetBlock();
-          if (next) stack.push(next);
-        }
-        for (const input of block.inputList) {
-          if (input.connection) {
-            const child = input.connection.targetBlock();
-            if (child) stack.push(child);
-          }
-        }
-      }
-      for (const id of blockIds) {
-        const block = workspace.getBlockById(id);
-        if (block?.svgGroup_) {
-          (block.svgGroup_.style as any).contentVisibility = '';
-          block.svgGroup_.style.display = '';
-          if ((block as any).intersects_ === false) {
-            (block as any).setIntersects(true);
-          }
-        }
-      }
-      for (const c of chunkCache.filter(c => c.rootId === rootId)) {
-        if (c.sprite) {
-          worldContainer.removeChild(c.sprite);
-          c.sprite.destroy({ texture: true, textureSource: true });
-        }
-      }
-      chunkCache = chunkCache.filter(c => c.rootId !== rootId);
-      updateViewport();
-    };
-
-    // 双击监听
-    const handleDoubleClick = (e: MouseEvent) => {
-      if (!worldContainer || chunkCache.length === 0) return;
-      const pos = getWorkspacePosFromEvent(e);
-      if (!pos) return;
-      for (const chunk of chunkCache) {
-        if (pos.x >= chunk.x && pos.x <= chunk.x + chunk.width && pos.y >= chunk.y && pos.y <= chunk.y + chunk.height) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          restoreRootBlock(chunk);
-          return;
-        }
-      }
-    };
-
-    // 创建 wrapper
-    const wrapper = document.createElement("div");
-    wrapper.style.position = "absolute";
-    wrapper.style.top = "0";
-    wrapper.style.left = "0";
-    wrapper.style.width = "100%";
-    wrapper.style.height = "100%";
-    wrapper.style.pointerEvents = "none";
-    wrapper.style.zIndex = "0";
-    workspaceDiv.style.position = "relative";
-    workspaceDiv.appendChild(wrapper);
-
-    // 劫持各种方法（在启用 Pixi 时）
-    if (WorkspaceDragger && originalDrag) {
-      WorkspaceDragger.drag = function (d: any) {
-        originalDrag.call(this, d);
-        syncView();
-      };
+      if (rootBlock) renderer.clearPixiForRoot(rootBlock);
     }
+  };
+workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
-    workspace.setScale = function (s: number) {
-      const hiddenBlocks: any[] = [];
+  pixiRendererRef.current = renderer;
+  renderer.init().then(() => {
+
+    const ContextMenu = (window as any).Blockly.ContextMenu;
+    let menuItemId: string | null = null;
+    if (ContextMenu && typeof ContextMenu.addDynamicMenuItem === 'function') {
+      menuItemId = ContextMenu.addDynamicMenuItem(
+        (items: any[], block: any) => {
+          if (!block || block.workspace.isFlyout) return items;
+          items.push({ separator: true });
+          items.push({
+            text: '切换至 Pixi 渲染',
+            enabled: true,
+            callback: () => {
+              const root = block.getRootBlock();
+              if (root) renderer.switchToPixi(root);
+            }
+          });
+          return items;
+        },
+        { targetNames: ['blocks', 'frame'] }
+      );
+    }
+    renderer.syncView();
+    renderer.fullRefresh((vm as any).editingTarget?.id);
+  });
+
+  // ---------- 保存原始方法 ----------
+  const BlocklyAny = blockly as any;
+  const WorkspaceDragger = BlocklyAny.WorkspaceDragger?.prototype;
+  const ScrollbarPair = BlocklyAny.ScrollbarPair?.prototype;
+  const BlockDragger = BlocklyAny.BlockDragger?.prototype;
+  const BlockSvgProto = blockly.BlockSvg.prototype;
+  const BlocklyXml = BlocklyAny.Xml;
+  const InsertionMarkerManager = BlocklyAny.InsertionMarkerManager;
+  const Connection = BlocklyAny.Connection?.prototype;
+
+  const originalDrag = WorkspaceDragger?.drag;
+  const originalSetScale = workspace.setScale.bind(workspace);
+  const originalScrollSet = ScrollbarPair?.set;
+  const originalEndDrag = BlockDragger?.endBlockDrag;
+  const originalUpdateIntersectionObserver = BlockSvgProto.updateIntersectionObserver;
+  const originalDomToBlock = BlocklyXml?.domToBlock;
+  const originalSetEditingTarget = vm.setEditingTarget.bind(vm);
+  const originalConnect_ = Connection?.connect_;
+  const originalDisconnectInternal_ = Connection?.disconnectInternal_;
+  let originalConnectMarker: any = null;
+  let originalDisconnectMarker: any = null;
+  let ignoreNextDoubleClick = false;
+
+  // ---------- 劫持工作区方法 ----------
+  if (WorkspaceDragger && originalDrag) {
+    WorkspaceDragger.drag = function (d: any) {
+      renderer.pauseInteractions();
+      originalDrag.call(this, d);
+      //renderer.syncView();
+    };
+  }
+
+  workspace.setScale = function (s: number) {
+     const hiddenBlocks: any[] = [];
       const allBlocks = workspace.getAllBlocks(false);
       for (const block of allBlocks) {
         if (block.svgGroup_ && block.svgGroup_.style.display === 'none') {
@@ -1672,194 +1081,161 @@ const workerRef = useRef<Worker | null>(null);
           (block.svgGroup_.style as any).contentVisibility = 'hidden';
         }
       }
-      originalSetScale(s);
-      syncView();
+    originalSetScale(s);
+    renderer.syncView();
+      ignoreNextDoubleClick = true;
+      requestAnimationFrame(() => {
+        ignoreNextDoubleClick = false;
+      });
+  };
+
+  if (ScrollbarPair && originalScrollSet) {
+    ScrollbarPair.set = function (x: number, y: number) {
+      originalScrollSet.call(this, x, y);
+      renderer.syncView();
     };
+  }
 
-    if (ScrollbarPair && originalScrollSet) {
-      ScrollbarPair.set = function (x: number, y: number) {
-        originalScrollSet.call(this, x, y);
-        syncView();
-      };
-    }
+  if (BlockDragger && originalEndDrag) {
+    BlockDragger.endBlockDrag = function (e: Event, delta: any, checkFn?: Function) {
+      renderer.resumeInteractions();
+      originalEndDrag.call(this, e, delta, checkFn);
+      //const root = this.draggingBlock_?.getRootBlock();
+      //if (root) renderer.markDirty(root);
+    };
+  }
 
-    if (BlockDragger && originalEndDrag) {
-      BlockDragger.endBlockDrag = function (e: Event, delta: any, checkFn?: Function) {
-        originalEndDrag.call(this, e, delta, checkFn);
-        rendering = false;
-        const root = this.draggingBlock_.getRootBlock();
-        if (this.draggingBlock_?.workspace === workspace) {
-          requestAnimationFrame(() => {
-            cleanOrphanChunks();
-          });
-        }
-      };
-    }
-
-    if (BlockSvgProto && originalMoveBy) {
-      BlockSvgProto.moveBy = function (dx: number, dy: number) {
-        const rootId = this.getRootBlock().id;
-        const hasPixi = chunkCache.some(c => c.rootId === rootId && c.sprite);
-        if (hasPixi) {
-          requestAnimationFrame(() => refreshRootBlock(this.getRootBlock()));
-        }
-        originalMoveBy.call(this, dx, dy);
-      };
-    }
-
-    if (originalUpdateIntersectionObserver) {
-      BlockSvgProto.updateIntersectionObserver = function () {
-        const block = this as any;
-        if (block.workspace?.intersectionObserver) {
-          block.workspace.intersectionObserver.unobserve(block);
-          if (block.intersects_ === false) {
-            block.intersects_ = true;
-          }
-        }
-      };
-    }
-
-    if (BlocklyXml && originalDomToBlock) {
-      BlocklyXml.domToBlock = function (xmlBlock: Element, targetWorkspace: any) {
-        const result = originalDomToBlock.call(this, xmlBlock, targetWorkspace);
-        // 不自动刷新，留给后续操作
-        return result;
-      };
-    }
-
-    if (InsertionMarkerManager) {
-      originalConnectMarker = InsertionMarkerManager.prototype.connectMarker_;
-      originalDisconnectMarker = InsertionMarkerManager.prototype.disconnectMarker_;
-      InsertionMarkerManager.prototype.connectMarker_ = function () {
-        originalConnectMarker.call(this);
-        const closestConn = (this as any).closestConnection_;
-        if (closestConn) {
-          const targetBlock = closestConn.sourceBlock_;
-          if (targetBlock && targetBlock.workspace === workspace) {
-            clearPixiAndRestoreDOM(targetBlock.getRootBlock());
-          }
-        }
-      };
-      InsertionMarkerManager.prototype.disconnectMarker_ = function () {
-        const closestConn = (this as any).closestConnection_;
-        let rootId: string | null = null;
-        if (closestConn) {
-          const targetBlock = closestConn.sourceBlock_;
-          if (targetBlock && targetBlock.workspace === workspace) {
-            clearPixiAndRestoreDOM(targetBlock.getRootBlock());
-          }
-        }
-        originalDisconnectMarker.call(this);
-      };
-    }
-
-    if (Connection) {
-      Connection.connect_ = function (childConnection: any) {
-        const childBlock = childConnection.sourceBlock_;
-        const oldRoot = childBlock ? childBlock.getRootBlock() : null;
-        originalConnect_.call(this, childConnection);
-        clearPixiAndRestoreDOM(this.sourceBlock_);
-        if (oldRoot && oldRoot !== this.sourceBlock_.getRootBlock()) {
-          cleanOrphanChunks();
-        }
-      };
-      Connection.disconnectInternal_ = function (parentBlock: any, childBlock: any) {
-        originalDisconnectInternal_.call(this, parentBlock, childBlock);
-        clearPixiAndRestoreDOM(parentBlock);
-        clearPixiAndRestoreDOM(childBlock);
-      };
-    }
-
-    vm.setEditingTarget = function (targetId: string) {
-      if (worldContainer) {
-        while (worldContainer.children.length > 0) {
-          worldContainer.removeChildAt(0).destroy({ texture: true });
+  if (originalUpdateIntersectionObserver) {
+    BlockSvgProto.updateIntersectionObserver = function () {
+      // 在 Pixi 模式下禁用离屏观察，所有块都视为可见（但渲染器自己裁剪）
+      const block = this as any;
+      if (block.workspace?.intersectionObserver) {
+        block.workspace.intersectionObserver.unobserve(block);
+        if (block.intersects_ === false) {
+          block.intersects_ = true;
         }
       }
-      chunkCache = [];
-      if (app.renderer) {
-        if ((app.renderer as any).gc) {
-          (app.renderer as any).gc.run();
-        } else if ((app.renderer as any).textureGC) {
-          (app.renderer as any).textureGC.run();
-        }
-      }
-      rendering = false;
-      const result = originalSetEditingTarget(targetId);
-      requestAnimationFrame(() => refreshOverlay());
+    };
+  }
+
+  if (BlocklyXml && originalDomToBlock) {
+    BlocklyXml.domToBlock = function (xmlBlock: Element, targetWorkspace: any) {
+      const result = originalDomToBlock.call(this, xmlBlock, targetWorkspace);
+      /*
+      // 新块加入后标记脏区
+      if (result) {
+        const root = result.getRootBlock?.() || result;
+        if (root.workspace === workspace) renderer.markDirty(root);
+      }*/
       return result;
     };
-    
+  }
 
-    workspaceDiv.addEventListener('dblclick', handleDoubleClick, true);
-
-    // 启动 Pixi 并首次刷新
-    initPixi().then(() => {
-      syncView();
-      refreshOverlay();
-      app.ticker.add(() => {
-        for (const child of worldContainer.children) {
-          const sprite = child as PIXI.Sprite;
-          const anim = (sprite as any)._hoverAlpha;
-          if (!anim) continue;
-          anim.current += (anim.target - anim.current) * 0.15;
-          sprite.alpha = anim.current;
-          //挂载refreshOverlay
-          (window as any).__PIXI_REFRESH_OVERLAY__ = refreshOverlay;
-        }
-      });
-    });
-
-    // 返回清理函数（当 pixiEnabled 变为 false 或组件卸载时调用）
-    return () => {
-      // 恢复所有劫持
-      if (WorkspaceDragger) WorkspaceDragger.drag = originalDrag;
-      workspace.setScale = originalSetScale;
-      if (ScrollbarPair) ScrollbarPair.set = originalScrollSet;
-      if (BlockDragger) BlockDragger.endBlockDrag = originalEndDrag;
-      if (BlockSvgProto) BlockSvgProto.moveBy = originalMoveBy;
-      if (originalUpdateIntersectionObserver) {
-        BlockSvgProto.updateIntersectionObserver = originalUpdateIntersectionObserver;
-      }
-      if (BlocklyXml) BlocklyXml.domToBlock = originalDomToBlock;
-      if (InsertionMarkerManager) {
-        InsertionMarkerManager.prototype.connectMarker_ = originalConnectMarker;
-        InsertionMarkerManager.prototype.disconnectMarker_ = originalDisconnectMarker;
-      }
-      if (Connection) {
-        Connection.connect_ = originalConnect_;
-        Connection.disconnectInternal_ = originalDisconnectInternal_;
-      }
-      vm.setEditingTarget = originalSetEditingTarget;
-
-      // 移除 Pixi 右键菜单
-      if (menuItemId != null && ContextMenu?.deleteDynamicMenuItem) {
-        ContextMenu.deleteDynamicMenuItem(menuItemId);
-      }
-      //移除挂载的refreshOverlay
-      delete (window as any).__PIXI_REFRESH_OVERLAY__;
-      // 移除事件监听
-      workspaceDiv.removeEventListener('dblclick', handleDoubleClick, true);
-
-      // 销毁所有 sprite 和纹理
-      for (const chunk of chunkCache) {
-        if (chunk.sprite) chunk.sprite.destroy({ texture: true, textureSource: true });
-      }
-      chunkCache = [];
-      
-      // 恢复所有隐藏的积木 DOM
-      const allBlocks = workspace.getAllBlocks(false);
-      for (const block of allBlocks) {
-        if (block.svgGroup_) {
-          (block.svgGroup_.style as any).contentVisibility = '';
-          block.svgGroup_.style.display = '';
+  // 插入标记管理器：连接/断开前恢复 DOM
+  if (InsertionMarkerManager) {
+    originalConnectMarker = InsertionMarkerManager.prototype.connectMarker_;
+    originalDisconnectMarker = InsertionMarkerManager.prototype.disconnectMarker_;
+    InsertionMarkerManager.prototype.connectMarker_ = function () {
+      originalConnectMarker.call(this);
+      const closestConn = (this as any).closestConnection_;
+      if (closestConn) {
+        const targetBlock = closestConn.sourceBlock_;
+        if (targetBlock && targetBlock.workspace === workspace) {
+          renderer.clearPixiForRoot(targetBlock.getRootBlock());
         }
       }
-      // 销毁 Pixi 应用
-      app.destroy(true, { children: true, texture: true });
-      wrapper.remove();
     };
-  }, [pixiEnabled, blockly, workspace, vm]); // 依赖 pixiEnabled，开关变化时重新执行
+    InsertionMarkerManager.prototype.disconnectMarker_ = function () {
+      const closestConn = (this as any).closestConnection_;
+      if (closestConn) {
+        const targetBlock = closestConn.sourceBlock_;
+        if (targetBlock && targetBlock.workspace === workspace) {
+          renderer.clearPixiForRoot(targetBlock.getRootBlock());
+        }
+      }
+      originalDisconnectMarker.call(this);
+    };
+  }
+
+  // 连接操作：恢复相关的积木 DOM
+  if (Connection) {
+    Connection.connect_ = function (childConnection: any) {
+      const childBlock = childConnection.sourceBlock_;
+      const oldRoot = childBlock ? childBlock.getRootBlock() : null;
+      originalConnect_.call(this, childConnection);
+      renderer.clearPixiForRoot(this.sourceBlock_.getRootBlock());
+      if (oldRoot && oldRoot !== this.sourceBlock_.getRootBlock()) {
+        renderer.clearPixiForRoot(oldRoot); // 旧树也清除
+      }
+    };
+    Connection.disconnectInternal_ = function (parentBlock: any, childBlock: any) {
+      originalDisconnectInternal_.call(this, parentBlock, childBlock);
+      renderer.clearPixiForRoot(parentBlock.getRootBlock());
+      renderer.clearPixiForRoot(childBlock.getRootBlock());
+    };
+  }
+
+  vm.setEditingTarget = function (targetId: string) {
+    renderer.cancelBake();
+    const result = originalSetEditingTarget(targetId);
+    // 延迟刷新，保证离屏缓存切换完成
+    requestAnimationFrame(() => {
+      renderer.fullRefresh(targetId);
+    });
+    return result;
+  };
+
+  // 外部刷新钩子
+  (window as any).__PIXI_REFRESH_OVERLAY__ = () => {
+    renderer.syncView();
+    renderer.fullRefresh();
+  };
+
+  // ---------- 清理 ----------
+  return () => {
+    if (WorkspaceDragger) WorkspaceDragger.drag = originalDrag;
+    workspace.setScale = originalSetScale;
+    workspaceDiv.removeEventListener('dblclick', handleDoubleClick);
+    if (ScrollbarPair) ScrollbarPair.set = originalScrollSet;
+    if (BlockDragger) BlockDragger.endBlockDrag = originalEndDrag;
+    if (originalUpdateIntersectionObserver) {
+      BlockSvgProto.updateIntersectionObserver = originalUpdateIntersectionObserver;
+    }
+    if (BlocklyXml) BlocklyXml.domToBlock = originalDomToBlock;
+    if (InsertionMarkerManager) {
+      InsertionMarkerManager.prototype.connectMarker_ = originalConnectMarker;
+      InsertionMarkerManager.prototype.disconnectMarker_ = originalDisconnectMarker;
+    }
+    if (Connection) {
+      Connection.connect_ = originalConnect_;
+      Connection.disconnectInternal_ = originalDisconnectInternal_;
+    }
+    vm.setEditingTarget = originalSetEditingTarget;
+    
+    //workspaceDiv.removeEventListener("dblclick", handleDoubleClick, true);
+    delete (window as any).__PIXI_REFRESH_OVERLAY__;
+
+    // 恢复所有被隐藏的积木 DOM
+    const allBlocks = workspace.getAllBlocks(false);
+    for (const block of allBlocks) {
+      if (block.svgGroup_) {
+        (block.svgGroup_.style as any).contentVisibility = "";
+        block.svgGroup_.style.display = "";
+      }
+    }
+    //如果关掉了Pixi渲染，就恢复观察
+    const topBlocks = workspace.getTopBlocks(false);
+    const observer = (workspace as any).intersectionObserver;
+    if (observer) {
+      topBlocks.forEach((b: any) => {
+        if (!observer.observing.includes(b)) observer.observe(b);
+      });
+      observer.checkForIntersections();
+    }
+    renderer.destroy();
+    pixiRendererRef.current = null;
+  };
+}, [pixiEnabled, blockly, workspace, vm]);
   //此useEffect用于修复一个小Bug：首次加载插件时，立即切换角色会把当前角色的积木工作区里所有元素（包括注释）全部错误地滞留到目标角色。
   //解决方案就是初始化加载时执行一次分组切换来初始化状态。
   const hasInitializedRef = React.useRef(false);

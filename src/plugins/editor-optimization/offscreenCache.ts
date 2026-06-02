@@ -154,38 +154,40 @@ export function getOffscreenWorkspace(targetId: string) {
   return hiddenWorkspaceCache.get(targetId);
 }
 
-export function ensureOffscreenWorkspace(
-  targetId: string,
-  blockly: any,
-  mainWorkspace: any
-) {
-  if ((window as any).__IS_COLLABORATION__) return undefined; // 不创建
-  if (hiddenWorkspaceCache.has(targetId)) return hiddenWorkspaceCache.get(targetId);
+export function ensureOffscreenWorkspace(targetId: string, blockly: any, mainWorkspace: any) {
+  if (hiddenWorkspaceCache.has(targetId)) {
+    const hiddenWs = hiddenWorkspaceCache.get(targetId);
+    // 清理旧积木和注释
+    const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
+    oldTopBlocks.forEach((b: any) => b.dispose(false, false));
+    if (hiddenWs.getTopComments) {
+      hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
+    }
+    return hiddenWs;
+  }
   const hiddenWs = createHiddenWorkspace(blockly, mainWorkspace);
   hiddenWorkspaceCache.set(targetId, hiddenWs);
+  console.log('[Offscreen Clean] Hidden workspace blocks after clean:', hiddenWs.getTopBlocks(false).length);
   return hiddenWs;
 }
 
-export function saveTargetToOffscreen(
-  targetId: string,
-  mainWs: any,
-  blockly: any
-) {
-   if ((window as any).__IS_COLLABORATION__) return; // 协作不缓存
-  // 如果主工作区已无积木，说明可能正在切换视图，放弃缓存
-  if (!mainWs || mainWs.getTopBlocks(false).length === 0) return;
+export function saveTargetToOffscreen(targetId: string, mainWs: any, blockly: any) {
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
-  copyVariables(mainWs, hiddenWs, blockly);
+  
+  // ✅ 清空旧缓存中的所有积木，避免 DOM 泄漏
+  const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
+  oldTopBlocks.forEach((b: any) => b.dispose(false, false));
+  // 清空旧注释
+  if (hiddenWs.getTopComments) {
+    hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
+  }
 
+  copyVariables(mainWs, hiddenWs, blockly);
   blockly.Events.disable();
   try {
     const topBlocks = [...mainWs.getTopBlocks(false)];
     topBlocks.forEach((block: any) => lightMoveBlockTreeToOffscreen(block, mainWs, hiddenWs));
-
-    // 搬移注释（保持不变）
     moveCommentsToWorkspace(mainWs, hiddenWs, blockly);
-
-    // 一次性清空 IntersectionObserver 的观察列表，避免数千次 unobserve 调用
     if (mainWs.intersectionObserver) {
       mainWs.intersectionObserver.observing = [];
     }
@@ -533,10 +535,8 @@ export function clearOffscreenCache(targetId: string) {
   const hiddenWs = hiddenWorkspaceCache.get(targetId);
   if (hiddenWs) {
     try {
-      // 清理积木
       const top = [...hiddenWs.getTopBlocks(false)];
       top.forEach((b: any) => b.dispose(false, false));
-      // 清理注释
       const topComments = hiddenWs.getTopComments?.(false) || [];
       topComments.forEach((c: any) => c.dispose?.());
       hiddenWs.dispose();
