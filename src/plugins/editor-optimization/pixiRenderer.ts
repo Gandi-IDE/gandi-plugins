@@ -180,10 +180,14 @@ export class PixiBlockRenderer {
   public refreshOverlay: () => Promise<void>;
   public onRestoreDOM?: (rootBlockId: string) => void;
   private interactionsPaused = false;
+  private pendingCreateBlocks: any[] = [];
+  private createBatchSize = 8; // 每帧创建5个容器，避免卡顿
+  private lastPauseTime = 0;
 
-    public pauseInteractions() {
+  public pauseInteractions() {
     if (this.interactionsPaused) return;
     this.interactionsPaused = true;
+    this.lastPauseTime = performance.now();
     for (const container of this.rootContainers.values()) {
       container.eventMode = 'none';
     }
@@ -204,7 +208,17 @@ export class PixiBlockRenderer {
     this.world = new PIXI.Container();
     this.refreshOverlay = this._refreshOverlay.bind(this);
   }
-
+  private processCreateQueue() {
+  if (this.pendingCreateBlocks.length === 0) return;
+  let count = 0;
+  while (count < this.createBatchSize && this.pendingCreateBlocks.length > 0) {
+    const block = this.pendingCreateBlocks.shift()!;
+    if (!this.rootContainers.has(block.id)) {
+      this.createRootContainer(block);
+    }
+    count++;
+  }
+}
   async init() {
     if (this.app) return;
     this.app = new PIXI.Application();
@@ -238,10 +252,167 @@ export class PixiBlockRenderer {
         this.pendingTargetId = undefined;
       }
     this.app.ticker.add(() => {
+      this.processCreateQueue();
       this.cullContainers();
+      // 如果拖拽结束后没有恢复交互，超过 200ms 自动恢复
+      if (this.interactionsPaused && performance.now() - this.lastPauseTime > 200) {
+        this.resumeInteractions();
+      }
     });
   }
+  // 判断一个积木是否“简单”（没有输入子积木）
+private isBlockSimple(block: any): boolean {
+  if (!block) return false;
+  for (const input of block.inputList) {
+    if (input.connection?.targetBlock()) return false;
+  }
+  return true;
+}
 
+// 从根积木开始提取简单链，返回分组数据列表
+private extractSimpleChains(rootBlock: any, data: BlockRenderData[]): BlockRenderData[][] {
+  const chains: BlockRenderData[][] = [];
+  const dataMap = new Map<string, BlockRenderData>();
+  for (const item of data) dataMap.set(item.id, item);
+
+  const visited = new Set<string>();
+  let current: BlockRenderData[] = [];
+  let block: any = rootBlock;
+
+  while (block && visited.size < data.length) {
+    const id = block.id;
+    if (visited.has(id)) break;
+    const item = dataMap.get(id);
+    if (!item) break;
+
+    if (this.isBlockSimple(block)) {
+      current.push(item);
+      visited.add(id);
+      if (current.length >= 16) {
+        chains.push(current);
+        current = [];
+      }
+    } else {
+      // 遇到复杂块，保存当前链并中断
+      if (current.length > 0) chains.push(current);
+      current = [];
+      visited.add(id);
+      // 处理复杂块的分支？这里先只收集复杂块本身，不深入
+    }
+
+    // 沿着 next 连接继续
+    block = block.nextConnection?.targetBlock();
+  }
+  if (current.length > 0) chains.push(current);
+
+  return chains;
+}
+
+// 将一组简单链数据烘焙成一个纹理 Sprite
+private createBakedChainSprite(chainData: BlockRenderData[]): PIXI.Sprite {
+  const container = new PIXI.Container();
+  const graphics = new PIXI.Graphics();
+  container.addChild(graphics);
+  const ctx = graphics.context;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+  // 绘制形状
+  for (const item of chainData) {
+    minX = Math.min(minX, item.x);
+    minY = Math.min(minY, item.y);
+    maxX = Math.max(maxX, item.x + (item.width || 0));
+    maxY = Math.max(maxY, item.y + (item.height || 0));
+
+    if (item.pathD) {
+      const path = new PIXI.GraphicsPath(item.pathD);
+      ctx.translate(item.x, item.y);
+      ctx.setFillStyle({ color: item.color });
+      ctx.path(path);
+      ctx.fill();
+      if (item.stroke) {
+        ctx.setStrokeStyle({ color: item.stroke, width: 1 });
+        ctx.stroke();
+      }
+      ctx.resetTransform();
+    }
+    for (const inp of item.inputs) {
+      if (inp.pathD) {
+        const path = new PIXI.GraphicsPath(inp.pathD);
+        ctx.translate(item.x + inp.x, item.y + inp.y);
+        ctx.setFillStyle({ color: inp.fill });
+        ctx.path(path);
+        ctx.fill();
+        ctx.resetTransform();
+      }
+    }
+  }
+
+  // 绘制文字（使用缓存纹理的 Sprite 放在临时容器中）
+  for (const item of chainData) {
+    for (const f of item.fields) {
+      const cacheKey = `${f.fontSize || 16}_${f.fontFamily || 'sans-serif'}_${f.fill}_${f.text}`;
+      let texture = this.textTextureCache.get(cacheKey);
+      if (!texture) {
+        // 创建临时 Text 并烘焙缓存（复用现有逻辑）
+        const tempText = new PIXI.Text({
+          text: f.text,
+          style: {
+            fontFamily: f.fontFamily || 'sans-serif',
+            fontSize: f.fontSize || 16,
+            fill: f.fill,
+          },
+        });
+        const bounds = tempText.getLocalBounds();
+        const texW = Math.ceil(bounds.width);
+        const texH = Math.ceil(bounds.height);
+        if (texW > 0 && texH > 0) {
+          const rt = PIXI.RenderTexture.create({
+            width: texW,
+            height: texH,
+            resolution: this.app.renderer.resolution,
+          });
+          const tempContainer = new PIXI.Container();
+          tempContainer.addChild(tempText);
+          tempText.x = -bounds.x;
+          tempText.y = -bounds.y;
+          this.app.renderer.render({ container: tempContainer, target: rt, clear: true });
+          tempContainer.destroy({ children: true });
+          texture = rt;
+          this.textTextureCache.set(cacheKey, texture);
+        } else {
+          tempText.destroy();
+          continue;
+        }
+      }
+      const sprite = new PIXI.Sprite(texture);
+      sprite.anchor.set(f.anchorX || 0, f.anchorY || 0);
+      sprite.x = item.x + f.x;
+      sprite.y = item.y + f.y;
+      container.addChild(sprite);
+    }
+  }
+
+  const pad = 4;
+  const texW = maxX - minX + pad * 2;
+  const texH = maxY - minY + pad * 2;
+
+  const rt = PIXI.RenderTexture.create({
+    width: texW,
+    height: texH,
+    resolution: this.app.renderer.resolution,
+  });
+  container.x = -minX + pad;
+  container.y = -minY + pad;
+  this.app.renderer.render({ container, target: rt, clear: true });
+  container.destroy({ children: true });
+
+  const sprite = new PIXI.Sprite(rt);
+  sprite.x = minX - pad;
+  sprite.y = minY - pad;
+  sprite.eventMode = 'none'; // 让事件穿透到父容器，保持 hover 正常
+  return sprite;
+}
   syncView() {
     if (!this.app || !this.app.renderer) return;
     const svgCanvas = (this.workspace as any).svgBlockCanvas_ || this.workspace.getCanvas();
@@ -258,48 +429,56 @@ export class PixiBlockRenderer {
     this.loadVisibleRoots(false); // 非强制：尊重用户意图
   }
 
-  async fullRefresh(targetId?: string) {
-      // 如果渲染器尚未就绪，先挂起请求
+    async fullRefresh(targetId?: string, forceAll = false) {
+      if (targetId) (this as any).currentTargetId = targetId;
+      const ct = this.vm.editingTarget;
+      if (!ct) return;
+
+      // 渲染器未就绪时挂起请求（原逻辑保留）
       if (!this.app || !this.app.renderer) {
         this.pendingFullRefresh = true;
         if (targetId) this.pendingTargetId = targetId;
         return;
       }
-    if (targetId) (this as any).currentTargetId = targetId;
-    const ct = this.vm.editingTarget;
-    if (!ct) return;
-    this.destroyAllContainers();
-    this.domOnlyRoots.clear(); // 切换角色时重置
-    this.loadVisibleRoots(true); // 强制全部 Pixi 覆盖
-  }
 
-  private loadVisibleRoots(force: boolean) {
-    const ct = this.vm.editingTarget;
-    if (!ct) return;
-    const activeId = getActiveGroupId(ct.id);
-    const topBlocks = this.workspace.getTopBlocks(false);
-    const scale = this.world.scale.x;
-    const viewX = -this.world.position.x / scale;
-    const viewY = -this.world.position.y / scale;
-    const viewW = this.app.renderer ? this.app.screen.width / scale : 0;
-    const viewH = this.app.renderer ? this.app.screen.height / scale : 0;
-    const margin = 500;
+      this.destroyAllContainers();
+      this.pendingCreateBlocks = [];
+      this.domOnlyRoots.clear();
+      this.interactionsPaused = false;
 
-    for (const block of topBlocks) {
-      if (block.workspace !== this.workspace || block.workspace.isFlyout) continue;
-      if (activeId !== ALL_GROUPS_ID && getBlockGroup(block) !== activeId) continue;
+      // 强制重置待创建队列（清空后填充）
+      this.pendingCreateBlocks = [];
+      this.loadVisibleRoots(true, forceAll);
+    }
 
-      const rootId = block.id;
-      if (this.rootContainers.has(rootId)) continue;
+private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
+  const ct = this.vm.editingTarget;
+  if (!ct) return;
+  const activeId = getActiveGroupId(ct.id);
+  const topBlocks = this.workspace.getTopBlocks(false);
+  const scale = this.world.scale.x;
+  const viewX = -this.world.position.x / scale;
+  const viewY = -this.world.position.y / scale;
+  const viewW = this.app.renderer ? this.app.screen.width / scale : 0;
+  const viewH = this.app.renderer ? this.app.screen.height / scale : 0;
+  const margin = forceAll ? Infinity : 500;
 
-      // 非强制模式下，跳过用户手动保留 DOM 的积木
-      if (!force && this.domOnlyRoots.has(rootId)) continue;
-      // 非强制模式下，如果 DOM 当前可见，则标记为 domOnly 并跳过
-      if (!force && this.isRootDOMVisible(rootId)) {
-        this.domOnlyRoots.add(rootId);
-        continue;
-      }
+  for (const block of topBlocks) {
+    if (block.workspace !== this.workspace || block.workspace.isFlyout) continue;
+    if (activeId !== ALL_GROUPS_ID && getBlockGroup(block) !== activeId) continue;
 
+    const rootId = block.id;
+    if (this.rootContainers.has(rootId)) continue;
+
+    // 非强制 Pixi 化时，遵守 domOnlyRoots 和可见性规则
+    if (!forcePixi && this.domOnlyRoots.has(rootId)) continue;
+    if (!forcePixi && this.isRootDOMVisible(rootId)) {
+      this.domOnlyRoots.add(rootId);
+      continue;
+    }
+
+    // 如果不强制全量，进行视口检测
+    if (!forceAll) {
       let bounds = this.rootBoundsCache.get(rootId);
       if (!bounds) {
         const data = extractTreeBlocks(block, this.blockly);
@@ -311,17 +490,19 @@ export class PixiBlockRenderer {
         bounds = { minX, minY, maxX, maxY };
         this.rootBoundsCache.set(rootId, bounds);
       }
-
-      if (
-        bounds.maxX > viewX - margin &&
-        bounds.minX < viewX + viewW + margin &&
-        bounds.maxY > viewY - margin &&
-        bounds.minY < viewY + viewH + margin
-      ) {
-        this.createRootContainer(block);
+      if (bounds.maxX <= viewX - margin || bounds.minX >= viewX + viewW + margin ||
+          bounds.maxY <= viewY - margin || bounds.minY >= viewY + viewH + margin) {
+        continue; // 不在视口内，跳过
       }
     }
+
+    // 无论哪种模式，到达此处意味着需要 Pixi 化该积木
+    // 立即隐藏 DOM，避免残留
+    this.hideRootDOM(rootId);
+    // 放入分帧创建队列
+    this.pendingCreateBlocks.push(block);
   }
+}
 
   private createRootContainer(rootBlock: any) {
   const rootId = rootBlock.id;
@@ -332,6 +513,13 @@ export class PixiBlockRenderer {
   container.visible = true;
   container.alpha = 0.6; // 默认稍暗，hover 时变亮
 
+    const chains = this.extractSimpleChains(rootBlock, data);
+  const groupedIds = new Set<string>();
+  for (const chain of chains) {
+    for (const item of chain) groupedIds.add(item.id);
+    const bakedSprite = this.createBakedChainSprite(chain);
+    container.addChild(bakedSprite);
+  }
   const sorted = [...data].sort((a, b) => a.depth - b.depth);
 
   // 绘制合并的形状（所有积木形状和输入）
@@ -425,6 +613,12 @@ export class PixiBlockRenderer {
   this.world.addChild(container);
   this.rootContainers.set(rootId, container);
   this.hideRootDOM(rootId);
+    // 计算并缓存包围盒，供 getChunkAt 等使用
+  const minX = Math.min(...data.map(d => d.x));
+  const minY = Math.min(...data.map(d => d.y));
+  const maxX = Math.max(...data.map(d => d.x + (d.width || 0)));
+  const maxY = Math.max(...data.map(d => d.y + (d.height || 0)));
+  this.rootBoundsCache.set(rootId, { minX, minY, maxX, maxY });
 }
 
   private setRootHover(rootId: string, hover: boolean) {
@@ -464,7 +658,19 @@ export class PixiBlockRenderer {
       container.visible = visible;
     }
   }
-
+  /** 批量添加根积木到 Pixi 创建队列，并立即隐藏其 DOM */
+  public addBlocks(blocks: any[]) {
+    for (const block of blocks) {
+      const rootId = block.id;
+      // 跳过已有容器或已在队列中的
+      if (this.rootContainers.has(rootId)) continue;
+      if (this.pendingCreateBlocks.some(b => b.id === rootId)) continue;
+      // 立即隐藏 DOM，防止残留
+      this.hideRootDOM(rootId);
+      // 加入分帧创建队列
+      this.pendingCreateBlocks.push(block);
+    }
+  }
   // ---------- 公开接口 ----------
   clearPixiForRoot(rootBlock: any) {
     if (!rootBlock) return;
@@ -474,6 +680,8 @@ export class PixiBlockRenderer {
       container.destroy({ children: true });
       this.rootContainers.delete(rootId);
     }
+    // 从分帧创建队列中移除，避免后续自动重建并隐藏 DOM
+    this.pendingCreateBlocks = this.pendingCreateBlocks.filter(b => b.id !== rootId);
     this.showRootDOM(rootId);
   }
 
@@ -546,6 +754,7 @@ export class PixiBlockRenderer {
   cancelBake() {}
 
   destroy() {
+    this.pendingCreateBlocks = [];
     this.destroyAllContainers();
     if ((this as any).__resizeHandler) {
       window.removeEventListener("resize", (this as any).__resizeHandler);
@@ -557,6 +766,7 @@ export class PixiBlockRenderer {
   }
 
   private destroyAllContainers() {
+    this.pendingCreateBlocks = [];
     this.textTextureCache.forEach(tex => tex.destroy(true));
     this.textTextureCache.clear();
     for (const container of this.rootContainers.values()) {
@@ -582,6 +792,7 @@ export class PixiBlockRenderer {
       if (b.svgGroup_) {
         (b.svgGroup_.style as any).contentVisibility = '';
         b.svgGroup_.style.visibility = ''; // 恢复默认可见
+        b.svgGroup_.style.display = '';
         b.svgGroup_.style.position = 'relative';
         b.svgGroup_.style.zIndex = '2';
       }

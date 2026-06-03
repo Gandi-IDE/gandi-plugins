@@ -69,7 +69,16 @@ function extractTopLevelBlocks(xmlString: string): Element[] {
   }
 }
 
-const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, registerSettings }) => {
+function getGroupIdFromBlockXml(xmlBlock: Element): string {
+  const commentNode = xmlBlock.querySelector('comment');
+  if (!commentNode) return UNGROUPED_ID;
+  const commentText = commentNode.textContent || '';
+  const separator = '|EdiOpt|';
+  const sepIdx = commentText.indexOf(separator);
+  if (sepIdx <= 0) return UNGROUPED_ID;
+  return commentText.substring(0, sepIdx);
+}
+const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, registerSettings, teamworkManager }) => {
   const [visible, setVisible] = React.useState(false);
   const [targetId, setTargetId] = React.useState<string | null>(null);
   const [groups, setGroups] = React.useState<any[]>([]);
@@ -129,16 +138,32 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         switchGroup(targetId, groupId, workspace, blockly, getBlockGroup, ALL_GROUPS_ID);
         setActiveGroupIdState(groupId);
         setActiveGroupId(targetId, groupId);
+        (vm as any).emitWorkspaceUpdate?.();
         refreshGroups();
+        //立即将主工作区中尚未被 Pixi 覆盖的积木加入队列
+        if (pixiEnabled && pixiRendererRef.current) {
+          const allTopBlocks = workspace.getTopBlocks(false);
+          const renderer = pixiRendererRef.current;
+          const toAdd = allTopBlocks.filter(
+            (b: any) => !renderer.hasPixiForRoot(b.id) && !renderer['domOnlyRoots']?.has(b.id)
+          );
+          if (toAdd.length > 0) {
+            renderer.addBlocks(toAdd);
+          }
+        }
       } catch (e) {
         console.error('离屏分组切换失败', e);
         toast.error('分组切换失败');
       }
       return;
-    }
-    setActiveGroupId(targetId, groupId);
-    setActiveGroupIdState(groupId);
-    (vm as any).emitWorkspaceUpdate?.();
+    } else {
+      setActiveGroupId(targetId, groupId);
+      setActiveGroupIdState(groupId);
+      // 触发完整重新加载，让劫持按新分组过滤加载
+      (vm as any).emitWorkspaceUpdate?.();
+      refreshGroups();
+      return;
+  }
   };
 
   const handleAddGroup = () => {
@@ -217,7 +242,8 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     );
     return () => dispose.dispose();
   }, [registerSettings]);
-  // 因为我根本不知道协作是否有状态标识，所以我们直接检测是否存在协作特有的GUI按钮。
+  // 因为我根本不知道协作是否有状态标识，所以我们直接检测是否存在协作特有的GUI按钮。方法已废弃，有teamworkManager这个东西啦。
+  /*
   if (!window.hasOwnProperty('__IS_COLLABORATION__')) {
     (window as any).__IS_COLLABORATION__ = !!document.querySelector(
       'div.gandi_teamwork-log_log-icon-btn_3XmSR'
@@ -225,8 +251,11 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     if ((window as any).__IS_COLLABORATION__) {
       console.log('[editor-optimization]检测到是协作环境,已禁用离屏缓存。')
     }
+  }*/
+   if (teamworkManager && !(window as any).__IS_COLLABORATION__) {
+    (window as any).__IS_COLLABORATION__ = true;
+    console.log('[editor-optimization] 检测到协作环境，已禁用离屏缓存。');
   }
-  // ========== 以下为原 EditorOptimization 的全部 useEffect（切出优化、核心劫持、全屏优化、注释处理、Frame 禁用等）保持不变 ==========
   // 核心劫持：clearWorkspaceAndLoadFromXml（集成离屏缓存）
   React.useEffect(() => {
     if (!blockly || !workspace || !vm) return;
@@ -236,14 +265,50 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
     const origClearWs = blockly.Xml?.clearWorkspace;
 
     if (!origClear || !origDom) return;
+    const origDomToWorkspace = blockly.Xml?.domToWorkspace;
 
+    blockly.Xml.domToWorkspace = function(xml: Element, targetWorkspace: any) {
+      if ((window as any).__IS_COLLABORATION__) {
+        const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
+        if (ct) {
+          const activeId = getActiveGroupId(ct.id);
+          if (activeId !== ALL_GROUPS_ID) {
+            const clone = xml.cloneNode(true) as Element;
+            // 收集属于当前分组的 block id
+            const keepBlockIds = new Set<string>();
+            const children = Array.from(clone.children);
+            for (const child of children) {
+              if (child.tagName.toLowerCase() === 'block') {
+                const groupId = getGroupIdFromBlockXml(child);
+                if (groupId === activeId) {
+                  const blockId = child.getAttribute('id');
+                  if (blockId) keepBlockIds.add(blockId);
+                } else {
+                  clone.removeChild(child);
+                }
+              }
+            }
+            // 移除不属于当前分组 block 的 comment 元素
+            const commentNodes = clone.querySelectorAll('comment');
+            for (const commentNode of commentNodes) {
+              const commentId = commentNode.getAttribute('id');
+              if (commentId && !keepBlockIds.has(commentId)) {
+                commentNode.parentNode?.removeChild(commentNode);
+              }
+            }
+            return origDomToWorkspace.call(this, clone, targetWorkspace);
+          }
+        }
+      }
+      return origDomToWorkspace.call(this, xml, targetWorkspace);
+    };
     blockly.Xml.clearWorkspaceAndLoadFromXml = function(xml: any, ...args: any[]) {
       const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
+      const tw = workspace || this;
       if (!ct) return origClear.call(this, xml, ...args);
-        //协作模式下通过原生加载
+        //协作模式下通过类原生加载，过滤非分组积木。
         if ((window as any).__IS_COLLABORATION__) {
           const result = origClear.call(this, xml, ...args);
-          // 原生加载后刷新 Pixi（如果开启）
           if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
             requestAnimationFrame(() => {
               (window as any).__PIXI_REFRESH_OVERLAY__?.();
@@ -263,7 +328,6 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       lastTargetIdRef.current = newTargetId;
 
       const activeId = getActiveGroupId(newTargetId);
-      const tw = workspace || this;
       // 如果是同一个编辑目标且工作区已有积木，说明是视图切换引起的多余调用，直接保留现状
       if (lastTargetIdRef.current === newTargetId && tw.getTopBlocks(false).length > 0) {
           if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
@@ -373,11 +437,12 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             console.error('[离屏缓存] 初始化失败', e);
         }  
       }
+      /*
       try {
       origClear.call(this, xml, ...args);
     } finally {
       setActiveGroupId(newTargetId, originalActiveId);
-    }
+    }*/
     cleanupFramesAfterLoad(tw);
 
     // 触发 Pixi 刷新（若已开启）
@@ -390,18 +455,25 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       return tw;
     };
 
-    const handleCreate = (e: any) => {
-      if (e.type !== blockly.Events.BLOCK_CREATE) return;
-      const block = workspace.getBlockById(e.blockId) as any;
-      if (!block || block.getParent?.()) return;
-      const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
-      if (!ct) return;
-      const activeId = getActiveGroupId(ct.id);
-      // 延迟到下一帧，保证积木已完成布局
-      requestAnimationFrame(() => {
-        setBlockGroup(block, activeId === ALL_GROUPS_ID ? UNGROUPED_ID : activeId, ct.id);
-      });
-    };
+      const handleCreate = (e: any) => {
+        if (e.type !== blockly.Events.BLOCK_CREATE) return;
+        const block = workspace.getBlockById(e.blockId) as any;
+        if (!block || block.getParent?.()) return;
+        const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
+        if (!ct) return;
+        const activeId = getActiveGroupId(ct.id);
+        requestAnimationFrame(() => {
+          //const root = getRootBlock(block);理论上讲应该设置根积木的，我也不知道为什么它能跑，反正不动了
+          setBlockGroup(block, activeId === ALL_GROUPS_ID ? UNGROUPED_ID : activeId, ct.id);
+          if ((window as any).__IS_COLLABORATION__ && activeId !== ALL_GROUPS_ID) {
+            const group = getBlockGroup(block);
+            if (group !== activeId) {
+              workspace.removeTopBlock(block);
+              block.dispose(false, false);
+            }
+          }
+        });
+      };
     workspace.addChangeListener(handleCreate);
 
     const ContextMenu = (window as any).Blockly.ContextMenu;
@@ -479,6 +551,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
       if (menuId && ContextMenu && typeof ContextMenu.deleteDynamicMenuItem === 'function') {
         ContextMenu.deleteDynamicMenuItem(menuId);
       }
+      if (origDomToWorkspace) blockly.Xml.domToWorkspace = origDomToWorkspace;
     };
   }, [blockly, workspace, vm, refreshGroups]);
   //阻止注释生成。这应该比原本的方法更高效。
@@ -1006,6 +1079,7 @@ React.useEffect(() => {
   const handleDoubleClick = (e: MouseEvent) => {
     if (ignoreNextDoubleClick) return; // 缩放时忽略双击
     const rootId = renderer.getChunkAt(e.clientX, e.clientY);
+    console.log(rootId)
     if (rootId) {
       const rootBlock = workspace.getBlockById(rootId);
       if (rootBlock) renderer.clearPixiForRoot(rootBlock);
@@ -1117,20 +1191,20 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
       }
     };
   }
-
+/*
   if (BlocklyXml && originalDomToBlock) {
     BlocklyXml.domToBlock = function (xmlBlock: Element, targetWorkspace: any) {
       const result = originalDomToBlock.call(this, xmlBlock, targetWorkspace);
-      /*
+      
       // 新块加入后标记脏区
       if (result) {
         const root = result.getRootBlock?.() || result;
         if (root.workspace === workspace) renderer.markDirty(root);
-      }*/
+      }
       return result;
     };
   }
-
+*/
   // 插入标记管理器：连接/断开前恢复 DOM
   if (InsertionMarkerManager) {
     originalConnectMarker = InsertionMarkerManager.prototype.connectMarker_;
@@ -1176,12 +1250,14 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
   }
 
   vm.setEditingTarget = function (targetId: string) {
+    const isCollab = !!(window as any).__IS_COLLABORATION__;
     renderer.cancelBake();
     const result = originalSetEditingTarget(targetId);
-    // 延迟刷新，保证离屏缓存切换完成
+    //延迟刷新
     requestAnimationFrame(() => {
-      renderer.fullRefresh(targetId);
+      renderer.fullRefresh(targetId, isCollab);
     });
+    
     return result;
   };
 

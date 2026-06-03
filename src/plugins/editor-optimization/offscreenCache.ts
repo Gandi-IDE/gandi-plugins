@@ -158,36 +158,37 @@ export function ensureOffscreenWorkspace(targetId: string, blockly: any, mainWor
   if (hiddenWorkspaceCache.has(targetId)) {
     const hiddenWs = hiddenWorkspaceCache.get(targetId);
     // 清理旧积木和注释
-    const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
-    oldTopBlocks.forEach((b: any) => b.dispose(false, false));
     if (hiddenWs.getTopComments) {
-      hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
+      //hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
     }
+    //const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
+    //oldTopBlocks.forEach((b: any) => b.dispose(false, false));
     return hiddenWs;
   }
   const hiddenWs = createHiddenWorkspace(blockly, mainWorkspace);
   hiddenWorkspaceCache.set(targetId, hiddenWs);
-  console.log('[Offscreen Clean] Hidden workspace blocks after clean:', hiddenWs.getTopBlocks(false).length);
   return hiddenWs;
 }
 
 export function saveTargetToOffscreen(targetId: string, mainWs: any, blockly: any) {
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
-  
-  // ✅ 清空旧缓存中的所有积木，避免 DOM 泄漏
-  const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
-  oldTopBlocks.forEach((b: any) => b.dispose(false, false));
-  // 清空旧注释
+  //清空旧注释
   if (hiddenWs.getTopComments) {
-    hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
+   // hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
   }
+  // 清空旧缓存中的所有积木，避免 DOM 泄漏
+  //const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
+  //oldTopBlocks.forEach((b: any) => b.dispose(false, false));
+
 
   copyVariables(mainWs, hiddenWs, blockly);
   blockly.Events.disable();
   try {
     const topBlocks = [...mainWs.getTopBlocks(false)];
     topBlocks.forEach((block: any) => lightMoveBlockTreeToOffscreen(block, mainWs, hiddenWs));
-    moveCommentsToWorkspace(mainWs, hiddenWs, blockly);
+    const comments = mainWs.getTopComments?.(false) || [];
+    const validComments = comments.filter((c: any) => c?.block_ && mainWs.getBlockById(c.block_.id));
+    moveCommentsToWorkspace(mainWs, hiddenWs, blockly, validComments);
     if (mainWs.intersectionObserver) {
       mainWs.intersectionObserver.observing = [];
     }
@@ -252,8 +253,15 @@ export function restoreTargetFromOffscreen(
       if (svgRoot) svgRoot.style.display = '';
     });
     */
-    // 搬移注释
-    moveCommentsToWorkspace(hiddenWs, mainWs, blockly);
+    // 获取离屏工作区的注释，只恢复属于当前分组的
+    const allComments = hiddenWs.getTopComments(false) || [];
+    const filteredComments = allComments.filter((c: any) => {
+      const block = c.block_;
+      if (!block) return false;
+      const groupId = getBlockGroup(block);
+      return activeGroupId === allGroupsId || groupId === activeGroupId;
+    });
+    moveCommentsToWorkspace(hiddenWs, mainWs, blockly, filteredComments);
     // 手动设置 blocksArea_ 为画布的真实矩形（轻量，不触发全量重排）
     /*但这里其实有大宗重排，所以被注掉了。
     if (canvas) {
@@ -487,22 +495,23 @@ function lightMoveBlockTreeToOffscreen(rootBlock: any, srcWs: any, dstWs: any) {
 /**
  * 将源工作区的所有顶层注释移动到目标工作区（包括 DOM、数据库）
  */
-export function moveCommentsToWorkspace(srcWs: any, dstWs: any, blockly: any) {
-  const comments = srcWs.getTopComments?.(false) || [];
-  if (!comments.length) return;
+export function moveCommentsToWorkspace(srcWs: any, dstWs: any, blockly: any, comments?: any[]) {
+  const commentsToMove = comments || srcWs.getTopComments?.(false) || [];
+  if (!commentsToMove.length) return;
 
   blockly.Events.disable();
   try {
-    comments.forEach((comment: any) => {
+    for (const comment of commentsToMove) {
+      if (!comment || !comment.block_) continue; // 跳过无效注释
+
       // 从源移除
       if (srcWs.removeTopComment) {
         srcWs.removeTopComment(comment);
       }
 
-      // 切换 workspace 引用
       comment.workspace = dstWs;
 
-      // 移动 SVG 节点（注释位于气泡画布）
+      // 移动 SVG
       const svgRoot = comment.getSvgRoot?.();
       if (svgRoot && svgRoot.parentNode) {
         svgRoot.parentNode.removeChild(svgRoot);
@@ -512,7 +521,7 @@ export function moveCommentsToWorkspace(srcWs: any, dstWs: any, blockly: any) {
         bubbleCanvas.appendChild(svgRoot);
       }
 
-      // 注册到目标工作区的注释数据库和顶层列表
+      // 注册到目标工作区
       if (dstWs.addTopComment) {
         dstWs.addTopComment(comment);
       } else {
@@ -526,7 +535,7 @@ export function moveCommentsToWorkspace(srcWs: any, dstWs: any, blockly: any) {
       if (srcWs.commentDB_ && comment.id in srcWs.commentDB_) {
         delete srcWs.commentDB_[comment.id];
       }
-    });
+    }
   } finally {
     blockly.Events.enable();
   }
