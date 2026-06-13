@@ -1069,7 +1069,23 @@ React.useEffect(() => {
   wrapper.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;";
   workspaceDiv.style.position = "relative";
   workspaceDiv.appendChild(wrapper);
-
+  // 创建调试面板
+  const debugPanel = document.createElement('div');
+  debugPanel.style.cssText = `
+    position: absolute;
+    bottom: 4px;
+    left: 332px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    font-family: monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 9999;
+    pointer-events: none;
+    line-height: 1.4;
+  `;
+  wrapper.appendChild(debugPanel);
   // 初始化渲染器
   const renderer = new PixiBlockRenderer(wrapper, workspace, blockly, vm);
   renderer.onRestoreDOM = (rootId: string) => {
@@ -1089,7 +1105,6 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
   pixiRendererRef.current = renderer;
   renderer.init().then(() => {
-
     const ContextMenu = (window as any).Blockly.ContextMenu;
     let menuItemId: string | null = null;
     if (ContextMenu && typeof ContextMenu.addDynamicMenuItem === 'function') {
@@ -1113,7 +1128,11 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
     renderer.syncView();
     renderer.fullRefresh((vm as any).editingTarget?.id);
   });
-
+    const debugInterval = setInterval(() => {
+      if (!pixiRendererRef.current) return;
+      const info = pixiRendererRef.current.getDebugInfo();
+      debugPanel.textContent = `FPS: ${Math.round(info.fps)} | Active Sprites: ${info.spriteCount}`;
+    }, 500);
   // ---------- 保存原始方法 ----------
   const BlocklyAny = blockly as any;
   const WorkspaceDragger = BlocklyAny.WorkspaceDragger?.prototype;
@@ -1269,6 +1288,7 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
   // ---------- 清理 ----------
   return () => {
+    clearInterval(debugInterval);
     if (WorkspaceDragger) WorkspaceDragger.drag = originalDrag;
     workspace.setScale = originalSetScale;
     workspaceDiv.removeEventListener('dblclick', handleDoubleClick);

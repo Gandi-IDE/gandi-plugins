@@ -176,14 +176,23 @@ export class PixiBlockRenderer {
   private pendingTargetId?: string;
   // 用户主动恢复为 DOM 的根积木 ID 集合，之后不再自动 Pixi 化
   private domOnlyRoots: Set<string> = new Set();
-
+  private dormantContainers: Map<string, PIXI.Container> = new Map();
   public refreshOverlay: () => Promise<void>;
   public onRestoreDOM?: (rootBlockId: string) => void;
   private interactionsPaused = false;
   private pendingCreateBlocks: any[] = [];
   private createBatchSize = 8; // 每帧创建5个容器，避免卡顿
   private lastPauseTime = 0;
-
+  public getDebugInfo(): { fps: number; spriteCount: number } {
+    let visibleCount = 0;
+    for (const container of this.rootContainers.values()) {
+      if (container.visible) visibleCount++;
+    }
+    return {
+      fps: this.app?.ticker?.FPS ?? 0,
+      spriteCount: visibleCount,
+    };
+  }
   public pauseInteractions() {
     if (this.interactionsPaused) return;
     this.interactionsPaused = true;
@@ -645,17 +654,51 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
     const vy = -this.world.position.y / scale;
     const vw = this.app.screen.width / scale;
     const vh = this.app.screen.height / scale;
-    const margin = 200;
+    const visibleMargin = 300;
+    const dormantMargin = 2000; // 超过此距离则休眠
 
     for (const [rootId, container] of this.rootContainers) {
       const bounds = this.rootBoundsCache.get(rootId);
       if (!bounds) continue;
-      const visible =
-        bounds.maxX > vx - margin &&
-        bounds.minX < vx + vw + margin &&
-        bounds.maxY > vy - margin &&
-        bounds.minY < vy + vh + margin;
-      container.visible = visible;
+
+      const inView = 
+        bounds.maxX > vx - visibleMargin &&
+        bounds.minX < vx + vw + visibleMargin &&
+        bounds.maxY > vy - visibleMargin &&
+        bounds.minY < vy + vh + visibleMargin;
+
+      if (inView) {
+        // 如果在视野内，确保容器处于活跃状态
+        container.visible = true;
+        if (container.parent !== this.world) {
+          this.world.addChild(container);
+        }
+        this.dormantContainers.delete(rootId);
+      } else {
+        // 视野外：判断是否需要休眠
+        const farAway = 
+          bounds.maxX <= vx - dormantMargin ||
+          bounds.minX >= vx + vw + dormantMargin ||
+          bounds.maxY <= vy - dormantMargin ||
+          bounds.minY >= vy + vh + dormantMargin;
+
+        if (farAway) {
+          // 完全远离视口 → 休眠
+          if (container.parent === this.world) {
+            this.world.removeChild(container);
+          }
+          container.visible = false;
+          this.dormantContainers.set(rootId, container);
+        } else {
+          // 虽不在视野内但不太远 → 仅隐藏，不休眠
+          container.visible = false;
+          // 确保仍在 world 中（可能之前被休眠后又靠近了）
+          if (container.parent !== this.world) {
+            this.world.addChild(container);
+          }
+          this.dormantContainers.delete(rootId);
+        }
+      }
     }
   }
   /** 批量添加根积木到 Pixi 创建队列，并立即隐藏其 DOM */
@@ -679,6 +722,11 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
     if (container) {
       container.destroy({ children: true });
       this.rootContainers.delete(rootId);
+    }
+    if (this.dormantContainers.has(rootId)) {
+      const dormant = this.dormantContainers.get(rootId);
+      (dormant as any).destroy({ children: true });
+      this.dormantContainers.delete(rootId);
     }
     // 从分帧创建队列中移除，避免后续自动重建并隐藏 DOM
     this.pendingCreateBlocks = this.pendingCreateBlocks.filter(b => b.id !== rootId);
@@ -772,6 +820,10 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
     for (const container of this.rootContainers.values()) {
       container.destroy({ children: true });
     }
+    for (const container of this.dormantContainers.values()) {
+      container.destroy({ children: true });
+    }
+    this.dormantContainers.clear();
     this.rootContainers.clear();
   }
 
