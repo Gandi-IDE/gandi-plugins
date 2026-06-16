@@ -31,5 +31,6 @@ export default {
   "witcat-infinite-canvas": () =>
     import(/* webpackChunkName: "plugin-witcat-infinite-canvas" */ "src/plugins/witcat-infinite-canvas"),
   "find-definition": () => import(/* webpackChunkName: "plugin-find-definition" */ "src/plugins/find-definition"),
+  "editor-optimization": () => import(/* webpackChunkName: "plugin-editor-optimization" */ "src/plugins/editor-optimization"),
   "todo-list": () => import(/* webpackChunkName: "plugin-todo-list" */ "src/plugins/todo-list"),
 } as const;

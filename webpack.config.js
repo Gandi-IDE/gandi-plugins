@@ -23,7 +23,7 @@ module.exports = {
         type: 'asset/source',
       },
       {
-        test: /\.tsx?$/,
+        test: /\.(tsx?|jsx)$/,
         use: "ts-loader",
         exclude: /node_modules/,
       },
