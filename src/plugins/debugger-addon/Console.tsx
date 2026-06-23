@@ -56,7 +56,12 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
           return renderLogs.map((log, i) => (
             <div className={styleConsole.logLine} key={i + startKey}>
               {log.count > 1 && <div className={styleConsole.logCount}>{log.count}</div>}
-              <div dangerouslySetInnerHTML={{ __html: log.msg }} />
+              <span dangerouslySetInnerHTML={{ __html: log.msg }} className={styleConsole.logContent} />
+              {log.innerBlockText && (
+                <span className={styleConsole.logInnerBlockTip}>
+                  <span style={{ backgroundColor: log.innerBlockColor }}>{log.innerBlockText}</span>
+                </span>
+              )}
               <a
                 className={styleConsole.targetLink}
                 onClick={(e) => {

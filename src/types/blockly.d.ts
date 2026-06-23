@@ -910,4 +910,18 @@ declare namespace Blockly {
     top: number;
     width: number;
   }
+
+  export interface Msg {
+    [K: string]: string;
+  }
+
+  export interface Blocks {
+    [K: string]: {
+      init?(): void;
+    };
+  }
+
+  export interface Colours {
+    [K: string]: any;
+  }
 }

@@ -24,11 +24,41 @@
   padding-left: 8px;
   padding-right: 8px;
   border-radius: 9px;
-  height: 18px;
+  height: 16px;
   margin-top: auto;
   margin-bottom: auto;
   background-color: var(--theme-color-b100);
   color: var(--theme-text-primary);
+  flex-shrink: 0;
+}
+
+.logContent {
+  flex-shrink: 0.4;
+}
+
+.logInnerBlockTip {
+  width: fit-content;
+  flex-shrink: 0.6;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.logInnerBlockTip > * {
+  width: fit-content;
+  border-radius: 8px;
+  height: 16px;
+  display: inline;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.targetLink {
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+  text-decoration: underline 1px;
+  cursor: pointer;
 }
 
 .logLine {
@@ -36,23 +66,18 @@
   flex-direction: row;
   gap: 8px;
   border-radius: 0;
-  min-height: 20px;
-  align-items: center;
+  min-height: 16px;
+  width: 100%;
+  align-items: baseline;
   border-bottom: solid var(--theme-color-g300) 1px;
   white-space: pre;
   font-family: Consolas, Monaco, "Courier New", Courier, monospace;
   position: relative;
+  line-height: 16px;
 }
 
-.logLine * {
+.logLine > * {
   display: inline-block;
   overflow-wrap: anywhere;
-}
-
-.targetLink {
-  position: absolute;
-  right: 0;
-  text-decoration: underline 1px;
-  color: var(--theme-color-g300);
-  cursor: pointer;
+  text-wrap-mode: wrap;
 }

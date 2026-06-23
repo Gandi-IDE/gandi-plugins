@@ -7,6 +7,7 @@ import style from "./styles.less";
 import { ConsoleButton, ConsoleWindow } from "./Console";
 import { PerformanceButton, PerformanceWindow } from "./Performance";
 import Anser from "anser";
+import { getCurrentBlocks } from "./getCurrentBlocks";
 
 const pluginsWrapper = document.querySelector(".plugins-wrapper")!;
 export type WindowContext = PluginContext & {
@@ -17,10 +18,24 @@ export type WindowContext = PluginContext & {
     clean(): void;
   };
 };
-export type ConsoleLine = { msg: string; count: number; target: Scratch.RenderTarget; block: string };
+export type ConsoleLine = {
+  msg: string;
+  count: number;
+  target: Scratch.RenderTarget;
+  block: string;
+  innerBlockText: string;
+  innerBlockColor: string;
+};
 
 function isSameLine(line1: ConsoleLine, line2: ConsoleLine) {
-  return line1.msg == line2.msg && line1.block == line2.block && line1.target == line2.target;
+  type keys = keyof ConsoleLine;
+  const uniqueKeys: keys[] = ["msg", "innerBlockText", "target", "block"];
+  for (let k of uniqueKeys) {
+    if (line1[k] !== line2[k]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 const NavWindow: React.FC<{ items: [React.ReactNode, React.ReactNode][] }> = ({ items }) => {
@@ -93,20 +108,28 @@ function escape(str: string) {
 }
 
 const DebuggerAddon: React.FC<PluginContext> = (context) => {
-  const { registerSettings, msg, vm } = context;
+  const { registerSettings, msg, vm, blockly } = context;
   const [visible, setVisible] = React.useState(false);
   const [maxLines, setMaxLines] = React.useState(1000);
   const [disableOrigin, setDisableOrigin] = React.useState(false);
 
   const animationRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
-  const pushLine = (str: string, target: Scratch.RenderTarget, block: string) => {
+  const pushLine = (
+    str: string,
+    target: Scratch.RenderTarget,
+    block: string,
+    innerBlockText: string,
+    innerBlockColor = "",
+  ) => {
     const lastLine = incomingLines.current.at(-1);
     const newLine: ConsoleLine = {
       msg: Anser.ansiToHtml(escape(str)),
       count: 1,
       target,
+      innerBlockText,
       block,
+      innerBlockColor,
     };
     if (lastLine && isSameLine(lastLine, newLine)) {
       lastLine.count += 1;
@@ -139,10 +162,8 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     });
   }
   const handleMessage = React.useCallback((msg: unknown) => {
-    const { activeThread } = vm.runtime.sequencer;
-    const { target } = activeThread;
-    const blockId = activeThread.peekStack();
-    requestAnimationFrame(() => pushLine(String(msg), target, blockId));
+    const { target, blockId, innerBlockText, color } = getCurrentBlocks(vm, blockly);
+    requestAnimationFrame(() => pushLine(String(msg), target, blockId, innerBlockText, color));
   }, []);
   const clean = React.useCallback(() => {
     setLogs([]);

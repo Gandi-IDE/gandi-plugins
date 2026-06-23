@@ -20,7 +20,6 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
   const chartRef = React.useRef<Chart | null>(null);
   const framesRef = React.useRef(0);
   const { vm } = context;
-  const [fpsData, setFpsData] = React.useState<number[]>(new Array(20).fill(0));
   React.useEffect(() => {
     if (!fpsRef.current) {
       return;
@@ -29,9 +28,10 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
       type: "line",
       data: {
         labels,
-        datasets: [{ label: "fps", data: fpsData }],
+        datasets: [{ label: "fps", data: new Array(20) }],
       },
       options: {
+        animation: undefined,
         plugins: {
           legend: {
             display: false,
@@ -39,21 +39,18 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
         },
         scales: {
           y: {
-            beginAtZero: true,
+            min: 0,
+            suggestedMax: 300,
+          },
+          x: {
+            ticks: {
+              stepSize: 1,
+            },
           },
         },
       },
     });
   }, [fpsRef]);
-
-  React.useEffect(() => {
-    if (!chartRef.current) {
-      return;
-    }
-    const chart = chartRef.current;
-    chart.data.datasets[0].data = fpsData;
-    chart.update();
-  }, [fpsData]);
 
   React.useEffect(() => {
     const { runtime } = vm;
@@ -64,7 +61,14 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
     };
     const interval = setInterval(() => {
       const frames = framesRef.current;
-      setFpsData((fpsData) => [...fpsData.slice(1), frames]);
+      const chart = chartRef.current!;
+
+      const fpsData = chart.data.datasets[0].data;
+      chart.options.scales!.y!.suggestedMax = runtime.framerate;
+      fpsData.shift();
+      fpsData.push(frames);
+
+      chart.update();
       framesRef.current = 0;
     }, 1000);
     return () => {
