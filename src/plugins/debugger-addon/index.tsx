@@ -7,7 +7,7 @@ import style from "./styles.less";
 import { ConsoleButton, ConsoleWindow } from "./Console";
 import { PerformanceButton, PerformanceWindow } from "./Performance";
 import Anser from "anser";
-import { getCurrentBlocks } from "./getCurrentBlocks";
+import { getInnerText } from "./getCurrentBlocks";
 
 const pluginsWrapper = document.querySelector(".plugins-wrapper")!;
 export type WindowContext = PluginContext & {
@@ -69,9 +69,8 @@ const MainWindow: React.FC<{
 }> = ({ context, onClose }) => {
   const { msg, vm } = context;
   React.useEffect(() => {
-    console.log(vm);
     vm.extensionManager.loadExtensionURL("GandiTerminal");
-  }, [context]);
+  }, [vm]);
   const [containerInfo, setContainerInfo] = React.useState({ width: 480, height: 320, translateX: 80, translateY: 80 });
 
   const pages: [React.ReactNode, React.ReactNode][] = [
@@ -113,38 +112,36 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
   const [maxLines, setMaxLines] = React.useState(1000);
   const [disableOrigin, setDisableOrigin] = React.useState(false);
 
-  const animationRef = React.useRef<number | null>(null);
+  const throttleTimerRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
-  const pushLine = (
-    str: string,
-    target: Scratch.RenderTarget,
-    block: string,
-    innerBlockText: string,
-    innerBlockColor = "",
-  ) => {
-    const lastLine = incomingLines.current.at(-1);
-    const newLine: ConsoleLine = {
-      msg: Anser.ansiToHtml(escape(str)),
-      count: 1,
-      target,
-      innerBlockText,
-      block,
-      innerBlockColor,
-    };
-    if (lastLine && isSameLine(lastLine, newLine)) {
-      lastLine.count += 1;
-    } else {
-      incomingLines.current.push(newLine);
-    }
-    if (animationRef.current == null) {
-      animationRef.current = requestAnimationFrame(flushLines);
-    }
-  };
+  const pushLine = React.useCallback(
+    (str: string, target: Scratch.RenderTarget, block: string, innerBlockText: string, innerBlockColor = "") => {
+      const lastLine = incomingLines.current.at(-1);
+      const newLine: ConsoleLine = {
+        msg: Anser.ansiToHtml(escape(str)),
+        count: 1,
+        target,
+        innerBlockText,
+        block,
+        innerBlockColor,
+      };
+      if (lastLine && isSameLine(lastLine, newLine)) {
+        lastLine.count += 1;
+      } else {
+        incomingLines.current.push(newLine);
+      }
+      // 统一使用节流延迟更新
+      if (throttleTimerRef.current == null) {
+        throttleTimerRef.current = window.setTimeout(flushLines, 100);
+      }
+    },
+    [],
+  );
   const [logs, setLogs] = React.useState<ConsoleLine[]>([]);
   function flushLines() {
     const newLines = incomingLines.current;
     incomingLines.current = [];
-    animationRef.current = null;
+    throttleTimerRef.current = null;
     setLogs((logs) => {
       const lastLine = logs.at(-1);
       if (newLines.length == 0) {
@@ -162,8 +159,15 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     });
   }
   const handleMessage = React.useCallback((msg: unknown) => {
-    const { target, blockId, innerBlockText, color } = getCurrentBlocks(vm, blockly);
-    requestAnimationFrame(() => pushLine(String(msg), target, blockId, innerBlockText, color));
+    const { activeThread } = vm.runtime.sequencer;
+    const { target } = activeThread;
+    const { blocks } = target;
+    const blockId = activeThread.peekStack();
+    const block = blocks.getBlock(blockId);
+    requestAnimationFrame(() => {
+      const { innerBlockText, color } = getInnerText(block, blocks, blockly);
+      pushLine(String(msg), target, blockId, innerBlockText, color);
+    });
   }, []);
   const clean = React.useCallback(() => {
     setLogs([]);
@@ -209,6 +213,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       logSystem.error = error;
       logSystem.clear = clear;
       setLogs([]);
+      if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);
     };
   }, [vm, disableOrigin]);
   React.useEffect(() => {

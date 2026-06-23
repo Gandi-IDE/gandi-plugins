@@ -25,6 +25,18 @@ export const ConsoleButton: React.FC<{ label: string }> = ({ label }) => {
 export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
   const { Console } = context;
   const { logs, clean } = Console;
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // 有新日志时自动滚动到底部
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
+    }
+  }, [logs]);
+
   const jumpToBlock = React.useCallback(
     (line: ConsoleLine) => {
       const { vm, blockly: _blockly } = context;
@@ -44,7 +56,7 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
       <button className={styleConsole.trash} onClick={() => clean()}>
         <TrashIcon />
       </button>
-      <div className={styleConsole.consoleWindow}>
+      <div className={styleConsole.consoleWindow} ref={scrollRef}>
         {(() => {
           let renderLogs = logs;
           let startKey = 0;

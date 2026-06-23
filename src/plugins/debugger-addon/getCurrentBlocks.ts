@@ -17,34 +17,28 @@ interface IBlockly {
 
 const FALLBACK_COLOR = "#701111";
 
-export function getCurrentBlocks(
-  vm: VirtualMachine,
+export function getInnerText(
+  block: Scratch.BlockState,
+  blocks: Scratch.Blocks,
   blockly: IBlockly,
 ): {
-  target: Scratch.RenderTarget;
-  blockId: string;
   innerBlockText: string;
   color: string;
 } {
-  const { activeThread } = vm.runtime.sequencer;
-  const { target } = activeThread;
-  const { blocks } = target;
-  const blockId = activeThread.peekStack();
-  const block = blocks.getBlock(blockId);
   if (!block) {
-    return { target, blockId, innerBlockText: "", color: FALLBACK_COLOR };
+    return { innerBlockText: "", color: FALLBACK_COLOR };
   }
   const innerBlockId = Object.values(block.inputs)[0].block;
   if (innerBlockId) {
     const innerBlock = blocks.getBlock(innerBlockId);
     const { opcode } = innerBlock;
     if (["text", "number"].includes(opcode)) {
-      return { target, blockId, innerBlockText: "", color: FALLBACK_COLOR };
+      return { innerBlockText: "", color: FALLBACK_COLOR };
     }
     const { text: innerBlockText, color } = getBlockTextAndColor(innerBlock, blockly);
-    return { target, blockId, innerBlockText, color };
+    return { innerBlockText, color };
   }
-  return { target, blockId, innerBlockText: "", color: FALLBACK_COLOR };
+  return { innerBlockText: "", color: FALLBACK_COLOR };
 }
 
 export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockly): { text: string; color: string } {
@@ -65,7 +59,6 @@ export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockl
       blockConfig = config;
     },
   });
-  debugger;
   if (!blockConfig!) {
     return { text: "", color: FALLBACK_COLOR };
   }
