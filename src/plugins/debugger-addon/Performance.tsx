@@ -36,6 +36,7 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
   const {
     vm,
     blockly,
+    msg,
     Performance: {
       performance_maxTime,
       performance_startTime,
@@ -189,6 +190,7 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
         startTime={performance_startTime}
         records={performance_records}
         blockly={blockly}
+        msg={msg}
       />
     </div>
   );
@@ -205,7 +207,11 @@ interface TableRow {
 const PerfTableSection: React.FC<{
   title: string;
   data: TableRow[];
-}> = ({ title, data }) => {
+  countHeader: string;
+  selfHeader: string;
+  totalHeader: string;
+  pctHeader: string;
+}> = ({ title, data, countHeader, selfHeader, totalHeader, pctHeader }) => {
   const sortNumberAsc = React.useCallback((a: number, b: number) => (a || 0) - (b || 0), []);
   const columns = React.useMemo(
     () => [
@@ -222,7 +228,7 @@ const PerfTableSection: React.FC<{
         disableSortBy: true,
       },
       {
-        Header: "次数",
+        Header: countHeader,
         accessor: "count",
         className: PerformanceStyle.colNum,
         sortType: (rowA: any, rowB: any, columnId: string) =>
@@ -230,7 +236,7 @@ const PerfTableSection: React.FC<{
         Cell: ({ value }: any) => <td className={PerformanceStyle.colNum}>{value}</td>,
       },
       {
-        Header: "自身(ms)",
+        Header: selfHeader,
         accessor: "selfTime",
         className: PerformanceStyle.colNum,
         sortType: (rowA: any, rowB: any, columnId: string) =>
@@ -238,7 +244,7 @@ const PerfTableSection: React.FC<{
         Cell: ({ value }: any) => <td className={PerformanceStyle.colNum}>{value.toFixed(2)}</td>,
       },
       {
-        Header: "总计(ms)",
+        Header: totalHeader,
         accessor: "totalTime",
         className: PerformanceStyle.colNum,
         sortType: (rowA: any, rowB: any, columnId: string) =>
@@ -246,7 +252,7 @@ const PerfTableSection: React.FC<{
         Cell: ({ value }: any) => <td className={PerformanceStyle.colNum}>{value.toFixed(2)}</td>,
       },
       {
-        Header: "占比",
+        Header: pctHeader,
         accessor: "pct",
         className: PerformanceStyle.colPct,
         sortType: (rowA: any, rowB: any, columnId: string) =>
@@ -263,7 +269,7 @@ const PerfTableSection: React.FC<{
         ),
       },
     ],
-    [title, sortNumberAsc],
+    [title, sortNumberAsc, countHeader, selfHeader, totalHeader, pctHeader],
   );
 
   const tableInstance = useTable(
@@ -324,7 +330,8 @@ const ProfileDisplay: React.FC<{
   performance_maxTime: number;
   startTime: number;
   blockly: IBlockly;
-}> = ({ records, profilingStarted, performance_maxTime, startTime, blockly }) => {
+  msg: (key: string) => string;
+}> = ({ records, profilingStarted, performance_maxTime, startTime, blockly, msg }) => {
   const [now, setNow] = React.useState(0);
 
   React.useEffect(() => {
@@ -332,10 +339,17 @@ const ProfileDisplay: React.FC<{
     return () => window.clearInterval(interval);
   }, []);
 
+  const countHeader = msg("plugins.debuggerAddon.performance.header.count");
+  const selfHeader = msg("plugins.debuggerAddon.performance.header.self");
+  const totalHeader = msg("plugins.debuggerAddon.performance.header.total");
+  const pctHeader = msg("plugins.debuggerAddon.performance.header.pct");
+  const executeTitle = msg("plugins.debuggerAddon.performance.section.execute");
+  const blockTitle = msg("plugins.debuggerAddon.performance.section.block");
+
   if (profilingStarted) {
     return (
       <div className={PerformanceStyle.profiling}>
-        <span>评估中</span>
+        <span>{msg("plugins.debuggerAddon.performance.status.profiling")}</span>
         <progress max={performance_maxTime * 1000} value={now - startTime} />
       </div>
     );
@@ -345,7 +359,7 @@ const ProfileDisplay: React.FC<{
   if (!blockEntries.length && !records.render?.count && !records.execute?.count) {
     return (
       <div className={PerformanceStyle.profiling}>
-        <span>请开始评估</span>
+        <span>{msg("plugins.debuggerAddon.performance.status.empty")}</span>
       </div>
     );
   }
@@ -398,8 +412,26 @@ const ProfileDisplay: React.FC<{
 
   return (
     <div className={PerformanceStyle.tableWrapper}>
-      {executeRows.length > 0 && <PerfTableSection title="Execute" data={executeRows} />}
-      {blockRows.length > 0 && <PerfTableSection title="Block" data={blockRows} />}
+      {executeRows.length > 0 && (
+        <PerfTableSection
+          title={executeTitle}
+          data={executeRows}
+          countHeader={countHeader}
+          selfHeader={selfHeader}
+          totalHeader={totalHeader}
+          pctHeader={pctHeader}
+        />
+      )}
+      {blockRows.length > 0 && (
+        <PerfTableSection
+          title={blockTitle}
+          data={blockRows}
+          countHeader={countHeader}
+          selfHeader={selfHeader}
+          totalHeader={totalHeader}
+          pctHeader={pctHeader}
+        />
+      )}
     </div>
   );
 };

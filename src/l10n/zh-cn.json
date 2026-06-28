@@ -346,5 +346,13 @@
   "plugins.debuggerAddon.stats.disableAnimation": "禁用Chart.js的动画",
   "plugins.debuggerAddon.stats.disableAnimation.desc": "更加直观",
   "plugins.debuggerAddon.performance": "性能",
-  "plugins.debuggerAddon.performance.maxTime": "最大采样时间(秒)"
+  "plugins.debuggerAddon.performance.maxTime": "最大采样时间(秒)",
+  "plugins.debuggerAddon.performance.header.count": "次数",
+  "plugins.debuggerAddon.performance.header.self": "自身(ms)",
+  "plugins.debuggerAddon.performance.header.total": "总计(ms)",
+  "plugins.debuggerAddon.performance.header.pct": "占比",
+  "plugins.debuggerAddon.performance.section.execute": "Execute",
+  "plugins.debuggerAddon.performance.section.block": "Block",
+  "plugins.debuggerAddon.performance.status.profiling": "评估中",
+  "plugins.debuggerAddon.performance.status.empty": "请开始评估"
 }

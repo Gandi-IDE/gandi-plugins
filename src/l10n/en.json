@@ -346,5 +346,13 @@
   "plugins.debuggerAddon.stats.disableAnimation.desc": "More intuitive",
   "plugins.debuggerAddon.stats.clones": "Clones",
   "plugins.debuggerAddon.performance": "Performance",
-  "plugins.debuggerAddon.performance.maxTime": "Max collect time (secs)"
+  "plugins.debuggerAddon.performance.maxTime": "Max collect time (secs)",
+  "plugins.debuggerAddon.performance.header.count": "Count",
+  "plugins.debuggerAddon.performance.header.self": "Self(ms)",
+  "plugins.debuggerAddon.performance.header.total": "Total(ms)",
+  "plugins.debuggerAddon.performance.header.pct": "%",
+  "plugins.debuggerAddon.performance.section.execute": "Execute",
+  "plugins.debuggerAddon.performance.section.block": "Block",
+  "plugins.debuggerAddon.performance.status.profiling": "Profiling...",
+  "plugins.debuggerAddon.performance.status.empty": "Start profiling to see data"
 }
