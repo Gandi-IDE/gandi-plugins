@@ -62,6 +62,16 @@ export function getGandiTerminalInnerBlockId(block: Scratch.BlockState): string 
 
 export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockly): { text: string; color: string } {
   const { opcode } = block;
+  if (opcode.startsWith("procedures")) {
+    const { mutation } = block;
+    if (!("proccode" in mutation)) {
+      return;
+    }
+    return {
+      text: mutation.proccode.replace(/%./g, "()"),
+      color: "#FF6680",
+    };
+  }
   if (opcode == "data_variable") {
     return { text: `(${block.fields["VARIABLE"].value})`, color: blockly.Colours.data.primary };
   }
@@ -69,7 +79,7 @@ export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockl
     return { text: `(${block.fields["LIST"].value})`, color: blockly.Colours.data_lists.primary };
   }
   if (!blockly.Blocks[opcode].init) {
-    return { text: "", color: FALLBACK_COLOR };
+    return { text: opcode, color: FALLBACK_COLOR };
   }
   let blockConfig: BlockJSONconfig;
   const blockInit = blockly.Blocks[opcode].init;
@@ -79,7 +89,10 @@ export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockl
     },
   });
   if (!blockConfig!) {
-    return { text: "", color: FALLBACK_COLOR };
+    return { text: opcode, color: FALLBACK_COLOR };
+  }
+  if (!("message0" in blockConfig)) {
+    return { text: opcode, color: FALLBACK_COLOR };
   }
   return { text: blockConfig["message0"].replace(/%\d/g, "()"), color: getBlockColor(blockConfig, blockly) };
 }
@@ -93,6 +106,9 @@ export function getBlockColor(config: BlockJSONconfig, blockly: IBlockly) {
 
 export function getColorFromCategory(category: string, blockly: IBlockly) {
   if (category in blockly.Colours) {
+    if (!("primary" in blockly.Colours[category])) {
+      return;
+    }
     return blockly.Colours[category].primary;
   }
   return;
