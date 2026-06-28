@@ -238,60 +238,65 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     };
   }, [console_disableOrigin]);
   React.useEffect(() => {
-    const { dispose } = registerSettings(msg("plugins.debuggerAddon.title"), "debugger-addon", [
-      {
-        key: "debuggerAddon",
-        label: msg("plugins.debuggerAddon.title"),
-        description: msg("plugins.debuggerAddon.description"),
-        items: [
-          {
-            type: "switch",
-            value: console_disableOrigin,
-            key: "disableOriginConsole",
-            label: msg("plugins.debuggerAddon.console.disableOrigin"),
-            description: msg("plugins.debuggerAddon.console.disableOrigin.desc"),
-            onChange(v) {
-              setConsole_DisableOrigin(!!v);
+    const { dispose } = registerSettings(
+      msg("plugins.debuggerAddon.title"),
+      "debugger-addon",
+      [
+        {
+          key: "debuggerAddon",
+          label: msg("plugins.debuggerAddon.title"),
+          description: msg("plugins.debuggerAddon.description"),
+          items: [
+            {
+              type: "switch",
+              value: console_disableOrigin,
+              key: "disableOriginConsole",
+              label: msg("plugins.debuggerAddon.console.disableOrigin"),
+              description: msg("plugins.debuggerAddon.console.disableOrigin.desc"),
+              onChange(v) {
+                setConsole_DisableOrigin(!!v);
+              },
             },
-          },
-          {
-            type: "input",
-            value: console_maxLines,
-            key: "maxLines",
-            label: msg("plugins.debuggerAddon.console.maxLines"),
-            description: msg("plugins.debuggerAddon.console.maxLines.desc"),
-            inputProps: {
-              type: "number",
+            {
+              type: "input",
+              value: console_maxLines,
+              key: "maxLines",
+              label: msg("plugins.debuggerAddon.console.maxLines"),
+              description: msg("plugins.debuggerAddon.console.maxLines.desc"),
+              inputProps: {
+                type: "number",
+              },
+              onChange(v) {
+                setConsole_MaxLines(Number(v));
+              },
             },
-            onChange(v) {
-              setConsole_MaxLines(Number(v));
+            {
+              type: "switch",
+              value: stats_disableAnimation,
+              key: "disableAnimation",
+              label: msg("plugins.debuggerAddon.stats.disableAnimation"),
+              description: msg("plugins.debuggerAddon.stats.disableAnimation.desc"),
+              onChange(v) {
+                setStats_DisableAnimation(!!v);
+              },
             },
-          },
-          {
-            type: "switch",
-            value: stats_disableAnimation,
-            key: "disableAnimation",
-            label: msg("plugins.debuggerAddon.stats.disableAnimation"),
-            description: msg("plugins.debuggerAddon.stats.disableAnimation.desc"),
-            onChange(v) {
-              setStats_DisableAnimation(!!v);
+            {
+              type: "input",
+              value: performance_maxTime,
+              key: "maxTime",
+              label: msg("plugins.debuggerAddon.performance.maxTime"),
+              inputProps: {
+                type: "number",
+              },
+              onChange(v) {
+                setPerformance_maxTime(Number(v));
+              },
             },
-          },
-          {
-            type: "input",
-            value: performance_maxTime,
-            key: "maxTime",
-            label: msg("plugins.debuggerAddon.performance.maxTime"),
-            inputProps: {
-              type: "number",
-            },
-            onChange(v) {
-              setPerformance_maxTime(Number(v));
-            },
-          },
-        ],
-      },
-    ]);
+          ],
+        },
+      ],
+      <DebuggerIcon />,
+    );
     return () => {
       dispose();
       setLogs([]);
