@@ -24,6 +24,7 @@ import mobileCodeBatchSelect from "src/plugins/mobile-code-batch-select/manifest
 import cleanPro from "src/plugins/clean-pro/manifest";
 import witcatInfiniteCanvas from "src/plugins/witcat-infinite-canvas/manifest";
 import findDefinition from "src/plugins/find-definition/manifest";
+import editorOptimization from "src/plugins/editor-optimization/manifest";
 import todoList from "src/plugins/todo-list/manifest";
 import debuggerAddon from "src/plugins/debugger-addon/manifest";
 
@@ -54,6 +55,7 @@ export default {
   "clean-pro": cleanPro,
   "witcat-infinite-canvas": witcatInfiniteCanvas,
   "find-definition": findDefinition,
+  "editor-optimization": editorOptimization,
   "todo-list": todoList,
   "debugger-addon": debuggerAddon,
 };
