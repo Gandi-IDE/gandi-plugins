@@ -5,6 +5,7 @@ import PerformanceStyle from "./style-performance.less";
 import CirclePlay from "assets/icon--circle-play.svg";
 import CircleStop from "assets/icon--circle-stop.svg";
 import { useTable, useSortBy } from "react-table";
+import { IBlockly, getBlockTextAndColor } from "./getCurrentBlocks";
 
 export const PerformanceButton: React.FC<{ label: string }> = ({ label }) => {
   return (
@@ -34,6 +35,7 @@ export interface Record {
 export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
   const {
     vm,
+    blockly,
     Performance: {
       performance_maxTime,
       performance_startTime,
@@ -186,6 +188,7 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
         performance_maxTime={performance_maxTime}
         startTime={performance_startTime}
         records={performance_records}
+        blockly={blockly}
       />
     </div>
   );
@@ -320,7 +323,8 @@ const ProfileDisplay: React.FC<{
   records: Record;
   performance_maxTime: number;
   startTime: number;
-}> = ({ records, profilingStarted, performance_maxTime, startTime }) => {
+  blockly: IBlockly;
+}> = ({ records, profilingStarted, performance_maxTime, startTime, blockly }) => {
   const [now, setNow] = React.useState(0);
 
   React.useEffect(() => {
@@ -351,13 +355,24 @@ const ProfileDisplay: React.FC<{
   const executeSelfTime = records.execute?.selfTime || 0;
   const totalSelfTime = totalBlockSelfTime + renderSelfTime + executeSelfTime;
 
-  const blockRows: TableRow[] = blockEntries.map(([name, r]) => ({
-    name,
-    count: r.count || 0,
-    selfTime: r.selfTime || 0,
-    totalTime: r.totalTime || 0,
-    pct: totalSelfTime > 0 ? ((r.selfTime || 0) / totalSelfTime) * 100 : 0,
-  }));
+  const blockRows: TableRow[] = blockEntries.map(([opcode, r]) => {
+    let displayName = opcode;
+    try {
+      const result = getBlockTextAndColor({ opcode }, blockly);
+      if (result && result.text) {
+        displayName = result.text;
+      }
+    } catch (e) {
+      // 翻译失败时保留原 opcode
+    }
+    return {
+      name: displayName,
+      count: r.count || 0,
+      selfTime: r.selfTime || 0,
+      totalTime: r.totalTime || 0,
+      pct: totalSelfTime > 0 ? ((r.selfTime || 0) / totalSelfTime) * 100 : 0,
+    };
+  });
 
   const renderRow: TableRow | null = records.render?.count
     ? {

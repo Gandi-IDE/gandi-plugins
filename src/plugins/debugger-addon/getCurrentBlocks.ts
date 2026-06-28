@@ -1,16 +1,16 @@
 type BlockJSONconfig = {
   [K: `message${number}`]: string;
   category: string;
-  [K: `args${number}`]: [
-    {
-      check: string;
-      name: string;
-      type: string;
-    },
-  ];
+  [K: `args${number}`]: Array<{
+    check?: string;
+    name?: string;
+    type: string;
+    text?: string;
+    alt?: string;
+  }>;
 };
 
-interface IBlockly {
+export interface IBlockly {
   Blocks: Blockly.Blocks;
   Colours: Blockly.Colours;
 }
@@ -60,11 +60,17 @@ export function getGandiTerminalInnerBlockId(block: Scratch.BlockState): string 
   return TEXT.block;
 }
 
-export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockly): { text: string; color: string } {
+export interface MinBlockState {
+  opcode: string;
+  mutation?: { proccode?: string };
+  fields?: Record<string, { value: string }>;
+}
+
+export function getBlockTextAndColor(block: MinBlockState, blockly: IBlockly): { text: string; color: string } {
   const { opcode } = block;
   if (opcode.startsWith("procedures")) {
     const { mutation } = block;
-    if (!("proccode" in mutation)) {
+    if (!mutation || !("proccode" in mutation)) {
       return;
     }
     return {
@@ -72,10 +78,10 @@ export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockl
       color: "#FF6680",
     };
   }
-  if (opcode == "data_variable") {
+  if (opcode == "data_variable" && block.fields) {
     return { text: `(${block.fields["VARIABLE"].value})`, color: blockly.Colours.data.primary };
   }
-  if (opcode == "data_listcontents") {
+  if (opcode == "data_listcontents" && block.fields) {
     return { text: `(${block.fields["LIST"].value})`, color: blockly.Colours.data_lists.primary };
   }
   if (!blockly.Blocks[opcode].init) {
@@ -83,18 +89,54 @@ export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockl
   }
   let blockConfig: BlockJSONconfig;
   const blockInit = blockly.Blocks[opcode].init;
-  blockInit.call({
-    jsonInit(config: BlockJSONconfig) {
-      blockConfig = config;
-    },
-  });
+  try {
+    blockInit.call({
+      jsonInit(config: BlockJSONconfig) {
+        blockConfig = config;
+      },
+    });
+  } catch (e) {
+    return { text: opcode, color: FALLBACK_COLOR };
+  }
+
   if (!blockConfig!) {
     return { text: opcode, color: FALLBACK_COLOR };
   }
   if (!("message0" in blockConfig)) {
     return { text: opcode, color: FALLBACK_COLOR };
   }
-  return { text: blockConfig["message0"].replace(/%\d/g, "()"), color: getBlockColor(blockConfig, blockly) };
+  const rawMessage = blockConfig["message0"];
+  const args0 = blockConfig["args0"] || [];
+  const processedMessage = rawMessage.replace(/%(\d+)/g, (match, idxStr) => {
+    const arg = args0[Number(idxStr) - 1];
+    if (!arg) return "";
+    switch (arg.type) {
+      case "field_label":
+        return arg.text || "";
+      case "field_image":
+        return arg.alt || "";
+      case "field_vertical_separator":
+        return "";
+      case "input_value":
+      case "input_statement":
+      case "input_statement_row":
+      case "field_dropdown":
+      case "field_number":
+      case "field_variable":
+      case "field_colour":
+      case "field_checkbox":
+      case "field_angle":
+      case "field_date":
+      case "field_matrix":
+      case "field_note":
+      default:
+        return "()";
+    }
+  });
+  return {
+    text: processedMessage.replace(/\s+/g, " ").trim(),
+    color: getBlockColor(blockConfig, blockly),
+  };
 }
 
 export function getBlockColor(config: BlockJSONconfig, blockly: IBlockly) {
