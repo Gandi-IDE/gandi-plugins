@@ -16,3 +16,4 @@
 *.less.d.ts
 
 temp-wrapper.jsx
+pnpm-workspace.yaml

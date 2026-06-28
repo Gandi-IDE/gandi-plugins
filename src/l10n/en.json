@@ -334,9 +334,17 @@
   "plugins.todoList.reminder.dueSoon": "Task Due Soon",
   "plugins.todoList.reminder.overdue": "Task Overdue",
   "plugins.debuggerAddon.title": "Debugger",
-  "plugins.debuggerAddon.description": "Debug happily in Gandi!",
+  "plugins.debuggerAddon.description": "Debug happily in Gandi! Need to be used with GandiTerminal Extension!",
   "plugins.debuggerAddon.console": "Console",
   "plugins.debuggerAddon.console.maxLines": "Max Display Lines",
+  "plugins.debuggerAddon.console.maxLines.desc": "Make this lower, make console faster",
   "plugins.debuggerAddon.console.disableOrigin": "Disable origin console",
-  "plugins.debuggerAddon.performance": "Performance"
+  "plugins.debuggerAddon.console.disableOrigin.desc": "Maybe faster",
+  "plugins.debuggerAddon.console.isClone": "(Clone)",
+  "plugins.debuggerAddon.stats": "Stats",
+  "plugins.debuggerAddon.stats.disableAnimation": "Disable animation for Chart.js",
+  "plugins.debuggerAddon.stats.disableAnimation.desc": "More intuitive",
+  "plugins.debuggerAddon.stats.clones": "Clones",
+  "plugins.debuggerAddon.performance": "Performance",
+  "plugins.debuggerAddon.performance.maxTime": "Max collect time (secs)"
 }

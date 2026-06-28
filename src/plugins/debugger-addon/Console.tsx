@@ -4,6 +4,7 @@ import TrashIcon from "assets/icon--trashcan.svg";
 import styleConsole from "./style-console.less";
 import { WindowContext } from ".";
 import { scrollBlockIntoView } from "utils/block-helper";
+import Tooltip from "components/Tooltip";
 
 type ConsoleLine = { msg: string; count: number; target: Scratch.RenderTarget; block: string };
 interface Blockly {
@@ -23,7 +24,7 @@ export const ConsoleButton: React.FC<{ label: string }> = ({ label }) => {
 };
 
 export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
-  const { Console } = context;
+  const { Console, msg } = context;
   const { logs, clean } = Console;
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -60,7 +61,7 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
         {(() => {
           let renderLogs = logs;
           let startKey = 0;
-          const { maxLines } = context.Console;
+          const { console_maxLines: maxLines } = context.Console;
           if (logs.length > maxLines) {
             renderLogs = logs.slice(-maxLines);
             startKey = logs.length - maxLines;
@@ -74,19 +75,60 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
                   <span style={{ backgroundColor: log.innerBlockColor }}>{log.innerBlockText}</span>
                 </span>
               )}
-              <a
-                className={styleConsole.targetLink}
-                onClick={(e) => {
-                  e.preventDefault();
-                  jumpToBlock(log);
-                }}
-              >
-                {log.target.sprite.name}
-              </a>
+              <TargetLink target={log.target} onClick={() => jumpToBlock(log)} msg={msg}></TargetLink>
             </div>
           ));
         })()}
       </div>
     </div>
+  );
+};
+
+interface TargetContext {
+  onClick(): any;
+  target: Scratch.RenderTarget;
+  msg: (key: string) => string;
+}
+
+export interface DollyProTarget extends Scratch.RenderTarget {
+  DollyPro: {
+    ID: string;
+    extraData: {};
+    isInGroup: {};
+  };
+}
+
+const TargetLink: React.FC<TargetContext> = (context) => {
+  const { onClick, target, msg } = context;
+  const { sprite, isOriginal, id } = target;
+  const { name } = sprite;
+  let tipId = id;
+  if ("DollyPro" in target) {
+    const dollyTarget = target as DollyProTarget;
+    const { DollyPro } = dollyTarget;
+    const { ID } = DollyPro;
+    if (ID) {
+      tipId = `${ID}(${id})`;
+    }
+  }
+  return (
+    <a
+      className={styleConsole.targetLink}
+      onClick={(e) => {
+        e.preventDefault();
+
+        onClick();
+      }}
+    >
+      {name}
+
+      {!isOriginal && (
+        <Tooltip
+          tipText={tipId}
+          icon={msg("plugins.debuggerAddon.console.isClone")}
+          className={styleConsole.targetTooltip}
+        />
+      )}
+    </a>
   );
 };

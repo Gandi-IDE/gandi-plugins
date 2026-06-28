@@ -1,8 +1,138 @@
-.chart {
+.container {
   width: 100%;
-  aspect-ratio: 16/9;
-  padding: 8px;
+  height: calc(100% - 65px);
   position: relative;
-  top: 0px;
-  background-color: var(--theme-color-400);
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+.topButton {
+  position: absolute;
+  top: -32px;
+  right: 4px;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.profiling {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.tableWrapper {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.perfTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+
+  th {
+    position: sticky;
+    top: 0;
+    background-color: var(--theme-color-400);
+    padding: 4px 6px;
+    text-align: left;
+    border-bottom: 2px solid var(--theme-color-g300);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+  }
+
+  .headerTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--theme-color-b100);
+    border-left: 3px solid var(--theme-color-b100);
+    padding-left: 8px;
+  }
+
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--theme-color-b100);
+    }
+  }
+
+  td {
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--theme-color-g300);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover {
+    background-color: var(--theme-color-g200);
+  }
+
+  .colBlock {
+    width: auto;
+  }
+
+  .colNum {
+    width: 80px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .colPct {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+  }
+}
+
+.blockName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.barCell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+
+  .barWrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .bar {
+    height: 6px;
+    background-color: var(--theme-color-b100);
+    border-radius: 3px;
+    min-width: 2px;
+  }
+
+  span {
+    white-space: nowrap;
+    font-size: 10px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+    text-align: right;
+  }
 }

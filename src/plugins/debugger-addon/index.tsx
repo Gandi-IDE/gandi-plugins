@@ -5,17 +5,28 @@ import ToolTip from "components/Tooltip";
 import ExpansionBox from "components/ExpansionBox";
 import style from "./styles.less";
 import { ConsoleButton, ConsoleWindow } from "./Console";
-import { PerformanceButton, PerformanceWindow } from "./Performance";
+import { StatsButton, StatsWindow } from "./Stats";
 import Anser from "anser";
 import { getInnerText } from "./getCurrentBlocks";
+import { PerformanceButton, PerformanceWindow, Record } from "./Performance";
 
 const pluginsWrapper = document.querySelector(".plugins-wrapper")!;
 export type WindowContext = PluginContext & {
   Console: {
-    maxLines: number;
-    disableOrigin: boolean;
+    console_maxLines: number;
+    console_disableOrigin: boolean;
     logs: ConsoleLine[];
     clean(): void;
+  };
+  Stats: {
+    stats_disableAnimation: boolean;
+  };
+  Performance: {
+    performance_maxTime: number;
+    performance_startTime: number;
+    setPerformance_startTime: React.Dispatch<React.SetStateAction<number>>;
+    performance_records: Record;
+    setPerformance_records: React.Dispatch<React.SetStateAction<Record>>;
   };
 };
 export type ConsoleLine = {
@@ -79,7 +90,11 @@ const MainWindow: React.FC<{
       <ConsoleWindow key="console-window" context={context} />,
     ],
     [
-      <PerformanceButton label={msg("plugins.debuggerAddon.performance")} key="performance-button" />,
+      <StatsButton label={msg("plugins.debuggerAddon.stats")} key="stats-button" />,
+      <StatsWindow key="stats-window" context={context} />,
+    ],
+    [
+      <PerformanceButton label={msg("plugins.debuggerAddon.performance")} />,
       <PerformanceWindow key="performance-window" context={context} />,
     ],
   ];
@@ -109,8 +124,26 @@ function escape(str: string) {
 const DebuggerAddon: React.FC<PluginContext> = (context) => {
   const { registerSettings, msg, vm, blockly } = context;
   const [visible, setVisible] = React.useState(false);
-  const [maxLines, setMaxLines] = React.useState(1000);
-  const [disableOrigin, setDisableOrigin] = React.useState(false);
+  const [console_maxLines, setConsole_MaxLines] = React.useState(1000);
+  const [console_disableOrigin, setConsole_DisableOrigin] = React.useState(false);
+
+  const [stats_disableAnimation, setStats_DisableAnimation] = React.useState(true);
+
+  const [performance_maxTime, setPerformance_maxTime] = React.useState(100);
+  const [performance_startTime, setPerformance_startTime] = React.useState(0);
+  const [performance_records, setPerformance_records] = React.useState<Record>({
+    blockFunc: {},
+    render: {
+      count: 0,
+      selfTime: 0,
+      totalTime: 0,
+    },
+    execute: {
+      count: 0,
+      selfTime: 0,
+      totalTime: 0,
+    },
+  });
 
   const throttleTimerRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
@@ -132,16 +165,18 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       }
       // 统一使用节流延迟更新
       if (throttleTimerRef.current == null) {
-        throttleTimerRef.current = window.setTimeout(flushLines, 100);
+        throttleTimerRef.current = window.setTimeout(() => {
+          throttleTimerRef.current = null;
+          flushLines();
+        }, 100);
       }
     },
     [],
   );
   const [logs, setLogs] = React.useState<ConsoleLine[]>([]);
-  function flushLines() {
+  const flushLines = React.useCallback(() => {
     const newLines = incomingLines.current;
     incomingLines.current = [];
-    throttleTimerRef.current = null;
     setLogs((logs) => {
       const lastLine = logs.at(-1);
       if (newLines.length == 0) {
@@ -157,7 +192,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       }
       return [...logs, ...newLines];
     });
-  }
+  }, [logs]);
   const handleMessage = React.useCallback((msg: unknown) => {
     const { activeThread } = vm.runtime.sequencer;
     const { target } = activeThread;
@@ -177,71 +212,81 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     const { vm } = context;
     const { logSystem } = vm.runtime;
     const { log, info, warn, error, clear } = logSystem;
-    logSystem.log = function (msg, ...rest) {
-      if (!disableOrigin) {
-        log.call(this, msg, ...rest);
-      }
-      handleMessage(msg);
-    };
-    logSystem.info = function (msg, ...rest) {
-      if (!disableOrigin) {
-        info.call(this, msg, ...rest);
-      }
-      handleMessage(`\x1B[0;92m${msg}`);
-    };
-    logSystem.warn = function (msg, ...rest) {
-      if (!disableOrigin) {
-        warn.call(this, msg, ...rest);
-      }
-      handleMessage(`\x1B[0;93m${msg}`);
-    };
-    logSystem.error = function (msg, ...rest) {
-      if (!disableOrigin) {
-        error.call(this, msg, ...rest);
-      }
-      handleMessage(`\x1B[97;101m${msg}`);
-    };
+    const origin = { log, info, warn, error };
+    const prefix = { log: "", info: "\x1B[0;92m", warn: "\x1B[0;93m", error: "\x1B[97;101m" };
+    for (let key_ of Object.keys(origin)) {
+      const key = key_ as keyof typeof origin;
+      logSystem[key] = (...msgs) => {
+        const msg = msgs.join(" ");
+        if (!console_disableOrigin) {
+          origin[key].call(logSystem, ...msgs);
+        }
+        handleMessage(`${prefix[key]}${msg}`);
+      };
+    }
     logSystem.clear = function () {
       clear.call(this);
       setLogs([]);
       incomingLines.current = [];
     };
     return () => {
-      logSystem.log = log;
-      logSystem.info = info;
-      logSystem.warn = warn;
-      logSystem.error = error;
-      logSystem.clear = clear;
-      setLogs([]);
+      for (let key_ of Object.keys(origin)) {
+        const key = key_ as keyof typeof origin;
+        logSystem[key] = origin[key];
+      }
       if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);
     };
-  }, [vm, disableOrigin]);
+  }, [console_disableOrigin]);
   React.useEffect(() => {
     const { dispose } = registerSettings(msg("plugins.debuggerAddon.title"), "debugger-addon", [
       {
         key: "debuggerAddon",
         label: msg("plugins.debuggerAddon.title"),
-        description: "abcd",
+        description: msg("plugins.debuggerAddon.description"),
         items: [
           {
             type: "switch",
-            value: disableOrigin,
+            value: console_disableOrigin,
             key: "disableOriginConsole",
             label: msg("plugins.debuggerAddon.console.disableOrigin"),
+            description: msg("plugins.debuggerAddon.console.disableOrigin.desc"),
             onChange(v) {
-              setDisableOrigin(!!v);
+              setConsole_DisableOrigin(!!v);
             },
           },
           {
             type: "input",
-            value: maxLines,
+            value: console_maxLines,
             key: "maxLines",
             label: msg("plugins.debuggerAddon.console.maxLines"),
+            description: msg("plugins.debuggerAddon.console.maxLines.desc"),
             inputProps: {
               type: "number",
             },
             onChange(v) {
-              setMaxLines(Number(v));
+              setConsole_MaxLines(Number(v));
+            },
+          },
+          {
+            type: "switch",
+            value: stats_disableAnimation,
+            key: "disableAnimation",
+            label: msg("plugins.debuggerAddon.stats.disableAnimation"),
+            description: msg("plugins.debuggerAddon.stats.disableAnimation.desc"),
+            onChange(v) {
+              setStats_DisableAnimation(!!v);
+            },
+          },
+          {
+            type: "input",
+            value: performance_maxTime,
+            key: "maxTime",
+            label: msg("plugins.debuggerAddon.performance.maxTime"),
+            inputProps: {
+              type: "number",
+            },
+            onChange(v) {
+              setPerformance_maxTime(Number(v));
             },
           },
         ],
@@ -249,6 +294,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     ]);
     return () => {
       dispose();
+      setLogs([]);
     };
   }, [registerSettings]);
   return ReactDOM.createPortal(
@@ -262,7 +308,25 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       {visible &&
         ReactDOM.createPortal(
           <MainWindow
-            context={{ ...context, Console: { maxLines, disableOrigin, logs, clean } }}
+            context={{
+              ...context,
+              Console: {
+                console_maxLines: console_maxLines,
+                console_disableOrigin: console_disableOrigin,
+                logs,
+                clean,
+              },
+              Stats: {
+                stats_disableAnimation,
+              },
+              Performance: {
+                performance_maxTime,
+                performance_startTime,
+                setPerformance_startTime,
+                performance_records,
+                setPerformance_records,
+              },
+            }}
             onClose={() => {
               setVisible(false);
             }}

@@ -28,7 +28,13 @@ export function getInnerText(
   if (!block) {
     return { innerBlockText: "", color: FALLBACK_COLOR };
   }
-  const innerBlockId = Object.values(block.inputs)[0].block;
+  let innerBlockId: string | null;
+  if (blockIsFromGandiTerminal(block)) {
+    innerBlockId = getGandiTerminalInnerBlockId(block);
+  } else {
+    // 一些扩展（如多莉pro）也会使用log system，这种情况下记录的块应该为触发log的块本身
+    innerBlockId = block.id;
+  }
   if (innerBlockId) {
     const innerBlock = blocks.getBlock(innerBlockId);
     const { opcode } = innerBlock;
@@ -39,6 +45,19 @@ export function getInnerText(
     return { innerBlockText, color };
   }
   return { innerBlockText: "", color: FALLBACK_COLOR };
+}
+
+export function blockIsFromGandiTerminal(block: Scratch.BlockState) {
+  const { opcode } = block;
+  return opcode.startsWith("GandiTerminal_") && ["log", "error", "warn", "trace"].includes(opcode.substring(14));
+}
+
+export function getGandiTerminalInnerBlockId(block: Scratch.BlockState): string | null {
+  const { TEXT } = block.inputs;
+  if (!TEXT) {
+    return null;
+  }
+  return TEXT.block;
 }
 
 export function getBlockTextAndColor(block: Scratch.BlockState, blockly: IBlockly): { text: string; color: string } {
