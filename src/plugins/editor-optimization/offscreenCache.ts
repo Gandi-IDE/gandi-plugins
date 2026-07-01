@@ -171,6 +171,7 @@ export function ensureOffscreenWorkspace(targetId: string, blockly: any, mainWor
 }
 
 export function saveTargetToOffscreen(targetId: string, mainWs: any, blockly: any) {
+  if ((window as any).__IS_COLLABORATION__) return;
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   //清空旧注释
   if (hiddenWs.getTopComments) {
@@ -187,8 +188,8 @@ export function saveTargetToOffscreen(targetId: string, mainWs: any, blockly: an
     const topBlocks = [...mainWs.getTopBlocks(false)];
     topBlocks.forEach((block: any) => lightMoveBlockTreeToOffscreen(block, mainWs, hiddenWs));
     const comments = mainWs.getTopComments?.(false) || [];
-    const validComments = comments.filter((c: any) => c?.block_ && mainWs.getBlockById(c.block_.id));
-    moveCommentsToWorkspace(mainWs, hiddenWs, blockly, validComments);
+    //const validComments = comments.filter((c: any) => c?.block_ && mainWs.getBlockById(c.block_.id));
+    moveCommentsToWorkspace(mainWs, hiddenWs, blockly, comments);
     if (mainWs.intersectionObserver) {
       mainWs.intersectionObserver.observing = [];
     }
@@ -253,15 +254,30 @@ export function restoreTargetFromOffscreen(
       if (svgRoot) svgRoot.style.display = '';
     });
     */
-    // 获取离屏工作区的注释，只恢复属于当前分组的
+    // 将所有注释全部移回主工作区
     const allComments = hiddenWs.getTopComments(false) || [];
-    const filteredComments = allComments.filter((c: any) => {
-      const block = c.block_;
-      if (!block) return false;
-      const groupId = getBlockGroup(block);
-      return activeGroupId === allGroupsId || groupId === activeGroupId;
-    });
-    moveCommentsToWorkspace(hiddenWs, mainWs, blockly, filteredComments);
+    moveCommentsToWorkspace(hiddenWs, mainWs, blockly, allComments);
+
+    // 按分组控制注释的可见性
+    if (activeGroupId !== allGroupsId) {
+      const mainComments = mainWs.getTopComments(false) || [];
+      for (const comment of mainComments) {
+        const block = comment.block_;
+        if (block) {
+          const groupId = getBlockGroup(block);
+          comment.setVisible?.(groupId === activeGroupId);
+        } else {
+          // 非积木注释（直接放在工作区的注释）始终可见
+          comment.setVisible?.(true);
+        }
+      }
+    } else {
+      // “全部显示”分组下，所有注释可见
+      const mainComments = mainWs.getTopComments(false) || [];
+      for (const comment of mainComments) {
+        comment.setVisible?.(true);
+      }
+    }
     // 手动设置 blocksArea_ 为画布的真实矩形（轻量，不触发全量重排）
     /*但这里其实有大宗重排，所以被注掉了。
     if (canvas) {
@@ -370,6 +386,7 @@ export function initTargetCacheAndSwitchToGroup(
   getBlockGroup: any,
   allGroupsId: string
 ) {
+  if ((window as any).__IS_COLLABORATION__) return;
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   copyVariables(mainWs, hiddenWs, blockly);
   moveAllTopBlocksToWorkspace(mainWs, hiddenWs, blockly, true);
@@ -502,7 +519,7 @@ export function moveCommentsToWorkspace(srcWs: any, dstWs: any, blockly: any, co
   blockly.Events.disable();
   try {
     for (const comment of commentsToMove) {
-      if (!comment || !comment.block_) continue; // 跳过无效注释
+      if (!comment) continue; // 跳过无效注释
 
       // 从源移除
       if (srcWs.removeTopComment) {
