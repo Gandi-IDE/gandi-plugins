@@ -78,7 +78,7 @@ function getGroupIdFromBlockXml(xmlBlock: Element): string {
   if (sepIdx <= 0) return UNGROUPED_ID;
   return commentText.substring(0, sepIdx);
 }
-const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, registerSettings, teamworkManager }) => {
+const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, registerSettings, teamworkManager,msg }) => {
   const [visible, setVisible] = React.useState(false);
   const [targetId, setTargetId] = React.useState<string | null>(null);
   const [groups, setGroups] = React.useState<any[]>([]);
@@ -153,7 +153,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         }
       } catch (e) {
         console.error('离屏分组切换失败', e);
-        toast.error('分组切换失败');
+        toast.error(msg('plugins.editorOptimization.groupSwitchFail'));
       }
       return;
     } else {
@@ -168,7 +168,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
 
   const handleAddGroup = () => {
     if (!targetId) return;
-    if (!newGroupName.trim()) { toast.error("请输入分组名称"); return; }
+    if (!newGroupName.trim()) { toast.error(msg('plugins.editorOptimization.enterGroupName')); return; }
     addGroup(targetId, newGroupName.trim());
     setNewGroupName("");
     refreshGroups();
@@ -176,7 +176,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
 
   const handleDeleteGroup = (groupId: string) => {
     if (!targetId) return;
-    if (groupId === UNGROUPED_ID) { toast.error("默认分组不可删除"); return; }
+    if (groupId === UNGROUPED_ID) { toast.error(msg('plugins.editorOptimization.defaultGroupUndeletable')); return; }
     deleteGroup(targetId, groupId);
     refreshGroups();
   };
@@ -184,7 +184,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
   const startEdit = (id: string, name: string) => { setEditingGroupId(id); setEditingName(name); };
   const saveEdit = () => {
     if (!targetId || !editingGroupId) return;
-    if (!editingName.trim()) { toast.error("名称不能为空"); return; }
+    if (!editingName.trim()) { toast.error(msg('plugins.editorOptimization.groupNameEmpty')); return; }
     renameGroup(targetId, editingGroupId, editingName.trim());
     setEditingGroupId(null);
     setEditingName("");
@@ -195,19 +195,19 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
   React.useEffect(() => {
     if (!registerSettings) return;
     const dispose = registerSettings(
-      '积木分组&编辑器优化',
+      msg('plugins.editorOptimization.title'),
       'plugin-editor-optimization',
       [
         {
           key: 'group',
-          label: '积木分组&编辑器优化',
-          description: '提供角色积木分组功能，同时优化编辑器性能。默认开启角色积木区缓存，从第二次进入角色开始提升约100%-200%切换效率。注意：本插件会忽略代码框，并禁用其创建功能；目前已兼容协作，但积木区缓存会被禁用，因此不建议在协作环境中启用。',
+          label: msg('plugins.editorOptimization.title'),
+          description: msg('plugins.editorOptimization.description'),
           items: [
             {
               key: 'enableFastClear',
               type: 'switch',
-              label: '[实验] 启用切出优化',
-              description: '极大优化切出大型角色时的效率。离屏缓存已有内部切出优化，此优化仅对特定原生场景生效。',
+              label: msg('plugins.editorOptimization.enableFastClearLabel'),
+              description: msg('plugins.editorOptimization.enableFastClearDesc'),
               value: false,
               onChange: (v: boolean) => {
                 window.__EDITOR_OPT_FAST_CLEAR_ENABLED__ = v;
@@ -216,8 +216,8 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enableFullscreenOptimize',
               type: 'switch',
-              label: '[实验] 启用全屏优化',
-              description: '在舞台全屏时隐藏积木区，减少不必要的积木区渲染开销。',
+              label: msg('plugins.editorOptimization.enableFullscreenLabel'),
+              description: msg('plugins.editorOptimization.enableFullscreenDesc'),
               value: false,
               onChange: (v: boolean) => {
                 window.__ENABLE_FULLSCREEN_OPTIMIZATION__ = v;
@@ -227,8 +227,8 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             {
               key: 'enablePixiOptimization',
               type: 'switch',
-              label: '[实验] 启用 Pixi 加速渲染',
-              description: '使用 PixiJS 将积木区渲染为纹理，大幅降低 DOM 节点数并提升拖拽/缩放流畅度。Pixi纹理提供受限的交互功能，通过双击以恢复原生DOM显示。',
+              label: msg('plugins.editorOptimization.enablePixiLabel'),
+              description: msg('plugins.editorOptimization.enablePixiDesc'),
               value: false,
               onChange: (v: boolean) => {
                 window.__ENABLE_PIXI_OPTIMIZATION__ = v;
@@ -495,7 +495,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
           
           allGroups.forEach(g => {
             items.push({
-              text: `移动到「${g.name}」${g.id === cur ? ' ✓' : ''}`,
+              text: msg('plugins.editorOptimization.moveToGroup')+`「${g.name}」${g.id === cur ? ' ✓' : ''}`,
               enabled: g.id !== cur,
               callback: () => {
                 try {
@@ -532,7 +532,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
                     hideBlockStack(root);
                   }
                 }
-                  toast.success(`已移至「${g.name}」`);
+                  toast.success(msg('plugins.editorOptimization.groupMoveSuccess')+`「${g.name}」`);
                 } catch (e) {
                 }
               }
@@ -628,10 +628,22 @@ React.useEffect(() => {
     BlockDragger.endBlockDrag = origEndBlockDrag;
   };
 }, [blockly]);
-  // 切出优化-快速清理
+  // 切出优化-快速清理-Flyout修复
   React.useEffect(() => {
     if (!blockly || !workspace) return;
-
+    // 修复 Flyout 变量字段序列化异常
+    const origFieldToDomVariable = blockly.Xml?.fieldToDomVariable_;
+    if (origFieldToDomVariable) {
+      blockly.Xml.fieldToDomVariable_ = function(field: any) {
+        // 如果变量不存在，返回 null 表示跳过此字段，而不是抛出错误
+        if (!field.getVariable()) {
+          console.warn('[editor-optimization] Skipping variable field with no variable:', field.name);
+          //这是某种Flyout流程的固有缺陷，editor-optimization并没有直接产生任何非法的variable field，此问题可能源于插件hack导致的加载时序问题，并且问题可能是偶发的。
+          return null;
+        }
+        return origFieldToDomVariable.call(this, field);
+      };
+    }
     const BlocklyAny = blockly as any;
     const WorkspaceSvg = BlocklyAny.WorkspaceSvg?.prototype ? BlocklyAny.WorkspaceSvg : workspace.constructor;
     const BlockSvg = BlocklyAny.BlockSvg?.prototype ? BlocklyAny.BlockSvg : (workspace.newBlock('') as any).constructor;
@@ -791,6 +803,7 @@ React.useEffect(() => {
       if (Field && origFieldDispose) Field.prototype.dispose = origFieldDispose;
       if (Input && origInputDispose) Input.prototype.dispose = origInputDispose;
       if (utils && origRemoveClass) utils.removeClass = origRemoveClass;
+      blockly.Xml.fieldToDomVariable_ = origFieldToDomVariable;
     };
   }, [blockly, workspace]);
 
@@ -1082,10 +1095,50 @@ React.useEffect(() => {
     padding: 4px 8px;
     border-radius: 4px;
     z-index: 9999;
-    pointer-events: none;
+    pointer-events: auto;
     line-height: 1.4;
+    cursor: move;
+    user-select: none;
   `;
   wrapper.appendChild(debugPanel);
+
+  // 拖拽逻辑
+  let dragging = false;
+  let offsetX = 0, offsetY = 0;
+  let useTop = false; // 是否已切换为 top 定位
+
+  const onPointerDown = (e: PointerEvent) => {
+    dragging = true;
+    const rect = debugPanel.getBoundingClientRect();
+    offsetX = e.clientX - rect.left + 72;
+    offsetY = e.clientY - rect.top + 60;
+    // 首次拖动时，从 bottom 定位切换为 top 定位，保持当前位置不变
+    if (!useTop) {
+      debugPanel.style.bottom = '';
+      debugPanel.style.top = rect.top + 'px';
+      debugPanel.style.left = rect.left + 'px';
+      useTop = true;
+    }
+    debugPanel.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+  };
+
+  const onPointerMove = (e: PointerEvent) => {
+    if (!dragging) return;
+    debugPanel.style.left = (e.clientX - offsetX) + 'px';
+    debugPanel.style.top = (e.clientY - offsetY) + 'px';
+    e.stopPropagation();
+  };
+
+  const onPointerUp = (e: PointerEvent) => {
+    dragging = false;
+    debugPanel.releasePointerCapture(e.pointerId);
+    e.stopPropagation();
+  };
+
+  debugPanel.addEventListener('pointerdown', onPointerDown);
+  debugPanel.addEventListener('pointermove', onPointerMove);
+  debugPanel.addEventListener('pointerup', onPointerUp);
   // 初始化渲染器
   const renderer = new PixiBlockRenderer(wrapper, workspace, blockly, vm);
   renderer.onRestoreDOM = (rootId: string) => {
@@ -1113,7 +1166,7 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
           if (!block || block.workspace.isFlyout) return items;
           items.push({ separator: true });
           items.push({
-            text: '切换至 Pixi 渲染',
+            text: msg('plugins.editorOptimization.switchToPixi'),
             enabled: true,
             callback: () => {
               const root = block.getRootBlock();
@@ -1288,6 +1341,9 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
   // ---------- 清理 ----------
   return () => {
+    debugPanel.removeEventListener('pointerdown', onPointerDown);
+    debugPanel.removeEventListener('pointermove', onPointerMove);
+    debugPanel.removeEventListener('pointerup', onPointerUp);
     clearInterval(debugInterval);
     if (WorkspaceDragger) WorkspaceDragger.drag = originalDrag;
     workspace.setScale = originalSetScale;
@@ -1356,7 +1412,7 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
       {visible &&
         ReactDOM.createPortal(
           <ExpansionBox
-            title="积木分组"
+            title={msg('plugins.editorOptimization.panelTitle')}
             id="block-groups"
             minWidth={229}
             minHeight={360}
@@ -1371,7 +1427,7 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
                 className={`${styles.listItem} ${activeGroupId === ALL_GROUPS_ID ? styles.active : ''}`}
                 onClick={() => handleSelectGroup(ALL_GROUPS_ID)}
               >
-                <span className={styles.itemText}>📁 全部显示</span>
+                <span className={styles.itemText}>{msg('plugins.editorOptimization.allGroups')}</span>
                 {activeGroupId === ALL_GROUPS_ID && <CheckIcon />}
               </div>
               <div className={styles.divider} />
@@ -1404,14 +1460,14 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
               <div className={styles.addGroup}>
                 <div className={styles.addGroupRow}>
                   <Input
-                    placeholder="新分组名称"
+                    placeholder={msg('plugins.editorOptimization.newGroupPlaceholder')}
                     value={newGroupName}
                     onChange={(e: any) => setNewGroupName(e.target.value)}
                   />
                 </div>
                 <div className={styles.addGroupRow}>
                   <button className={styles.addButton} onClick={handleAddGroup}>
-                    <AddIcon />新建
+                    <AddIcon />{msg('plugins.editorOptimization.newGroup')}
                   </button>
                   <button
                     className={styles.addButton}
@@ -1419,16 +1475,16 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
                       if (!targetId) return;
                       try {
                         disposeOffscreenCache(targetId);
-                        toast.success('已重置缓存');
+                        toast.success(msg('plugins.editorOptimization.cacheResetSuccess'));
                       } catch (e) {
-                        toast.error('刷新失败');
+                        toast.error(msg('plugins.editorOptimization.cacheResetFail'));
                       }
                     }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 4 }}>
                       <path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
                     </svg>
-                    重置缓存
+                    {msg('plugins.editorOptimization.resetCache')}
                   </button>
                 </div>
               </div>
