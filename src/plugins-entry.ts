@@ -33,4 +33,5 @@ export default {
   "find-definition": () => import(/* webpackChunkName: "plugin-find-definition" */ "src/plugins/find-definition"),
   "editor-optimization": () => import(/* webpackChunkName: "plugin-editor-optimization" */ "src/plugins/editor-optimization"),
   "todo-list": () => import(/* webpackChunkName: "plugin-todo-list" */ "src/plugins/todo-list"),
+  "debugger-addon": () => import(/* webpackChunkName: "plugin-debugger-addon" */ "src/plugins/debugger-addon"),
 } as const;
