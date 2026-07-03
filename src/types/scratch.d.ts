@@ -335,12 +335,74 @@ declare namespace Scratch {
         hatParam?: unknown;
       },
     ) => void;
+    _step(): void;
+
+    getOpcodeFunction(opcode: string): (...args: any) => any;
+
+    sequencer: Sequencer;
+
+    _cloneCounter: number;
+
+    runtimeOptions: {
+      maxClones: number;
+      miscLimits: boolean;
+      fencing: boolean;
+      hatsConcurrency: number;
+    };
+
+    enableProfiling(): void;
+
+    disableProfiling(): void;
+
+    profiler: Profiler | null;
   }
+
+  export type ProfilerName =
+    | "Runtime._step"
+    | "Sequencer.stepThreads"
+    | "RenderWebGL.draw"
+    | "Sequencer.stepThreads#inner"
+    | "Sequencer.stepThread"
+    | "execute"
+    | "blockFunction";
+
+  export type Profiler = {
+    idByName(name: ProfilerName): number;
+    nameById(id: number): ProfilerName;
+    START: 0;
+    STOP: 0;
+    onFrame(frame: ProfilerFrame): any;
+    /**
+     * decode frames and call this.onFrame(frame) for each frame
+     */
+    reportFrames(): void;
+    start(id: number, args: any): void;
+    stop(): void;
+  };
+
+  export interface ProfilerFrame {
+    id: number;
+    totalTime: number;
+    selfTime: number;
+    arg: any;
+    depth: number;
+    count: number;
+  }
+
+  export type Sequencer = {
+    activeThread: Thread;
+    runtime: Runtime;
+    timer: any;
+    stepThread(thread: Thread): void;
+    stepThreads(): void;
+  };
 
   export type Thread = {
     topBlock: string;
     status: number;
     updateMonitor: boolean;
+    peekStack(): string;
+    target: Scratch.RenderTarget;
   };
 
   export interface ExtensionManager {
