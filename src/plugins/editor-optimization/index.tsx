@@ -1146,12 +1146,14 @@ React.useEffect(() => {
     if (rootBlock) renderer.clearPixiForRoot(rootBlock);
   };
   const handleDoubleClick = (e: MouseEvent) => {
-    if (ignoreNextDoubleClick) return; // 缩放时忽略双击
-    const rootId = renderer.getChunkAt(e.clientX, e.clientY);
-    console.log(rootId)
+    if (ignoreNextDoubleClick) return;
+    const rootId = renderer.currentHoveredRootId ?? renderer.getChunkAt(e.clientX, e.clientY);
     if (rootId) {
       const rootBlock = workspace.getBlockById(rootId);
-      if (rootBlock) renderer.clearPixiForRoot(rootBlock);
+      if (rootBlock) {
+        renderer.clearPixiForRoot(rootBlock);
+        renderer.markDOMOnly(rootId);
+      }
     }
   };
 workspaceDiv.addEventListener('dblclick', handleDoubleClick);
@@ -1219,20 +1221,23 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
   }
 
   workspace.setScale = function (s: number) {
-     const hiddenBlocks: any[] = [];
-      const allBlocks = workspace.getAllBlocks(false);
-      for (const block of allBlocks) {
-        if (block.svgGroup_ && block.svgGroup_.style.display === 'none') {
-          hiddenBlocks.push(block);
-          (block.svgGroup_.style as any).contentVisibility = 'hidden';
-        }
+    const hiddenBlocks: any[] = [];
+    const allBlocks = workspace.getAllBlocks(false);
+    for (const block of allBlocks) {
+      if (block.svgGroup_ && block.svgGroup_.style.display === 'none') {
+        hiddenBlocks.push(block);
+        (block.svgGroup_.style as any).contentVisibility = 'hidden';
       }
+    }
     originalSetScale(s);
     renderer.syncView();
-      ignoreNextDoubleClick = true;
-      requestAnimationFrame(() => {
-        ignoreNextDoubleClick = false;
-      });
+
+    ignoreNextDoubleClick = true;
+    // 防止双击事件穿透
+    clearTimeout((window as any).__ignoreDblClickTimer);
+    (window as any).__ignoreDblClickTimer = setTimeout(() => {
+      ignoreNextDoubleClick = false;
+    }, 300);
   };
 
   if (ScrollbarPair && originalScrollSet) {
@@ -1341,6 +1346,7 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
   // ---------- 清理 ----------
   return () => {
+    clearTimeout((window as any).__ignoreDblClickTimer);
     debugPanel.removeEventListener('pointerdown', onPointerDown);
     debugPanel.removeEventListener('pointermove', onPointerMove);
     debugPanel.removeEventListener('pointerup', onPointerUp);
