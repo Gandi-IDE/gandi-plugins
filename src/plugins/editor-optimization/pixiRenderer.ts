@@ -374,11 +374,12 @@ private createBakedChainSprite(chainData: BlockRenderData[]): PIXI.Sprite {
       if (!texture) {
         // 创建临时 Text 并烘焙缓存（复用现有逻辑）
         const tempText = new PIXI.Text({
-          text: f.text,
+          text: f.text.replace(/\n/g, ' '), //去除换行
           style: {
             fontFamily: f.fontFamily || 'sans-serif',
             fontSize: f.fontSize || 16,
             fill: f.fill,
+            wordWrap: false,   // 禁止换行
           },
         });
         const bounds = tempText.getLocalBounds();
@@ -581,11 +582,12 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
       if (!texture) {
         // 创建临时 Text 对象
         const tempText = new PIXI.Text({
-          text: f.text,
+          text: f.text.replace(/\n/g, ' '), //去除换行
           style: {
             fontFamily: f.fontFamily || 'sans-serif',
             fontSize: f.fontSize || 16,
             fill: f.fill,
+            wordWrap: false,   // 禁止换行
           },
         });
         // 获取文本边界
