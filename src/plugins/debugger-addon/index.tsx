@@ -53,7 +53,7 @@ const NavWindow: React.FC<{ items: [React.ReactNode, React.ReactNode][] }> = ({ 
   const [pageId, setPageId] = React.useState(0);
   return (
     <>
-      <nav>
+      <nav className={style.topNav}>
         {items.map(([button], id) => {
           return (
             <button
