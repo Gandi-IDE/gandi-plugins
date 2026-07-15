@@ -183,6 +183,8 @@ export class PixiBlockRenderer {
   private pendingCreateBlocks: any[] = [];
   private createBatchSize = 8; // 每帧创建5个容器，避免卡顿
   private lastPauseTime = 0;
+  public currentHoveredRootId: string | null = null;
+  private alphaAnimations: Map<PIXI.Container, { target: number; current: number }> = new Map();//hover的动画属性
   public getDebugInfo(): { fps: number; spriteCount: number } {
     let visibleCount = 0;
     for (const container of this.rootContainers.values()) {
@@ -266,6 +268,13 @@ export class PixiBlockRenderer {
       // 如果拖拽结束后没有恢复交互，超过 200ms 自动恢复
       if (this.interactionsPaused && performance.now() - this.lastPauseTime > 200) {
         this.resumeInteractions();
+      }
+      // hover 动画
+      for (const [container, anim] of this.alphaAnimations) {
+        if (Math.abs(anim.current - anim.target) > 0.001) {
+          anim.current += (anim.target - anim.current) * 0.15; // 平滑系数
+          container.alpha = anim.current;
+        }
       }
     });
   }
@@ -365,11 +374,12 @@ private createBakedChainSprite(chainData: BlockRenderData[]): PIXI.Sprite {
       if (!texture) {
         // 创建临时 Text 并烘焙缓存（复用现有逻辑）
         const tempText = new PIXI.Text({
-          text: f.text,
+          text: f.text.replace(/\n/g, ' '), //去除换行
           style: {
             fontFamily: f.fontFamily || 'sans-serif',
             fontSize: f.fontSize || 16,
             fill: f.fill,
+            wordWrap: false,   // 禁止换行
           },
         });
         const bounds = tempText.getLocalBounds();
@@ -520,7 +530,9 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
 
   const container = new PIXI.Container();
   container.visible = true;
+  (container as any).cacheAsTexture = true; //缓存以提高性能
   container.alpha = 0.6; // 默认稍暗，hover 时变亮
+  this.alphaAnimations.set(container, { target: 0.6, current: 0.6 });
 
     const chains = this.extractSimpleChains(rootBlock, data);
   const groupedIds = new Set<string>();
@@ -570,11 +582,12 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
       if (!texture) {
         // 创建临时 Text 对象
         const tempText = new PIXI.Text({
-          text: f.text,
+          text: f.text.replace(/\n/g, ' '), //去除换行
           style: {
             fontFamily: f.fontFamily || 'sans-serif',
             fontSize: f.fontSize || 16,
             fill: f.fill,
+            wordWrap: false,   // 禁止换行
           },
         });
         // 获取文本边界
@@ -616,8 +629,18 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
   container.eventMode = this.interactionsPaused ? 'none' : 'static';
   container.cursor = 'pointer';
   (container as any)._rootId = rootId;
-  container.on('pointerover', () => { container.alpha = 0.9; });
-  container.on('pointerout', () => { container.alpha = 0.6; });
+  container.on('pointerover', () => {
+    this.currentHoveredRootId = rootId;
+    const anim = this.alphaAnimations.get(container);
+    if (anim) anim.target = 0.9;
+  });
+  container.on('pointerout', () => {
+    if (this.currentHoveredRootId === rootId) {
+      this.currentHoveredRootId = null;
+    }
+    const anim = this.alphaAnimations.get(container);
+    if (anim) anim.target = 0.6;
+  });
 
   this.world.addChild(container);
   this.rootContainers.set(rootId, container);
@@ -718,8 +741,13 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
   clearPixiForRoot(rootBlock: any) {
     if (!rootBlock) return;
     const rootId = rootBlock.id;
+    if (this.currentHoveredRootId === rootId) {
+      this.currentHoveredRootId = null;
+    }
     const container = this.rootContainers.get(rootId);
     if (container) {
+      this.alphaAnimations.delete(container);
+      (container as any).cacheAsTexture = false;
       container.destroy({ children: true });
       this.rootContainers.delete(rootId);
     }
@@ -818,9 +846,11 @@ private loadVisibleRoots(forcePixi: boolean, forceAll = false) {
     this.textTextureCache.forEach(tex => tex.destroy(true));
     this.textTextureCache.clear();
     for (const container of this.rootContainers.values()) {
+      this.alphaAnimations.delete(container);
       container.destroy({ children: true });
     }
     for (const container of this.dormantContainers.values()) {
+      this.alphaAnimations.delete(container);
       container.destroy({ children: true });
     }
     this.dormantContainers.clear();
