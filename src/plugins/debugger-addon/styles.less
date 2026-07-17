@@ -1,6 +1,17 @@
 .icon {
   width: 32px !important;
   height: 32px !important;
+  &[unread]:after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #ff4d4f;
+    border-radius: 50%;
+    border: 2px solid var(--theme-color-400);
+  }
 }
 
 .overflow-hidden {
@@ -14,14 +25,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border-bottom: 1px solid var(--theme-color-50);
   margin-bottom: -1px;
-}
+  padding: 0 4px;
 
-.navButton:hover,
-.navButton[data-active="true"] {
-  color: var(--theme-text-primary);
-  border-bottom: solid var(--theme-brand-color) 1px;
+  svg {
+    zoom: .8;
+    transition: 0.1s;
+  }
+
+  &:hover, &[data-active="true"] {
+    color: var(--theme-text-primary);
+    svg {
+      stroke: var(--theme-text-primary);
+      transition-duration: 0.1s;
+    }
+  }
 }
 
 .topNav {

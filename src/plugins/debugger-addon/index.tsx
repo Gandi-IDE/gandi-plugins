@@ -9,6 +9,7 @@ import { StatsButton, StatsWindow } from "./Stats";
 import Anser from "anser";
 import { getInnerText } from "./getCurrentBlocks";
 import { PerformanceButton, PerformanceWindow, Record } from "./Performance";
+import { ThreadsButton, ThreadsWindow } from "./Threads";
 
 const pluginsWrapper = document.querySelector(".plugins-wrapper")!;
 export type WindowContext = PluginContext & {
@@ -17,6 +18,7 @@ export type WindowContext = PluginContext & {
     console_disableOrigin: boolean;
     logs: ConsoleLine[];
     clean(): void;
+    console_transparent: boolean;
   };
   Stats: {
     stats_disableAnimation: boolean;
@@ -73,15 +75,12 @@ const NavWindow: React.FC<{ items: [React.ReactNode, React.ReactNode][] }> = ({ 
     </>
   );
 };
-
+  
 const MainWindow: React.FC<{
   onClose(): void;
   context: WindowContext;
 }> = ({ context, onClose }) => {
   const { msg, vm } = context;
-  React.useEffect(() => {
-    vm.extensionManager.loadExtensionURL("GandiTerminal");
-  }, [vm]);
   const [containerInfo, setContainerInfo] = React.useState({ width: 480, height: 320, translateX: 80, translateY: 80 });
 
   const pages: [React.ReactNode, React.ReactNode][] = [
@@ -96,6 +95,10 @@ const MainWindow: React.FC<{
     [
       <PerformanceButton label={msg("plugins.debuggerAddon.performance")} />,
       <PerformanceWindow key="performance-window" context={context} />,
+    ],
+    [
+      <ThreadsButton label={msg("plugins.debuggerAddon.threads")} key="threads-button" />,
+      <ThreadsWindow key="threads-window" context={context} />,
     ],
   ];
 
@@ -144,6 +147,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       totalTime: 0,
     },
   });
+  const [console_transparent, setConsole_Transparent] = React.useState(true);
 
   const throttleTimerRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
@@ -292,11 +296,20 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 setPerformance_maxTime(Number(v));
               },
             },
+            {
+              type: "switch",
+              value: true,
+              key: "transparent",
+              label: msg("plugins.debuggerAddon.console.transparent"),
+              description: msg("plugins.debuggerAddon.console.transparent.desc"),
+              onChange: v => setConsole_Transparent(!!v),
+            },
           ],
         },
       ],
       <DebuggerIcon />,
     );
+    vm.extensionManager.loadExternalExtensionById('GandiTerminal');
     return () => {
       dispose();
       setLogs([]);
@@ -320,6 +333,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 console_disableOrigin: console_disableOrigin,
                 logs,
                 clean,
+                console_transparent: console_transparent,
               },
               Stats: {
                 stats_disableAnimation,
