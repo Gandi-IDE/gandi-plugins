@@ -9,6 +9,11 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
     let hasSeparateLocalVariables = false;
     let hasMoveReportersDown = false;
     let style: HTMLStyleElement | null = null;
+
+    // TDZ
+    const runtime = vm.runtime as any;
+    const ScratchBlocks = blockly;
+    
     const setHasSeparateListCategory = (value: boolean) => {
       if (value) {
         style = document.createElement("style");
@@ -22,6 +27,10 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
         style.remove();
       }
       hasSeparateListCategory = value;
+
+      if (runtime && runtime.__dataCategoryTweaksState) {
+        runtime.__dataCategoryTweaksState.hasSeparateListCategory = value;
+      }
     };
 
     const register = registerSettings(
@@ -74,8 +83,8 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
       <DataCategoryTweaksIcon />,
     );
 
-    const runtime = vm.runtime as any;
-    const ScratchBlocks = blockly;
+    // const runtime = vm.runtime as any;
+    // const ScratchBlocks = blockly;
 
     const SMALL_GAP = 8;
     const BIG_GAP = 24;
