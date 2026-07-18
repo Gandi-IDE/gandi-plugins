@@ -232,43 +232,56 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
     // https://github.com/scratchfoundation/scratch-gui/blob/ddd2fa06f2afa140a46ec03be91796ded861e65c/src/containers/blocks.jsx#L344
     // https://github.com/scratchfoundation/scratch-gui/blob/2ceab00370ad7bd8ecdf5c490e70fd02152b3e2a/src/lib/make-toolbox-xml.js#L763
     // https://github.com/scratchfoundation/scratch-vm/blob/a0c11d6d8664a4f2d55632e70630d09ec6e9ae28/src/engine/runtime.js#L1381
-    const originalGetBlocksXML = runtime.getBlocksXML;
-    runtime.getBlocksXML = function (target) {
-      const result = originalGetBlocksXML.call(this, target);
+    if (!runtime.__dataCategoryTweaksState) {
+      runtime.__dataCategoryTweaksState = {
+        hasSeparateListCategory: false,
+        enabled: true
+      };
+    }
+    const state = runtime.__dataCategoryTweaksState;
 
-      if (hasSeparateListCategory) {
-        result.push({
-          id: "data",
-          xml: `
-          <category
-            name="%{BKY_CATEGORY_VARIABLES}"
-            id="variables"
-            iconURI="${VariablesIcon}"
-            colour="${ScratchBlocks.Colours.data.primary}"
-            secondaryColour="${ScratchBlocks.Colours.data.tertiary}"
-            custom="VARIABLE">
-          </category>
-          <category
-            name="${msg("plugins.dataCategoryTweaks.list")}"
-            id="lists"
-            iconURI="${ListIcon}"
-            colour="${ScratchBlocks.Colours.data_lists.primary}"
-            secondaryColour="${ScratchBlocks.Colours.data_lists.tertiary}"
-            custom="LIST">
-          </category>`,
-        });
-        result.map = (callback) => {
-          // Prevent Scratch from trying to change the color of the added category in high contrast mode.
-          // https://github.com/scratchfoundation/scratch-gui/blob/44eb578/src/containers/blocks.jsx#L358-L361
-          // https://github.com/scratchfoundation/scratch-gui/blob/44eb578/src/lib/themes/blockHelpers.js#L18-L53
-          return Array.prototype.map.call(result, (extension) => {
-            if (extension.id === "data") return extension;
-            else return callback(extension);
+    state.hasSeparateListCategory = hasSeparateListCategory;
+    state.enabled = true;
+
+    if (!runtime.__dataCategoryTweaksWrapped) {
+      runtime.__dataCategoryTweaksWrapped = true;
+      const originalGetBlocksXML = runtime.getBlocksXML;
+      
+      runtime.getBlocksXML = function (target) {
+        const result = originalGetBlocksXML.call(this, target);
+
+        if (state.enabled && state.hasSeparateListCategory) {
+          result.push({
+            id: "data",
+            xml: `
+            <category
+              name="%{BKY_CATEGORY_VARIABLES}"
+              id="variables"
+              iconURI="${VariablesIcon}"
+              colour="${ScratchBlocks.Colours.data.primary}"
+              secondaryColour="${ScratchBlocks.Colours.data.tertiary}"
+              custom="VARIABLE">
+            </category>
+            <category
+              name="${msg("plugins.dataCategoryTweaks.list")}"
+              id="lists"
+              iconURI="${ListIcon}"
+              colour="${ScratchBlocks.Colours.data_lists.primary}"
+              secondaryColour="${ScratchBlocks.Colours.data_lists.tertiary}"
+              custom="LIST">
+            </category>`,
           });
-        };
-      }
-      return result;
-    };
+          result.map = (callback) => {
+            // Prevent Scratch from trying to change the color of the added category in high contrast mode.
+            return Array.prototype.map.call(result, (extension) => {
+              if (extension.id === "data") return extension;
+              else return callback(extension);
+            });
+          };
+        }
+        return result;
+      };
+    }
 
     // If editingTarget is set, the editor has already rendered and we have to tell it to rerender.
     if (vm.editingTarget) {
@@ -282,10 +295,16 @@ const DataCategoryTweaks: React.FC<PluginContext> = ({ vm, blockly, workspace, m
       setHasSeparateListCategory(false);
       hasSeparateLocalVariables = false;
       hasMoveReportersDown = false;
+      
+      if (runtime.__dataCategoryTweaksState) {
+        runtime.__dataCategoryTweaksState.hasSeparateListCategory = false;
+        runtime.__dataCategoryTweaksState.enabled = false; 
+      }
+
       if (shouldEmitWorkspaceUpdate) vm.emitWorkspaceUpdate();
       if (shouldRefreshToolboxSelection) workspace.refreshToolboxSelection_();
       // Restore an overridden function to its original implementation.
-      runtime.getBlocksXML = originalGetBlocksXML;
+      // runtime.getBlocksXML = originalGetBlocksXML;
       ScratchBlocks.Flyout.prototype.show = oldShow;
 
       register.dispose();
