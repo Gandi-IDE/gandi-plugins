@@ -156,14 +156,8 @@ export function getOffscreenWorkspace(targetId: string) {
 
 export function ensureOffscreenWorkspace(targetId: string, blockly: any, mainWorkspace: any) {
   if (hiddenWorkspaceCache.has(targetId)) {
-    const hiddenWs = hiddenWorkspaceCache.get(targetId);
-    // 清理旧积木和注释
-    if (hiddenWs.getTopComments) {
-      //hiddenWs.getTopComments(true).forEach((c: any) => c.dispose());
-    }
-    //const oldTopBlocks = [...hiddenWs.getTopBlocks(false)];
-    //oldTopBlocks.forEach((b: any) => b.dispose(false, false));
-    return hiddenWs;
+    // 直接返回已有工作区，不销毁，保留所有分组的积木
+    return hiddenWorkspaceCache.get(targetId);
   }
   const hiddenWs = createHiddenWorkspace(blockly, mainWorkspace);
   hiddenWorkspaceCache.set(targetId, hiddenWs);
@@ -171,7 +165,7 @@ export function ensureOffscreenWorkspace(targetId: string, blockly: any, mainWor
 }
 
 export function saveTargetToOffscreen(targetId: string, mainWs: any, blockly: any) {
-  if ((window as any).__IS_COLLABORATION__) return;
+  //if ((window as any).__IS_COLLABORATION__) return;
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   //清空旧注释
   if (hiddenWs.getTopComments) {
@@ -386,7 +380,7 @@ export function initTargetCacheAndSwitchToGroup(
   getBlockGroup: any,
   allGroupsId: string
 ) {
-  if ((window as any).__IS_COLLABORATION__) return;
+  //if ((window as any).__IS_COLLABORATION__) return;
   const hiddenWs = ensureOffscreenWorkspace(targetId, blockly, mainWs);
   copyVariables(mainWs, hiddenWs, blockly);
   moveAllTopBlocksToWorkspace(mainWs, hiddenWs, blockly, true);
@@ -399,9 +393,9 @@ export function disposeOffscreenCache(targetId: string) {
   const hiddenWs = hiddenWorkspaceCache.get(targetId);
   if (hiddenWs) {
     try {
-      const top = [...hiddenWs.getTopBlocks(false)];
-      top.forEach((b: any) => b.dispose(false, false));
-      hiddenWs.dispose();
+      const canvas = hiddenWs.getCanvas();
+      if (canvas) while (canvas.firstChild) canvas.removeChild(canvas.firstChild);
+      hiddenWs.dispose();   // 销毁工作区
     } catch (e) {}
     hiddenWorkspaceCache.delete(targetId);
   }

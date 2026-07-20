@@ -266,7 +266,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
 
     if (!origClear || !origDom) return;
     const origDomToWorkspace = blockly.Xml?.domToWorkspace;
-
+    /*
     blockly.Xml.domToWorkspace = function(xml: Element, targetWorkspace: any) {
       if ((window as any).__IS_COLLABORATION__) {
         const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
@@ -301,12 +301,13 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
         }
       }
       return origDomToWorkspace.call(this, xml, targetWorkspace);
-    };
+    };*/
     blockly.Xml.clearWorkspaceAndLoadFromXml = function(xml: any, ...args: any[]) {
       const ct = (vm as any).editingTarget || (vm as any).runtime?._editingTarget;
       const tw = workspace || this;
       if (!ct) return origClear.call(this, xml, ...args);
         //协作模式下通过类原生加载，过滤非分组积木。
+        /*
         if ((window as any).__IS_COLLABORATION__) {
           const result = origClear.call(this, xml, ...args);
           if ((window as any).__ENABLE_PIXI_OPTIMIZATION__) {
@@ -315,7 +316,7 @@ const EditorOptimization: React.FC<PluginContext> = ({ vm, blockly, workspace, r
             });
           }
           return result;
-        }
+        }*/
       const newTargetId = ct.id;
       // 切出旧角色：保存到离屏
       if (lastTargetIdRef.current && lastTargetIdRef.current !== newTargetId) {
@@ -1084,9 +1085,29 @@ React.useEffect(() => {
   workspaceDiv.appendChild(wrapper);
   // 创建调试面板
   const debugPanel = document.createElement('div');
-  debugPanel.style.cssText = `
+  const isCollab = !!(window as any).__IS_COLLABORATION__;
+  if (isCollab) {
+      debugPanel.style.cssText = `
     position: absolute;
-    bottom: 4px;
+    bottom: 8px;
+    left: 496px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    font-family: monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 9999;
+    pointer-events: auto;
+    line-height: 1.4;
+    cursor: move;
+    user-select: none;
+  `;
+  }
+  else {
+      debugPanel.style.cssText = `
+    position: absolute;
+    bottom: 8px;
     left: 332px;
     color: #fff;
     background: rgba(0, 0, 0, 0.6);
@@ -1100,6 +1121,7 @@ React.useEffect(() => {
     cursor: move;
     user-select: none;
   `;
+  }
   wrapper.appendChild(debugPanel);
 
   // 拖拽逻辑
@@ -1328,6 +1350,10 @@ workspaceDiv.addEventListener('dblclick', handleDoubleClick);
 
   vm.setEditingTarget = function (targetId: string) {
     const isCollab = !!(window as any).__IS_COLLABORATION__;
+    if (isCollab) {
+      disposeOffscreenCache(targetId);        // 模拟首次进入，强制清空旧缓存
+      console.log('清理旧缓存')
+    }
     renderer.cancelBake();
     const result = originalSetEditingTarget(targetId);
     //延迟刷新
