@@ -249,6 +249,8 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
   }, [logs]);
   const handleMessage = React.useCallback((msg: unknown) => {
     const { activeThread } = vm.runtime.sequencer;
+    // @ts-ignore
+    if (!activeThread) return void pushLine(`${msg}`, vm.runtime._stageTarget, null, '');
     const { target } = activeThread;
     const { blocks } = target;
     const blockId = activeThread.peekStack();
