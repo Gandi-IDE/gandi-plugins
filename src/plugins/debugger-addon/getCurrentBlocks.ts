@@ -135,7 +135,7 @@ export function getBlockTextAndColor(block: MinBlockState, blockly: IBlockly): {
   });
   return {
     text: processedMessage.replace(/\s+/g, " ").trim(),
-    color: getBlockColor(blockConfig, blockly),
+    color: opcode.startsWith("event_") ? '#FFBF00' : getBlockColor(blockConfig, blockly),
   };
 }
 

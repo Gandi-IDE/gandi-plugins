@@ -25,7 +25,7 @@ export const ConsoleButton: React.FC<{ label: string }> = ({ label }) => {
 
 export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
   const { Console, msg } = context;
-  const { logs, clean, console_transparent } = Console;
+  const { logs, clean, transparentBg } = Console;
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   // 有新日志时自动滚动到底部
@@ -57,7 +57,7 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
       <button className={styleConsole.trash} onClick={() => clean()}>
         <TrashIcon />
       </button>
-      <div className={`${styleConsole.consoleWindow} ${console_transparent ? styleConsole.transparent : ''}`} ref={scrollRef}>
+      <div className={`${styleConsole.consoleWindow} ${transparentBg ? styleConsole.transparent : ''}`} ref={scrollRef}>
         {logs.length ?
           (() => {
             let renderLogs = logs;

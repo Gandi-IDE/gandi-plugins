@@ -19,16 +19,18 @@ interface ThreadInfo {
   targetId: string;
   topBlockId: string;
   stack: string[];
-  isRunning: boolean;
+  status: number;
   isCompiled: boolean;
   depth: number;
   children?: ThreadInfo[];
+  target: any;
+  stopThisScript: () => void;
+  threadTag?: any;
 }
 
 export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
   const { vm, blockly, msg } = context;
   const [threads, setThreads] = React.useState<ThreadInfo[]>([]);
-  const [runningThreadId, setRunningThreadId] = React.useState<number | null>(null);
   const threadIdMap = React.useRef<WeakMap<any, number>>(new WeakMap());
   let nextThreadId = React.useRef(1);
 
@@ -67,6 +69,12 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     }
   }, [blockly]);
 
+  const blockToOpcode = (b: string, thread?: ThreadInfo) => {
+    return thread?.target?.blocks.getBlock(b)?.opcode
+      ?? Object.keys(blockly.Blocks).find(x => x.endsWith("_" + b))
+        ?? b;
+  }
+
   const collectThreadInfo = React.useCallback((thread: any, depth: number, visited: Set<any>): ThreadInfo | null => {
     if (visited.has(thread)) return null;
     visited.add(thread);
@@ -76,28 +84,23 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     if (thread.updateMonitor) return null;
 
     const id = getThreadId(thread);
-    const runningThread = vm.runtime.sequencer?.activeThread;
-    const isRunning = thread === runningThread;
 
     const stackOpcode: string[] = [];
-    if (thread.stackFrames) {
-      for (const frame of thread.stackFrames) {
-        if (frame.op?.opcode) {
-          stackOpcode.push(frame.op.opcode);
-        }
-      }
-    }
+    for (const frame of thread.stackFrames) frame.op?.opcode && stackOpcode.push(frame.op.opcode);
 
     const info: ThreadInfo = {
       id,
-      targetName: target.getName?.() || "Unknown",
+      target,
+      targetName: target.sprite.name,
       targetId: target.id,
-      topBlockId: thread.topBlock || null,
+      topBlockId: thread.topBlock,
       stack: stackOpcode,
-      isRunning,
-      isCompiled: thread.isCompiled || false,
+      status: thread.status,
+      isCompiled: thread.isCompiled,
       depth,
       children: [],
+      stopThisScript: thread.stopThisScript.bind(thread),
+      threadTag: thread.threadTag || {},
     };
 
     // 处理子线程
@@ -106,34 +109,23 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
         if (frame.executionContext?.startedThreads) {
           for (const childThread of frame.executionContext.startedThreads) {
             const childInfo = collectThreadInfo(childThread, depth + 1, visited);
-            if (childInfo) {
-              info.children!.push(childInfo);
-            }
+            if (childInfo) info.children!.push(childInfo);
           }
         }
       }
     }
 
+    if (info.stack[0] !== info.topBlockId) info.stack.unshift(blockToOpcode(thread.topBlock, thread));
     return info;
   }, [getThreadId, vm]);
 
   const updateThreads = React.useCallback(() => {
-    const allThreads = vm.runtime.threads || [];
     const visited = new Set<any>();
     const result: ThreadInfo[] = [];
 
-    for (const thread of allThreads) {
+    for (const thread of vm.runtime.threads) {
       const info = collectThreadInfo(thread, 0, visited);
-      if (info) {
-        result.push(info);
-      }
-    }
-
-    const running = vm.runtime.sequencer?.activeThread;
-    if (running) {
-      setRunningThreadId(getThreadId(running));
-    } else {
-      setRunningThreadId(null);
+      result.push(info);
     }
 
     setThreads(result);
@@ -141,20 +133,15 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
 
   React.useEffect(() => {
     updateThreads();
-
     const { runtime } = vm;
     const originalStep = runtime._step;
     runtime._step = function(this: any) {
       const result = originalStep.call(this);
-      requestAnimationFrame(() => {
-        updateThreads();
-      });
+      requestAnimationFrame(() => updateThreads());
       return result;
     };
 
-    return () => {
-      runtime._step = originalStep;
-    };
+    return () => { runtime._step = originalStep };
   }, [vm, updateThreads]);
 
   const jumpToBlock = React.useCallback((targetId: string, blockId: string) => {
@@ -164,49 +151,46 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     vm.setEditingTarget(targetId);
     const workspace = blockly.getMainWorkspace();
     const blocklyBlock = workspace?.getBlockById(blockId);
-    if (blocklyBlock) {
-      blocklyBlock.select();
-    }
+    if (blocklyBlock) blocklyBlock.select();
   }, [vm, blockly]);
 
   const renderThread = (thread: ThreadInfo, isChild = false) => {
-    console.log(thread);
-    const isRunning = thread.isRunning || thread.id === runningThreadId;
-
+    const stack = thread.stack, tags = Object.keys(thread.threadTag);
     return (
       <div key={thread.id} className={styleThreads.threadItem}>
-        <div className={`${styleThreads.threadHeader} ${isRunning ? styleThreads.running : ''}`}>
+        <div className={styleThreads.threadHeader}>
           <div className={styleThreads.threadIndent} style={{ paddingLeft: `${thread.depth * 20}px` }}>
             {isChild && <span className={styleThreads.threadChildIcon}>└─</span>}
             <span className={styleThreads.threadTargetName}>{thread.targetName}</span>
             <span className={styleThreads.threadId}>#{thread.id}</span>
-            {isRunning && <span className={styleThreads.threadRunningBadge}>{msg("plugins.debuggerAddon.threads.running")}</span>}
+            {thread.status === 1 && <span className={styleThreads.threadPausedBadge}>{msg("plugins.debuggerAddon.threads.paused")}</span>}
             {thread.isCompiled && <span className={styleThreads.threadCompiledBadge}>{msg("plugins.debuggerAddon.threads.compiled")}</span>}
+            {tags.map(tag => <span key={tag} className={styleThreads.threadTag}>{tag}</span>)}
+            <button
+              className={styleThreads.threadStopButton}
+              onClick={thread.stopThisScript}
+              title={msg("plugins.debuggerAddon.threads.stop")}
+            ><span className={styleThreads.stopIcon}></span></button>
           </div>
         </div>
-        {(thread.stack.length > 0 || thread.topBlockId) && (
+        {stack.length && (
           <div className={styleThreads.threadStack}>
-            {(thread.stack.length ? thread.stack : [thread.topBlockId]).map((opcode, idx) => {
+            {stack.map((opcode, idx) => {
               const blockInfo = getBlockDisplayInfo(opcode);
               return (
                 <div key={idx} className={styleThreads.threadStackItem}>
                   <span className={styleThreads.threadStackIndex}>{idx + 1}.</span>
-                  <span 
-                    className={styleThreads.threadStackBlock}
+                  <span className={styleThreads.threadStackBlock}
                     style={{ 
                       backgroundColor: blockInfo.color + '33',
                       color: blockInfo.color,
                     }}
-                  >
-                    {blockInfo.text}
-                  </span>
-                  <a
-                    className={styleThreads.targetLink}
+                  >{blockInfo.text}</span>
+                  <a className={styleThreads.targetLink}
                     onClick={(e) => {
                       e.preventDefault();
                       jumpToBlock(thread.targetId, thread.stack[idx]);
-                    }}
-                  >
+                    }}>
                     {thread.targetName}
                     {!vm.runtime.getTargetById(thread.targetId)?.isOriginal && msg("plugins.debuggerAddon.console.isClone")}
                   </a>
@@ -232,15 +216,13 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
           {msg("plugins.debuggerAddon.threads.compilerWarning")}
         </div>
       )}
-      {
-        threads.length
-          ? <div className={styleThreads.threadsList}>
-              {threads.map(thread => renderThread(thread))}
-            </div>
-          : <div className={styleThreads.threadsEmpty}>
-              {msg("plugins.debuggerAddon.threads.empty")}
-            </div>
-      }
+      {threads.length
+        ? <div className={styleThreads.threadsList}>
+            {threads.map(thread => renderThread(thread))}
+          </div>
+        : <div className={styleThreads.threadsEmpty}>
+            {msg("plugins.debuggerAddon.threads.empty")}
+          </div>}
     </div>
   );
 };

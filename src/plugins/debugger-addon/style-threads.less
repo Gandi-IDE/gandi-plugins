@@ -23,7 +23,7 @@
   cursor: pointer;
   color: var(--theme-text-primary);
   font-size: 11px;
-  transition: 0.1s;
+  transition: .1s;
 
   &:hover {
     background: var(--theme-color-50);
@@ -62,11 +62,7 @@
   min-height: 24px;
   font-size: 12px;
   border-left: 2px solid transparent;
-  transition: 0.1s;
-
-  &.running {
-    border-left-color: #ff4d4f;
-  }
+  transition: .1s;
 }
 
 .threadIndent {
@@ -105,19 +101,19 @@
   text-overflow: ellipsis;
 }
 
-.threadRunningBadge {
+.threadPausedBadge {
   font-size: 10px;
-  color: #ff4d4f;
+  color: #faad14;
   padding: 0 4px;
-  border: 1px solid rgba(255, 77, 79, 0.3);
   border-radius: 2px;
+  border: 1px solid rgba(250, 173, 20, .2);
 }
 
 .threadCompiledBadge {
   font-size: 10px;
   color: var(--theme-color-b100);
   padding: 0 4px;
-  border: 1px solid rgba(100, 100, 255, 0.2);
+  border: 1px solid rgba(100, 100, 255, .2);
   border-radius: 2px;
 }
 
@@ -128,9 +124,9 @@
   margin-bottom: auto;
   text-decoration: underline 1px;
   cursor: pointer;
-  :not(.transparent) & {
-    color: #fff;
-  }
+  color: var(--theme-text-primary);
+  font-size: 12px;
+  transition-duration: .1s;
   &:hover {
     color: var(--theme-color-b100);
   }
@@ -152,10 +148,6 @@
   font-size: 11px;
   font-family: monospace, Consolas;
   color: var(--theme-color-g400);
-
-  &:hover {
-    background: var(--theme-color-50);
-  }
 }
 
 .threadStackIndex {
@@ -194,10 +186,54 @@
   gap: 8px;
   padding: 6px 10px;
   margin-bottom: 8px;
-  background: rgba(255, 171, 25, 0.15);
-  border: 1px solid rgba(255, 171, 25, 0.3);
+  background: rgba(255, 171, 25, .15);
+  border: 1px solid rgba(255, 171, 25, .3);
   border-radius: 4px;
   font-size: 12px;
   color: var(--theme-color-primary);
   flex-shrink: 0;
+}
+
+.threadStopButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .5;
+  transition: .1s;
+  margin-left: auto;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  .running & {
+    opacity: .8;
+  }
+}
+
+.stopIcon {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: var(--theme-text-primary);
+  border-radius: 2px;
+  transition: .1s;
+  .threadStopButton:hover & {
+    background: #ff4d4f;
+  }
+}
+
+.threadTag {
+  font-size: 10px;
+  padding: 0 4px;
+  border-radius: 2px;
+  border: 1px solid rgb(45, 140, 255, .3);
+  color: rgb(45, 140, 255);
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: .8;
 }

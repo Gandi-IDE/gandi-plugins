@@ -18,10 +18,16 @@ export type WindowContext = PluginContext & {
     console_disableOrigin: boolean;
     logs: ConsoleLine[];
     clean(): void;
-    console_transparent: boolean;
+    transparentBg: boolean;
   };
   Stats: {
     stats_disableAnimation: boolean;
+    transparentBg: boolean;
+    statsData: {
+      fps: number[];
+      clones: number[];
+      labels: number[];
+    };
   };
   Performance: {
     performance_maxTime: number;
@@ -30,6 +36,7 @@ export type WindowContext = PluginContext & {
     performance_records: Record;
     setPerformance_records: React.Dispatch<React.SetStateAction<Record>>;
   };
+  terminalLoadMode: string;
 };
 export type ConsoleLine = {
   msg: string;
@@ -80,8 +87,9 @@ const MainWindow: React.FC<{
   onClose(): void;
   context: WindowContext;
 }> = ({ context, onClose }) => {
-  const { msg, vm } = context;
+  const { msg, vm, terminalLoadMode } = context;
   const [containerInfo, setContainerInfo] = React.useState({ width: 480, height: 320, translateX: 80, translateY: 80 });
+  if (terminalLoadMode === 'onClick') vm.extensionManager.loadExternalExtensionById('GandiTerminal');
 
   const pages: [React.ReactNode, React.ReactNode][] = [
     [
@@ -93,12 +101,12 @@ const MainWindow: React.FC<{
       <StatsWindow key="stats-window" context={context} />,
     ],
     [
-      <PerformanceButton label={msg("plugins.debuggerAddon.performance")} />,
-      <PerformanceWindow key="performance-window" context={context} />,
-    ],
-    [
       <ThreadsButton label={msg("plugins.debuggerAddon.threads")} key="threads-button" />,
       <ThreadsWindow key="threads-window" context={context} />,
+    ],
+    [
+      <PerformanceButton label={msg("plugins.debuggerAddon.performance")} />,
+      <PerformanceWindow key="performance-window" context={context} />,
     ],
   ];
 
@@ -147,7 +155,49 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       totalTime: 0,
     },
   });
-  const [console_transparent, setConsole_Transparent] = React.useState(true);
+  const [transparentBg, setTransparentBg] = React.useState(true);
+  const [terminalLoadMode, setTerminalLoadMode] = React.useState("auto");
+  const statsDataRef = React.useRef<{
+    fps: number[];
+    clones: number[];
+    labels: number[];
+  }>({
+    fps: new Array(20).fill(0),
+    clones: new Array(20).fill(0),
+    labels: Array.from({ length: 20 }, (_, i) => 19 - i),
+  });
+  React.useEffect(() => {
+    const { runtime } = context.vm;
+    let frameCount = 0;
+    let lastTime = performance.now();
+    
+    const originalStep = runtime._step;
+    runtime._step = function () {
+      originalStep.call(this);
+      frameCount++;
+    };
+    
+    const interval = setInterval(() => {
+      const data = statsDataRef.current;
+      const now = performance.now();
+      
+      const fps = Math.round(frameCount);
+      frameCount = 0;
+      lastTime = now;
+      
+      const clones = runtime.targets.filter((t: any) => !t.isOriginal).length;
+      
+      data.fps.shift();
+      data.fps.push(fps);
+      data.clones.shift();
+      data.clones.push(clones);
+    }, 1000);
+    
+    return () => {
+      runtime._step = originalStep;
+      clearInterval(interval);
+    };
+  }, []);
 
   const throttleTimerRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
@@ -289,6 +339,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
               value: performance_maxTime,
               key: "maxTime",
               label: msg("plugins.debuggerAddon.performance.maxTime"),
+              description: msg("plugins.debuggerAddon.performance.maxTime.d"),
               inputProps: {
                 type: "number",
               },
@@ -301,15 +352,28 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
               value: true,
               key: "transparent",
               label: msg("plugins.debuggerAddon.console.transparent"),
-              description: msg("plugins.debuggerAddon.console.transparent.desc"),
-              onChange: v => setConsole_Transparent(!!v),
+              description: msg("plugins.debuggerAddon.console.transparent.d"),
+              onChange: v => setTransparentBg(v as boolean),
+            },
+            {
+              type: "select",
+              value: terminalLoadMode,
+              key: "terminalLoadMode",
+              label: msg("plugins.debuggerAddon.terminalLoadMode"),
+              description: msg("plugins.debuggerAddon.terminalLoadMode.d"),
+              options: [
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.auto"), value: "auto" },
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.onClick"), value: "onClick" },
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.manual"), value: "manual" },
+              ],
+              onChange: v => setTerminalLoadMode(v as string),
             },
           ],
         },
       ],
       <DebuggerIcon />,
     );
-    vm.extensionManager.loadExternalExtensionById('GandiTerminal');
+    terminalLoadMode === "auto" && vm.extensionManager.loadExternalExtensionById('GandiTerminal');
     return () => {
       dispose();
       setLogs([]);
@@ -333,10 +397,12 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 console_disableOrigin: console_disableOrigin,
                 logs,
                 clean,
-                console_transparent: console_transparent,
+                transparentBg,
               },
               Stats: {
                 stats_disableAnimation,
+                transparentBg,
+                statsData: statsDataRef.current,
               },
               Performance: {
                 performance_maxTime,
@@ -345,10 +411,9 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 performance_records,
                 setPerformance_records,
               },
+              terminalLoadMode,
             }}
-            onClose={() => {
-              setVisible(false);
-            }}
+            onClose={() => setVisible(false)}
           />,
           document.body,
         )}
