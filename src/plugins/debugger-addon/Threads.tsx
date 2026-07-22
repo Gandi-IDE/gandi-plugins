@@ -83,8 +83,13 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
 
     const id = getThreadId(thread);
 
-    const stackOpcode: string[] = [];
+    const stackOpcode: string[] = [], _stack = [...thread.stack];
     thread.stackFrames.forEach((frame: any, i: any) => stackOpcode.push(frame.op?.opcode ?? blockToOpcode(thread.stack[i], thread)));
+
+    if (thread.topBlock !== thread.stack[0]) {
+      stackOpcode.unshift(blockToOpcode(thread.topBlock, thread));
+      _stack.unshift(thread.topBlock);
+    }
 
     const info: ThreadInfo = {
       id,
@@ -99,7 +104,7 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
       children: [],
       stopThisScript: thread.stopThisScript.bind(thread),
       threadTag: thread.threadTag ?? {},
-      _stack: thread.stack,
+      _stack,
     };
 
     // 处理子线程
@@ -167,35 +172,33 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
             ><span className={styleThreads.stopIcon}></span></button>
           </div>
         </div>
-        {
-          stack.length 
-            ? <div className={styleThreads.threadStack}>
-                {stack.map((opcode, idx) => {
-                  const blockInfo = getBlockDisplayInfo(opcode);
-                  return (
-                    <div key={idx} className={styleThreads.threadStackItem}>
-                      <span className={styleThreads.threadStackIndex}>{idx + 1}.</span>
-                      <span className={styleThreads.threadStackBlock}
-                        style={{ 
-                          backgroundColor: blockInfo.color + '33',
-                          color: blockInfo.color,
-                        }}
-                      >{blockInfo.text}</span>
-                      <a className={styleThreads.targetLink}
-                        onClick={e => {
-                          e.preventDefault();
-                          jumpToBlock(thread.target, thread._stack[idx]);
-                        }}
-                      >
-                        {thread.targetName}
-                        {!vm.runtime.getTargetById(thread.targetId)?.isOriginal && msg("plugins.debuggerAddon.console.isClone")}
-                      </a>
-                    </div>
-                  );
-                })}
-              </div>
-            : <span style={{ color: 'var(--theme-color-g400)' }}>无线程</span>
-        }
+        {stack.length 
+          ? <div className={styleThreads.threadStack}>
+              {stack.map((opcode, idx) => {
+                const blockInfo = getBlockDisplayInfo(opcode);
+                return (
+                  <div key={idx} className={styleThreads.threadStackItem}>
+                    <span className={styleThreads.threadStackIndex}>{idx + 1}.</span>
+                    <span className={styleThreads.threadStackBlock}
+                      style={{ 
+                        backgroundColor: blockInfo.color + '33',
+                        color: blockInfo.color,
+                      }}
+                    >{blockInfo.text}</span>
+                    <a className={styleThreads.targetLink}
+                      onClick={e => {
+                        e.preventDefault();
+                        jumpToBlock(thread.target, thread._stack[idx]);
+                      }}
+                    >
+                      {thread.targetName}
+                      {!vm.runtime.getTargetById(thread.targetId)?.isOriginal && msg("plugins.debuggerAddon.console.isClone")}
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          : <span style={{ color: 'var(--theme-color-g400)' }}>无线程</span>}
         
         {thread.children && thread.children.length > 0 && (
           <div className={styleThreads.threadChildren}>
