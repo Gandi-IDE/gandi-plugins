@@ -169,4 +169,5 @@ declare interface VirtualMachine extends NodeJS.EventEmitter {
     targetId: string,
     optFromTargetId?: string,
   ) => Promise<Record<string, string>>;
+  setCompilerOptions: (opcode: any) => any;
 }

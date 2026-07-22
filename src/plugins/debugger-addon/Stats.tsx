@@ -114,8 +114,9 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
             },
           },
         },
+        // @ts-ignore
         scales: scaleOptions,
-      } as any,
+      },
     });
     chartRef.current = chartInstance;
     const updateInterval = setInterval(() => {

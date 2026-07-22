@@ -41,7 +41,7 @@ export type WindowContext = PluginContext & {
 export type ConsoleLine = {
   msg: string;
   count: number;
-  target: Scratch.RenderTarget;
+  target: Scratch.RenderTarget | null;
   block: string;
   innerBlockText: string;
   innerBlockColor: string;
@@ -202,7 +202,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
   const throttleTimerRef = React.useRef<number | null>(null);
   const incomingLines = React.useRef<ConsoleLine[]>([]);
   const pushLine = React.useCallback(
-    (str: string, target: Scratch.RenderTarget, block: string, innerBlockText: string, innerBlockColor = "") => {
+    (str: string, target: Scratch.RenderTarget | null, block: string, innerBlockText: string, innerBlockColor = "") => {
       const lastLine = incomingLines.current.at(-1);
       const newLine: ConsoleLine = {
         msg: Anser.ansiToHtml(escape(str)),
@@ -249,8 +249,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
   }, [logs]);
   const handleMessage = React.useCallback((msg: unknown) => {
     const { activeThread } = vm.runtime.sequencer;
-    // @ts-ignore
-    if (!activeThread) return void pushLine(`${msg}`, vm.runtime._stageTarget, null, '');
+    if (!activeThread) return void pushLine(`${msg}`, null, '', '');
     const { target } = activeThread;
     const { blocks } = target;
     const blockId = activeThread.peekStack();
@@ -304,6 +303,19 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
           description: msg("plugins.debuggerAddon.description"),
           items: [
             {
+              type: "select",
+              value: terminalLoadMode,
+              key: "terminalLoadMode",
+              label: msg("plugins.debuggerAddon.terminalLoadMode"),
+              description: msg("plugins.debuggerAddon.terminalLoadMode.d"),
+              options: [
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.auto"), value: "auto" },
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.onClick"), value: "onClick" },
+                { label: msg("plugins.debuggerAddon.terminalLoadMode.manual"), value: "manual" },
+              ],
+              onChange: v => setTerminalLoadMode(v as string),
+            },
+            {
               type: "switch",
               value: console_disableOrigin,
               key: "disableOriginConsole",
@@ -356,19 +368,6 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
               label: msg("plugins.debuggerAddon.console.transparent"),
               description: msg("plugins.debuggerAddon.console.transparent.d"),
               onChange: v => setTransparentBg(v as boolean),
-            },
-            {
-              type: "select",
-              value: terminalLoadMode,
-              key: "terminalLoadMode",
-              label: msg("plugins.debuggerAddon.terminalLoadMode"),
-              description: msg("plugins.debuggerAddon.terminalLoadMode.d"),
-              options: [
-                { label: msg("plugins.debuggerAddon.terminalLoadMode.auto"), value: "auto" },
-                { label: msg("plugins.debuggerAddon.terminalLoadMode.onClick"), value: "onClick" },
-                { label: msg("plugins.debuggerAddon.terminalLoadMode.manual"), value: "manual" },
-              ],
-              onChange: v => setTerminalLoadMode(v as string),
             },
           ],
         },

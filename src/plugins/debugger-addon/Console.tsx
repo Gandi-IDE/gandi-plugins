@@ -6,7 +6,12 @@ import { WindowContext } from ".";
 import { scrollBlockIntoView } from "utils/block-helper";
 import Tooltip from "components/Tooltip";
 
-type ConsoleLine = { msg: string; count: number; target: Scratch.RenderTarget; block: string };
+type ConsoleLine = {
+  msg: string;
+  count: number;
+  target: Scratch.RenderTarget | null;
+  block: string
+};
 interface Blockly {
   getMainWorkspace(): Blockly.WorkspaceSvg;
   Events: {
@@ -40,6 +45,7 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
 
   const jumpToBlock = React.useCallback(
     (line: ConsoleLine) => {
+      if (!line.target) return;
       const { vm, blockly: _blockly } = context;
       const blockly = _blockly as Blockly;
       vm.setEditingTarget(line.target.id);
@@ -76,7 +82,7 @@ export const ConsoleWindow: React.FC<{ context: WindowContext }> = ({ context })
                     <span style={{ backgroundColor: log.innerBlockColor }}>{log.innerBlockText ?? ''}</span>
                   </span>
                 )}
-                <TargetLink target={log.target} onClick={() => jumpToBlock(log)} msg={msg}></TargetLink>
+                {log.target && <TargetLink target={log.target} onClick={() => jumpToBlock(log)} msg={msg}></TargetLink>}
               </div>
             ));
           })()
@@ -120,7 +126,6 @@ const TargetLink: React.FC<TargetContext> = (context) => {
       className={styleConsole.targetLink}
       onClick={(e) => {
         e.preventDefault();
-
         onClick();
       }}
     >

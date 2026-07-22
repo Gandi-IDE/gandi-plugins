@@ -3,6 +3,7 @@ import ThreadIcon from "assets/icon--threads.svg";
 import styleThreads from "./style-threads.less";
 import { WindowContext } from ".";
 import { getBlockTextAndColor } from "./getCurrentBlocks";
+import { scrollBlockIntoView } from "utils/block-helper";
 
 export const ThreadsButton: React.FC<{ label: string }> = ({ label }) => {
   return (
@@ -26,6 +27,7 @@ interface ThreadInfo {
   target: any;
   stopThisScript: () => void;
   threadTag?: any;
+  _stack: any;
 }
 
 export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
@@ -37,17 +39,14 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
   const [isCompilerEnabled, setCompilerEnabled] = React.useState(vm.runtime.compilerOptions.enabled);
 
   React.useEffect(() => {
-    // @ts-ignore
     const originalSetCompilerOptions = vm.setCompilerOptions;
-    // @ts-ignore
     vm.setCompilerOptions = function(options: any) {
       const result = originalSetCompilerOptions.call(this, options);
       setCompilerEnabled(options?.enabled === true);
       updateThreads();
       return result;
     };
-    // @ts-ignore
-    return () => vm.setCompilerOptions = originalSetCompilerOptions;
+    return () => { vm.setCompilerOptions = originalSetCompilerOptions };
   }, [vm]);
 
   const getThreadId = React.useCallback((thread: any): number => {
@@ -69,11 +68,10 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     }
   }, [blockly]);
 
-  const blockToOpcode = (b: string, thread?: ThreadInfo) => {
-    return thread?.target?.blocks.getBlock(b)?.opcode
+  const blockToOpcode = (b: string, thread?: ThreadInfo) => 
+    thread?.target?.blocks.getBlock(b)?.opcode
       ?? Object.keys(blockly.Blocks).find(x => x.endsWith("_" + b))
         ?? b;
-  }
 
   const collectThreadInfo = React.useCallback((thread: any, depth: number, visited: Set<any>): ThreadInfo | null => {
     if (visited.has(thread)) return null;
@@ -86,7 +84,7 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     const id = getThreadId(thread);
 
     const stackOpcode: string[] = [];
-    for (const frame of thread.stackFrames) frame.op?.opcode && stackOpcode.push(frame.op.opcode);
+    thread.stackFrames.forEach((frame: any, i: any) => stackOpcode.push(frame.op?.opcode ?? blockToOpcode(thread.stack[i], thread)));
 
     const info: ThreadInfo = {
       id,
@@ -100,22 +98,20 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
       depth,
       children: [],
       stopThisScript: thread.stopThisScript.bind(thread),
-      threadTag: thread.threadTag || {},
+      threadTag: thread.threadTag ?? {},
+      _stack: thread.stack,
     };
 
     // 处理子线程
-    if (thread.stackFrames) {
-      for (const frame of thread.stackFrames) {
-        if (frame.executionContext?.startedThreads) {
-          for (const childThread of frame.executionContext.startedThreads) {
-            const childInfo = collectThreadInfo(childThread, depth + 1, visited);
-            if (childInfo) info.children!.push(childInfo);
-          }
+    for (const frame of thread.stackFrames) {
+      if (frame.executionContext?.startedThreads) {
+        for (const childThread of frame.executionContext.startedThreads) {
+          const childInfo = collectThreadInfo(childThread, depth + 1, visited);
+          if (childInfo) info.children!.push(childInfo);
         }
       }
     }
 
-    if (info.stack[0] !== info.topBlockId) info.stack.unshift(blockToOpcode(thread.topBlock, thread));
     return info;
   }, [getThreadId, vm]);
 
@@ -125,7 +121,7 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
 
     for (const thread of vm.runtime.threads) {
       const info = collectThreadInfo(thread, 0, visited);
-      result.push(info);
+      info && result.push(info);
     }
 
     setThreads(result);
@@ -144,14 +140,12 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
     return () => { runtime._step = originalStep };
   }, [vm, updateThreads]);
 
-  const jumpToBlock = React.useCallback((targetId: string, blockId: string) => {
-    const target = vm.runtime.getTargetById(targetId);
+  const jumpToBlock = React.useCallback((target: any, blockId: string) => {
     if (!target) return;
-
-    vm.setEditingTarget(targetId);
+    vm.setEditingTarget(target.id);
     const workspace = blockly.getMainWorkspace();
-    const blocklyBlock = workspace?.getBlockById(blockId);
-    if (blocklyBlock) blocklyBlock.select();
+    const blocklyBlock = workspace.blockDB_[blockId];
+    blocklyBlock && scrollBlockIntoView(blocklyBlock, workspace);
   }, [vm, blockly]);
 
   const renderThread = (thread: ThreadInfo, isChild = false) => {
@@ -173,32 +167,35 @@ export const ThreadsWindow: React.FC<{ context: WindowContext }> = ({ context })
             ><span className={styleThreads.stopIcon}></span></button>
           </div>
         </div>
-        {stack.length && (
-          <div className={styleThreads.threadStack}>
-            {stack.map((opcode, idx) => {
-              const blockInfo = getBlockDisplayInfo(opcode);
-              return (
-                <div key={idx} className={styleThreads.threadStackItem}>
-                  <span className={styleThreads.threadStackIndex}>{idx + 1}.</span>
-                  <span className={styleThreads.threadStackBlock}
-                    style={{ 
-                      backgroundColor: blockInfo.color + '33',
-                      color: blockInfo.color,
-                    }}
-                  >{blockInfo.text}</span>
-                  <a className={styleThreads.targetLink}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      jumpToBlock(thread.targetId, thread.stack[idx]);
-                    }}>
-                    {thread.targetName}
-                    {!vm.runtime.getTargetById(thread.targetId)?.isOriginal && msg("plugins.debuggerAddon.console.isClone")}
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {
+          stack.length 
+            ? <div className={styleThreads.threadStack}>
+                {stack.map((opcode, idx) => {
+                  const blockInfo = getBlockDisplayInfo(opcode);
+                  return (
+                    <div key={idx} className={styleThreads.threadStackItem}>
+                      <span className={styleThreads.threadStackIndex}>{idx + 1}.</span>
+                      <span className={styleThreads.threadStackBlock}
+                        style={{ 
+                          backgroundColor: blockInfo.color + '33',
+                          color: blockInfo.color,
+                        }}
+                      >{blockInfo.text}</span>
+                      <a className={styleThreads.targetLink}
+                        onClick={e => {
+                          e.preventDefault();
+                          jumpToBlock(thread.target, thread._stack[idx]);
+                        }}
+                      >
+                        {thread.targetName}
+                        {!vm.runtime.getTargetById(thread.targetId)?.isOriginal && msg("plugins.debuggerAddon.console.isClone")}
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            : <span style={{ color: 'var(--theme-color-g400)' }}>无线程</span>
+        }
         
         {thread.children && thread.children.length > 0 && (
           <div className={styleThreads.threadChildren}>
