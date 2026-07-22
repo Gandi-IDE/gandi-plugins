@@ -1,8 +1,9 @@
 .consoleWindow {
   height: 100%;
   width: 100%;
-  background-color: var(--theme-color-400);
   overflow-y: scroll;
+  background-color: #2e3644;
+  font-family: monospace, Consolas, Monaco, "Courier New", Courier;
 }
 
 .w100-h100 {
@@ -21,8 +22,7 @@
 }
 
 .logCount {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 1px 6px;
   border-radius: 9px;
   height: 16px;
   margin-top: auto;
@@ -34,6 +34,8 @@
 
 .logContent {
   flex-shrink: 0.4;
+  max-width: 100%;
+  flex: 1;
 }
 
 .logInnerBlockTip {
@@ -59,6 +61,13 @@
   margin-bottom: auto;
   text-decoration: underline 1px;
   cursor: pointer;
+  transition-duration: .1s;
+  :not(.transparent) & {
+    color: var(--theme-text-primary);
+  }
+  &:hover {
+    color: var(--theme-color-b100);
+  }
 }
 
 .logLine {
@@ -71,7 +80,6 @@
   align-items: baseline;
   border-bottom: solid var(--theme-color-g300) 1px;
   white-space: pre;
-  font-family: Consolas, Monaco, "Courier New", Courier, monospace;
   position: relative;
   line-height: 16px;
 }
@@ -84,4 +92,22 @@
 
 .targetTooltip {
   display: inline;
+}
+
+.transparent {
+  background-color: transparent !important;
+}
+
+:root[theme="light"] .transparent .logContent:not(:has([style*="background"])) {
+  filter: brightness(0.7) saturate(0.8);
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--theme-color-g400);
+  font-size: 13px;
+  user-select: none;
 }

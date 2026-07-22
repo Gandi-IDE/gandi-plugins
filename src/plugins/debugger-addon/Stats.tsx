@@ -13,8 +13,6 @@ export const StatsButton: React.FC<{ label: string }> = ({ label }) => {
   );
 };
 
-const labels = Array.from({ length: 20 }, (_, i) => 19 - i);
-
 interface YAxis {
   min: 0;
   suggestedMax: number;
@@ -22,6 +20,8 @@ interface YAxis {
   ticks: {
     color: string;
   };
+  position: string;
+  grid: any;
 }
 type ScalesOptions = {
   fpsY: YAxis;
@@ -31,21 +31,22 @@ type ScalesOptions = {
       stepSize: 1;
       color: string;
     };
+    grid: any;
   };
 };
 
 const FPS_COLOR = "#09F7F7";
 const CLONES_COLOR = "#F4B960";
-const WHITE = "#FFFFFF";
+const WHITE = "#999999"; // 实际上是 GRAY
+const gridGray = '#99999966';
 
 export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const chartRef = React.useRef<Chart | null>(null);
   const framesInSecRef = React.useRef(0);
   const {
-    vm,
-    msg,
-    Stats: { stats_disableAnimation },
+    vm, msg,
+    Stats: { stats_disableAnimation, transparentBg, statsData },
   } = context;
 
   const scaleOptions: ScalesOptions = {
@@ -53,23 +54,24 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
       min: 0,
       suggestedMax: 50,
       display: "auto",
-      ticks: {
-        color: FPS_COLOR,
-      },
+      position: 'left',
+      ticks: { color: FPS_COLOR },
+      grid: { color: gridGray }
     },
     clonesY: {
       min: 0,
       suggestedMax: 300,
       display: "auto",
-      ticks: {
-        color: CLONES_COLOR,
-      },
+      position: 'right',
+      ticks: { color: CLONES_COLOR },
+      grid: { color: gridGray }
     },
     x: {
       ticks: {
         stepSize: 1,
         color: WHITE,
       },
+      grid: { color: gridGray },
     },
   };
 
@@ -81,9 +83,14 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
     const chartInstance = new Chart(canvas, {
       type: "line",
       data: {
-        labels,
+        labels: statsData.labels,
         datasets: [
-          { label: "fps", data: new Array(20), yAxisID: "fpsY", borderColor: FPS_COLOR },
+          {
+            label: "FPS",
+            data: new Array(20),
+            yAxisID: "fpsY",
+            borderColor: FPS_COLOR
+          },
           {
             label: msg("plugins.debuggerAddon.stats.clones"),
             data: new Array(20),
@@ -101,9 +108,9 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
             position: "bottom",
             labels: {
               color: WHITE,
-              font: {
-                size: 16,
-              },
+              font: { size: 16 },
+              usePointStyle: true,
+              pointStyle: 'line',
             },
           },
         },
@@ -112,49 +119,21 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
       },
     });
     chartRef.current = chartInstance;
+    const updateInterval = setInterval(() => {
+      const chart = chartRef.current;
+      if (!chart) return;
+      
+      // 直接从持久数据读取更新
+      chart.data.datasets[0].data = statsData.fps;
+      chart.data.datasets[1].data = statsData.clones;
+      chart.update();
+    }, 100);
+    
     return () => {
       chartInstance.destroy();
-      chartRef.current = null;
+      clearInterval(updateInterval);
     };
   }, []);
-
-  React.useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) {
-      return;
-    }
-    const { runtime } = vm;
-    const { _step } = runtime;
-    runtime._step = function () {
-      _step.call(this);
-      framesInSecRef.current++;
-    };
-    const interval = setInterval(() => {
-      const framesInSec = framesInSecRef.current;
-      const {
-        options: { scales: scales_ },
-      } = chart;
-      const scales = scales_ as unknown as ScalesOptions;
-      const { datasets } = chart.data;
-
-      const fpsData = datasets[0].data;
-      scales.fpsY.suggestedMax = runtime.framerate;
-      fpsData.shift();
-      fpsData.push(framesInSec);
-
-      const clonesData = datasets[1].data;
-      scales.clonesY.suggestedMax = runtime.runtimeOptions.maxClones;
-      clonesData.shift();
-      clonesData.push(runtime._cloneCounter);
-
-      chart.update();
-      framesInSecRef.current = 0;
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-      runtime._step = _step;
-    };
-  }, [vm]);
 
   React.useEffect(() => {
     const chart = chartRef.current;
@@ -165,10 +144,8 @@ export const StatsWindow: React.FC<{ context: WindowContext }> = ({ context }) =
   }, [stats_disableAnimation]);
 
   return (
-    <>
-      <div className={stylePerformance.chart}>
-        <canvas ref={canvasRef} />
-      </div>
-    </>
+    <div className={`${stylePerformance.chart} ${transparentBg ? stylePerformance.transparent : ''}`}>
+      <canvas ref={canvasRef} />
+    </div>
   );
 };

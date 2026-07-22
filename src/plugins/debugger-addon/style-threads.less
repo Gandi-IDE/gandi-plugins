@@ -1,0 +1,239 @@
+.threadsWindow {
+  width: 100%;
+  height: calc(100% - 65px);
+  position: relative;
+  box-sizing: border-box;
+  padding: 0 4px;
+  overflow-y: auto;
+  font-family: monospace, Consolas;
+}
+
+.threadsCount {
+  margin-left: auto;
+  color: var(--theme-color-g400);
+  font-size: 12px;
+  font-family: monospace, Consolas;
+}
+
+.threadsRefreshButton {
+  background: transparent;
+  border: 1px solid var(--theme-color-g300);
+  border-radius: 2px;
+  padding: 1px 8px;
+  cursor: pointer;
+  color: var(--theme-text-primary);
+  font-size: 11px;
+  transition: .1s;
+
+  &:hover {
+    background: var(--theme-color-50);
+    border-color: var(--theme-color-g400);
+  }
+}
+
+.threadsEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--theme-color-g400);
+  font-size: 13px;
+}
+
+.threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.threadItem {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+  border-bottom: 1px solid var(--theme-color-g300);
+  padding: 2px 0;
+}
+
+.threadHeader {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  min-height: 24px;
+  font-size: 12px;
+  border-left: 2px solid transparent;
+  transition: .1s;
+}
+
+.threadIndent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.threadChildIcon {
+  color: var(--theme-color-g400);
+  font-size: 11px;
+}
+
+.threadTargetName {
+  font-weight: 500;
+  color: var(--theme-text-primary);
+}
+
+.threadId {
+  font-size: 11px;
+  color: var(--theme-color-g400);
+  font-family: monospace, Consolas;
+}
+
+.threadTopBlock {
+  font-size: 11px;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.threadPausedBadge {
+  font-size: 10px;
+  color: #faad14;
+  padding: 0 4px;
+  border-radius: 2px;
+  border: 1px solid rgba(250, 173, 20, .2);
+}
+
+.threadCompiledBadge {
+  font-size: 10px;
+  color: var(--theme-color-b100);
+  padding: 0 4px;
+  border: 1px solid rgba(100, 100, 255, .2);
+  border-radius: 2px;
+}
+
+.targetLink {
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+  text-decoration: underline 1px;
+  cursor: pointer;
+  color: var(--theme-text-primary);
+  font-size: 12px;
+  transition-duration: .1s;
+  &:hover {
+    color: var(--theme-color-b100);
+  }
+}
+
+.threadStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 2px 4px;
+  border-top: 1px solid var(--theme-color-50);
+}
+
+.threadStackItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 4px;
+  font-size: 11px;
+  font-family: monospace, Consolas;
+  color: var(--theme-color-g400);
+}
+
+.threadStackIndex {
+  font-size: 10px;
+  color: var(--theme-color-g400);
+  min-width: 20px;
+}
+
+.threadStackBlock {
+  font-size: 11px;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.threadStackMore {
+  font-size: 11px;
+  color: var(--theme-color-g300);
+  padding: 2px 4px 2px 24px;
+  font-style: italic;
+}
+
+.threadChildren {
+  padding-left: 6px;
+  border-left: 1px dashed var(--theme-color-50);
+  margin-left: 2px;
+}
+
+.threadsWarning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  background: rgba(255, 171, 25, .15);
+  border: 1px solid rgba(255, 171, 25, .3);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--theme-color-primary);
+  flex-shrink: 0;
+}
+
+.threadStopButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .5;
+  transition: .1s;
+  margin-left: auto;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  .running & {
+    opacity: .8;
+  }
+}
+
+.stopIcon {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: var(--theme-text-primary);
+  border-radius: 2px;
+  transition: .1s;
+  .threadStopButton:hover & {
+    background: #ff4d4f;
+  }
+}
+
+.threadTag {
+  font-size: 10px;
+  padding: 0 4px;
+  border-radius: 2px;
+  border: 1px solid rgb(45, 140, 255, .3);
+  color: rgb(45, 140, 255);
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: .8;
+}

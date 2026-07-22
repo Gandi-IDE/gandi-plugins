@@ -79,7 +79,6 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
       vm.runtime.disableProfiling();
     };
   }, []);
-
   React.useEffect(() => {
     const { runtime } = vm;
     const { getOpcodeFunction } = runtime;
@@ -102,7 +101,6 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
       runtime.getOpcodeFunction = getOpcodeFunction;
     };
   }, [profilingStarted]);
-
   const switchProfiling = () => {
     if (profilingStarted) {
       endProfiling();
@@ -191,6 +189,7 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
         records={performance_records}
         blockly={blockly}
         msg={msg}
+        onStop={switchProfiling}
       />
     </div>
   );
@@ -331,13 +330,20 @@ const ProfileDisplay: React.FC<{
   startTime: number;
   blockly: IBlockly;
   msg: (key: string) => string;
-}> = ({ records, profilingStarted, performance_maxTime, startTime, blockly, msg }) => {
+  onStop?: () => void;
+}> = ({ records, profilingStarted, performance_maxTime, startTime, blockly, msg, onStop }) => {
   const [now, setNow] = React.useState(0);
 
   React.useEffect(() => {
     const interval = window.setInterval(() => setNow(window.performance.now()), 20);
     return () => window.clearInterval(interval);
   }, []);
+
+  React.useEffect(() => {
+    if (!profilingStarted) return;
+    const elapsed = (now - startTime) / 1000;
+    if (elapsed >= performance_maxTime) onStop?.();
+  }, [now, profilingStarted, startTime, performance_maxTime, onStop]);
 
   const countHeader = msg("plugins.debuggerAddon.performance.header.count");
   const selfHeader = msg("plugins.debuggerAddon.performance.header.self");
@@ -347,10 +353,24 @@ const ProfileDisplay: React.FC<{
   const blockTitle = msg("plugins.debuggerAddon.performance.section.block");
 
   if (profilingStarted) {
+    const elapsed = (now - startTime) / 1000;
+    const maxTime = performance_maxTime;
+    const progress = Math.min((elapsed / maxTime) * 100, 100);
+    
     return (
       <div className={PerformanceStyle.profiling}>
         <span>{msg("plugins.debuggerAddon.performance.status.profiling")}</span>
-        <progress max={performance_maxTime * 1000} value={now - startTime} />
+        <div className={PerformanceStyle.progressWrapper}>
+          <div className={PerformanceStyle.progressTrack}>
+            <div 
+              className={PerformanceStyle.progressFill} 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className={PerformanceStyle.progressText}>
+            {elapsed.toFixed(1)}s / {maxTime}s
+          </span>
+        </div>
       </div>
     );
   }
