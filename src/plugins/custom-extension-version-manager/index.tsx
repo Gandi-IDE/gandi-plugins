@@ -5,9 +5,20 @@ import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import Tooltip from "components/Tooltip";
 import useStorageInfo from "hooks/useStorageInfo";
 import ExtensionVersionIcon from "assets/icon--extension-version.svg";
+import { scrollBlockIntoView } from "utils/block-helper";
 import { fetchMarketplaceExtension, getMarketplacePageUrl, MarketplaceRequestError } from "./marketplace";
-import { getLoadedCustomExtensions, switchCustomExtensionVersion } from "./runtime";
-import { ExtensionVersion, ManagedCustomExtension, MarketplaceExtensionDetail } from "./types";
+import {
+  getLoadedCustomExtensions,
+  inspectCustomExtensionVersionCompatibility,
+  switchCustomExtensionVersion,
+} from "./runtime";
+import {
+  ExtensionCompatibilityReport,
+  ExtensionVersion,
+  IncompatibleBlockUsage,
+  ManagedCustomExtension,
+  MarketplaceExtensionDetail,
+} from "./types";
 import styles from "./styles.less";
 
 const DEFAULT_CONTAINER_INFO: ExpansionRect = {
@@ -25,6 +36,11 @@ const formatReleasedAt = (value: string | number | undefined, locale: string) =>
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 };
 
+type CompatibilityWarningState = {
+  version: ExtensionVersion;
+  report: ExtensionCompatibilityReport;
+};
+
 const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace, intl, msg, registerSettings }) => {
   const [visible, setVisible] = React.useState(false);
   const [containerInfo, setContainerInfo] = useStorageInfo(
@@ -36,11 +52,15 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
   const [marketplaceDetail, setMarketplaceDetail] = React.useState<MarketplaceExtensionDetail | null>(null);
   const [marketplaceError, setMarketplaceError] = React.useState("");
   const [loadingVersions, setLoadingVersions] = React.useState(false);
+  const [checkingVersionId, setCheckingVersionId] = React.useState("");
   const [switchingVersionId, setSwitchingVersionId] = React.useState("");
+  const [compatibilityWarning, setCompatibilityWarning] = React.useState<CompatibilityWarningState | null>(null);
+  const [compatibilityModalVisible, setCompatibilityModalVisible] = React.useState(false);
 
   const rootRef = React.useRef<HTMLElement>(null);
   const containerInfoRef = React.useRef(containerInfo);
   const marketplaceRequestRef = React.useRef<AbortController | null>(null);
+  const pendingBlockRef = React.useRef<IncompatibleBlockUsage | null>(null);
 
   const selectedExtension = extensions.find((extension) => extension.id === selectedExtensionId) || null;
   const versions = marketplaceDetail?.eid === selectedExtensionId ? marketplaceDetail.versions : [];
@@ -138,24 +158,110 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
     [formatMarketplaceError],
   );
 
-  const switchVersion = React.useCallback(
-    async (version: ExtensionVersion) => {
-      if (!selectedExtension || switchingVersionId) return;
-      setSwitchingVersionId(version.id);
+  const performVersionSwitch = React.useCallback(
+    async (version: ExtensionVersion, extensionId: string, force = false) => {
       try {
-        await switchCustomExtensionVersion(vm, workspace, selectedExtension.id, version.url);
+        await switchCustomExtensionVersion(vm, workspace, extensionId, version.url, force);
         refreshExtensions();
         toast.success(
           intl.formatMessage({ id: "plugins.customExtensionVersionManager.switchSuccess" }, { version: version.label }),
         );
+        return true;
       } catch (error) {
         refreshExtensions();
+        setTimeout(refreshExtensions, 0);
+        toast.error(formatSwitchError(error), { duration: 7000 });
+        return false;
+      }
+    },
+    [formatSwitchError, intl, refreshExtensions, vm, workspace],
+  );
+
+  const switchVersion = React.useCallback(
+    async (version: ExtensionVersion) => {
+      if (!selectedExtension || checkingVersionId || switchingVersionId) return;
+      const extensionId = selectedExtension.id;
+      setCheckingVersionId(version.id);
+      try {
+        const report = await inspectCustomExtensionVersionCompatibility(vm, extensionId, version.url);
+        refreshExtensions();
+        setTimeout(refreshExtensions, 0);
+        if (report.issues.length > 0) {
+          setCompatibilityWarning({ version, report });
+          setCompatibilityModalVisible(true);
+          return;
+        }
+
+        setCheckingVersionId("");
+        setSwitchingVersionId(version.id);
+        await performVersionSwitch(version, extensionId);
+      } catch (error) {
+        refreshExtensions();
+        setTimeout(refreshExtensions, 0);
         toast.error(formatSwitchError(error), { duration: 7000 });
       } finally {
+        setCheckingVersionId("");
         setSwitchingVersionId("");
       }
     },
-    [formatSwitchError, intl, refreshExtensions, selectedExtension, switchingVersionId, vm, workspace],
+    [
+      checkingVersionId,
+      formatSwitchError,
+      performVersionSwitch,
+      refreshExtensions,
+      selectedExtension,
+      switchingVersionId,
+      vm,
+    ],
+  );
+
+  const forceSwitchVersion = React.useCallback(async () => {
+    if (!compatibilityWarning || switchingVersionId) return;
+    const { version, report } = compatibilityWarning;
+    setCompatibilityModalVisible(false);
+    setCheckingVersionId("");
+    setSwitchingVersionId(version.id);
+    try {
+      const switched = await performVersionSwitch(version, report.extensionId, true);
+      if (switched) setCompatibilityWarning(null);
+    } finally {
+      setSwitchingVersionId("");
+    }
+  }, [compatibilityWarning, performVersionSwitch, switchingVersionId]);
+
+  const revealPendingBlock = React.useCallback(() => {
+    if (!pendingBlockRef.current) return;
+    let attempts = 0;
+    const reveal = () => {
+      const pendingBlock = pendingBlockRef.current;
+      if (!pendingBlock) return;
+      const block = workspace.blockDB_[pendingBlock.blockId] || workspace.getBlockById(pendingBlock.blockId);
+      if (block) {
+        pendingBlockRef.current = null;
+        scrollBlockIntoView(block, workspace);
+        return;
+      }
+      attempts += 1;
+      if (attempts < 60) {
+        requestAnimationFrame(reveal);
+      } else {
+        pendingBlockRef.current = null;
+      }
+    };
+    requestAnimationFrame(reveal);
+  }, [workspace]);
+
+  const jumpToIncompatibleBlock = React.useCallback(
+    (issue: IncompatibleBlockUsage) => {
+      setCompatibilityModalVisible(false);
+      pendingBlockRef.current = issue;
+      if (vm.editingTarget?.id === issue.targetId) {
+        revealPendingBlock();
+      } else {
+        vm.setEditingTarget(issue.targetId);
+      }
+    },
+    [revealPendingBlock, vm],
   );
 
   const getContainerPosition = React.useCallback(() => {
@@ -215,6 +321,14 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
   }, [refreshExtensions, vm]);
 
   React.useEffect(() => {
+    const handleTargetUpdate = () => revealPendingBlock();
+    vm.on("targetsUpdate", handleTargetUpdate);
+    return () => {
+      vm.off("targetsUpdate", handleTargetUpdate);
+    };
+  }, [revealPendingBlock, vm]);
+
+  React.useEffect(() => {
     if (!visible) return;
     void loadMarketplaceVersions(selectedExtensionId);
   }, [loadMarketplaceVersions, selectedExtensionId, visible]);
@@ -247,7 +361,11 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
             minWidth={400}
             minHeight={460}
             borderRadius={8}
-            onClose={() => setVisible(false)}
+            onClose={() => {
+              setVisible(false);
+              setCompatibilityWarning(null);
+              setCompatibilityModalVisible(false);
+            }}
             onSizeChange={handleSizeChange}
             containerInfo={containerInfo}
           >
@@ -261,7 +379,11 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
                     id="custom-extension-version-manager-extension"
                     className={styles.select}
                     value={selectedExtensionId}
-                    onChange={(event) => setSelectedExtensionId(event.target.value)}
+                    onChange={(event) => {
+                      setSelectedExtensionId(event.target.value);
+                      setCompatibilityWarning(null);
+                      setCompatibilityModalVisible(false);
+                    }}
                     disabled={extensions.length === 0}
                   >
                     {extensions.length === 0 ? (
@@ -313,80 +435,240 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
                     </a>
                   </div>
 
-                  <div className={styles.listHeader}>
-                    <strong>{msg("plugins.customExtensionVersionManager.versionList")}</strong>
-                    <span>{versions.length}</span>
-                  </div>
-                  <div className={styles.versionList}>
-                    {loadingVersions ? (
-                      <div className={styles.empty}>{msg("plugins.customExtensionVersionManager.loadingVersions")}</div>
-                    ) : marketplaceError ? (
-                      <div className={styles.errorState}>
-                        <span>{marketplaceError}</span>
+                  {compatibilityWarning ? (
+                    <>
+                      <div className={styles.listHeader}>
+                        <strong>{msg("plugins.customExtensionVersionManager.compatibilityWarningTitle")}</strong>
                         <button
                           className={styles.secondaryButton}
                           type="button"
-                          onClick={() => void loadMarketplaceVersions(selectedExtension.id)}
+                          onClick={() => {
+                            setCompatibilityWarning(null);
+                            setCompatibilityModalVisible(false);
+                          }}
                         >
-                          {msg("plugins.customExtensionVersionManager.retry")}
+                          {msg("plugins.customExtensionVersionManager.backToVersions")}
                         </button>
                       </div>
-                    ) : versions.length === 0 ? (
-                      <div className={styles.empty}>{msg("plugins.customExtensionVersionManager.noVersions")}</div>
-                    ) : (
-                      versions.map((version) => {
-                        const isCurrent = version.url === selectedExtension.currentUrl;
-                        const isSwitching = switchingVersionId === version.id;
-                        const releasedAt = formatReleasedAt(version.releasedAt, intl.locale);
-                        return (
-                          <article className={styles.versionCard} key={`${version.id}-${version.url}`}>
-                            <div className={styles.versionMain}>
-                              <div className={styles.versionTitleRow}>
-                                <strong>{version.label}</strong>
-                                {isCurrent && (
-                                  <span className={styles.currentBadge}>
-                                    {msg("plugins.customExtensionVersionManager.current")}
-                                  </span>
-                                )}
-                                {version.releaseTags.map((tag) => (
-                                  <span className={styles.releaseTag} key={tag}>
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                              <code className={styles.versionUrl} title={version.url}>
-                                {version.url}
-                              </code>
-                              {releasedAt && <time className={styles.versionDate}>{releasedAt}</time>}
-                              {version.changelog && (
-                                <p className={styles.versionChangelog} title={version.changelog}>
-                                  {version.changelog}
-                                </p>
+                      <p className={styles.modalHint}>
+                        {intl.formatMessage(
+                          { id: "plugins.customExtensionVersionManager.compatibilityWarningDescription" },
+                          {
+                            version: compatibilityWarning.version.label,
+                            count: compatibilityWarning.report.issues.length,
+                          },
+                        )}
+                      </p>
+                      <div className={styles.issueList}>
+                        {compatibilityWarning.report.issues.map((issue, index) => (
+                          <button
+                            className={styles.issueItem}
+                            type="button"
+                            key={`${issue.targetId}-${issue.blockId}-${index}`}
+                            onClick={() => jumpToIncompatibleBlock(issue)}
+                          >
+                            <span className={styles.issueMain}>
+                              <strong>{issue.label}</strong>
+                              <code>{`${compatibilityWarning.report.extensionId}_${issue.opcode}`}</code>
+                            </span>
+                            <span className={styles.issueLocation}>
+                              {intl.formatMessage(
+                                { id: "plugins.customExtensionVersionManager.incompatibleBlockLocation" },
+                                { target: issue.targetName },
                               )}
-                            </div>
-                            <div className={styles.versionActions}>
-                              <button
-                                className={styles.primaryButton}
-                                type="button"
-                                disabled={isCurrent || Boolean(switchingVersionId)}
-                                onClick={() => void switchVersion(version)}
-                              >
-                                {isSwitching
-                                  ? msg("plugins.customExtensionVersionManager.switching")
-                                  : msg("plugins.customExtensionVersionManager.switch")}
-                              </button>
-                            </div>
-                          </article>
-                        );
-                      })
-                    )}
-                  </div>
+                            </span>
+                            <span className={styles.issueReason}>
+                              {issue.reason === "missing"
+                                ? msg("plugins.customExtensionVersionManager.incompatibleBlockMissing")
+                                : issue.reason === "hidden"
+                                  ? msg("plugins.customExtensionVersionManager.incompatibleBlockHidden")
+                                  : intl.formatMessage(
+                                      { id: "plugins.customExtensionVersionManager.incompatibleBlockTypeChanged" },
+                                      {
+                                        from: issue.blockType || msg("plugins.customExtensionVersionManager.unknown"),
+                                        to:
+                                          issue.targetBlockType || msg("plugins.customExtensionVersionManager.unknown"),
+                                      },
+                                    )}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className={styles.modalActions}>
+                        <button className={styles.dangerButton} type="button" onClick={() => void forceSwitchVersion()}>
+                          {msg("plugins.customExtensionVersionManager.forceSwitch")}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.listHeader}>
+                        <strong>{msg("plugins.customExtensionVersionManager.versionList")}</strong>
+                        <span>{versions.length}</span>
+                      </div>
+                      <div className={styles.versionList}>
+                        {loadingVersions ? (
+                          <div className={styles.empty}>
+                            {msg("plugins.customExtensionVersionManager.loadingVersions")}
+                          </div>
+                        ) : marketplaceError ? (
+                          <div className={styles.errorState}>
+                            <span>{marketplaceError}</span>
+                            <button
+                              className={styles.secondaryButton}
+                              type="button"
+                              onClick={() => void loadMarketplaceVersions(selectedExtension.id)}
+                            >
+                              {msg("plugins.customExtensionVersionManager.retry")}
+                            </button>
+                          </div>
+                        ) : versions.length === 0 ? (
+                          <div className={styles.empty}>{msg("plugins.customExtensionVersionManager.noVersions")}</div>
+                        ) : (
+                          versions.map((version) => {
+                            const isCurrent = version.url === selectedExtension.currentUrl;
+                            const isChecking = checkingVersionId === version.id;
+                            const isSwitching = switchingVersionId === version.id;
+                            const releasedAt = formatReleasedAt(version.releasedAt, intl.locale);
+                            return (
+                              <article className={styles.versionCard} key={`${version.id}-${version.url}`}>
+                                <div className={styles.versionMain}>
+                                  <div className={styles.versionTitleRow}>
+                                    <strong>{version.label}</strong>
+                                    {isCurrent && (
+                                      <span className={styles.currentBadge}>
+                                        {msg("plugins.customExtensionVersionManager.current")}
+                                      </span>
+                                    )}
+                                    {version.releaseTags.map((tag) => (
+                                      <span className={styles.releaseTag} key={tag}>
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <code className={styles.versionUrl} title={version.url}>
+                                    {version.url}
+                                  </code>
+                                  {releasedAt && <time className={styles.versionDate}>{releasedAt}</time>}
+                                  {version.changelog && (
+                                    <p className={styles.versionChangelog} title={version.changelog}>
+                                      {version.changelog}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className={styles.versionActions}>
+                                  <button
+                                    className={styles.primaryButton}
+                                    type="button"
+                                    disabled={isCurrent || Boolean(checkingVersionId) || Boolean(switchingVersionId)}
+                                    onClick={() => void switchVersion(version)}
+                                  >
+                                    {isChecking
+                                      ? msg("plugins.customExtensionVersionManager.checkingCompatibility")
+                                      : isSwitching
+                                        ? msg("plugins.customExtensionVersionManager.switching")
+                                        : msg("plugins.customExtensionVersionManager.switch")}
+                                  </button>
+                                </div>
+                              </article>
+                            );
+                          })
+                        )}
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <div className={styles.empty}>{msg("plugins.customExtensionVersionManager.emptyHint")}</div>
               )}
             </div>
           </ExpansionBox>,
+          document.body,
+        )}
+
+      {compatibilityWarning &&
+        compatibilityModalVisible &&
+        ReactDOM.createPortal(
+          <div
+            className={styles.modalBackdrop}
+            onMouseDown={() => setCompatibilityModalVisible(false)}
+            role="presentation"
+          >
+            <div
+              className={styles.compatibilityModal}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="custom-extension-version-compatibility-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className={styles.modalHeader}>
+                <span className={styles.warningIcon}>!</span>
+                <div>
+                  <h2 id="custom-extension-version-compatibility-title">
+                    {msg("plugins.customExtensionVersionManager.compatibilityWarningTitle")}
+                  </h2>
+                  <p>
+                    {intl.formatMessage(
+                      { id: "plugins.customExtensionVersionManager.compatibilityWarningDescription" },
+                      {
+                        version: compatibilityWarning.version.label,
+                        count: compatibilityWarning.report.issues.length,
+                      },
+                    )}
+                  </p>
+                </div>
+              </div>
+              <p className={styles.modalHint}>
+                {msg("plugins.customExtensionVersionManager.compatibilityWarningHint")}
+              </p>
+              <div className={styles.issueList}>
+                {compatibilityWarning.report.issues.map((issue, index) => (
+                  <button
+                    className={styles.issueItem}
+                    type="button"
+                    key={`${issue.targetId}-${issue.blockId}-${index}`}
+                    onClick={() => jumpToIncompatibleBlock(issue)}
+                  >
+                    <span className={styles.issueMain}>
+                      <strong>{issue.label}</strong>
+                      <code>{`${compatibilityWarning.report.extensionId}_${issue.opcode}`}</code>
+                    </span>
+                    <span className={styles.issueLocation}>
+                      {intl.formatMessage(
+                        { id: "plugins.customExtensionVersionManager.incompatibleBlockLocation" },
+                        { target: issue.targetName },
+                      )}
+                    </span>
+                    <span className={styles.issueReason}>
+                      {issue.reason === "missing"
+                        ? msg("plugins.customExtensionVersionManager.incompatibleBlockMissing")
+                        : issue.reason === "hidden"
+                          ? msg("plugins.customExtensionVersionManager.incompatibleBlockHidden")
+                          : intl.formatMessage(
+                              { id: "plugins.customExtensionVersionManager.incompatibleBlockTypeChanged" },
+                              {
+                                from: issue.blockType || msg("plugins.customExtensionVersionManager.unknown"),
+                                to: issue.targetBlockType || msg("plugins.customExtensionVersionManager.unknown"),
+                              },
+                            )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.secondaryButton}
+                  type="button"
+                  onClick={() => setCompatibilityModalVisible(false)}
+                >
+                  {msg("plugins.customExtensionVersionManager.cancel")}
+                </button>
+                <button className={styles.dangerButton} type="button" onClick={() => void forceSwitchVersion()}>
+                  {msg("plugins.customExtensionVersionManager.forceSwitch")}
+                </button>
+              </div>
+            </div>
+          </div>,
           document.body,
         )}
     </section>,
