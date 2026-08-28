@@ -139,6 +139,8 @@
 
 ## Project Structure
 
+Remote content and service URLs are supplied by the host. See [Host-provided plugin services](./docs/host-plugin-services.md) for the runtime contract, capability reporting, and CCW/Cocrea profiles.
+
 ```console
   ├──plugin-template                 // Plugin template directory
   │   ├──plugin-index-js.hbs         // Handlebars template for JavaScript plugin index

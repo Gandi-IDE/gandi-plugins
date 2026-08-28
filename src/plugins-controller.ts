@@ -8,6 +8,12 @@ import pluginsL10n from "./plugins-l10n";
 import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
 import { camelToKebab } from "utils/name-helper";
+import {
+  getPluginCapabilities,
+  getServiceUnavailablePlugins,
+  normalizePluginServices,
+  PluginCapabilities,
+} from "./lib/plugin-services";
 
 export const LoadingPlugins = {};
 
@@ -21,13 +27,16 @@ export interface PluginFunction {
   };
 }
 
-export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "msg"> {
+export interface PluginsControllerOptions
+  extends Omit<PluginContext, "intl" | "msg" | "pluginCapabilities" | "pluginServices"> {
+  pluginServices?: PluginContext["pluginServices"];
   disabledPlugins?: Array<string>;
   unavailablePlugins?: string[];
   locale: string;
 }
 
 class PluginsController {
+  capabilities: PluginCapabilities;
   context: PluginContext;
   plugins: Record<string, () => void>;
   options: PluginsControllerOptions;
@@ -42,11 +51,23 @@ class PluginsController {
   constructor(options: PluginsControllerOptions) {
     this.plugins = {};
     const intl = this.createIntl(options.locale);
-    this.context = Object.assign(options, {
+    const pluginServices = normalizePluginServices(options.pluginServices);
+    this.capabilities = getPluginCapabilities(pluginServices);
+    const unavailablePlugins = Array.from(
+      new Set([...(options.unavailablePlugins || []), ...getServiceUnavailablePlugins(this.capabilities)]),
+    );
+    this.options = {
+      ...options,
+      pluginServices,
+      unavailablePlugins,
+    };
+    this.context = {
+      ...options,
+      pluginServices,
+      pluginCapabilities: this.capabilities,
       intl,
       msg: (id: string) => intl.formatMessage({ id }),
-    });
-    this.options = options;
+    };
     this.wrapperElement = this.initWrapper();
     this.initPluginsManager();
   }

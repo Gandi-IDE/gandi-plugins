@@ -1,7 +1,7 @@
 import { ExtensionVersion, MarketplaceExtensionDetail } from "./types";
+import { buildPluginServiceUrl, PluginServices } from "../../lib/plugin-services";
 
-export const MARKETPLACE_API_HOST = "https://bfs-web.ccw.site";
-export const MARKETPLACE_WEB_HOST = "https://assets.ccw.site";
+type MarketplaceService = NonNullable<PluginServices["customExtensionVersionManager"]>;
 
 type MarketplaceVersionPayload = {
   id?: number | string;
@@ -65,21 +65,25 @@ const normalizeVersion = (value: MarketplaceVersionPayload, index: number): Exte
   };
 };
 
-export const getMarketplacePageUrl = (extensionId: string) =>
-  `${MARKETPLACE_WEB_HOST}/extension/${encodeURIComponent(extensionId)}`;
+export const getMarketplacePageUrl = (service: MarketplaceService, extensionId: string) =>
+  buildPluginServiceUrl(service.webBaseUrl, `extension/${encodeURIComponent(extensionId)}`);
 
 export const fetchMarketplaceExtension = async (
+  service: MarketplaceService,
   extensionId: string,
   signal?: AbortSignal,
 ): Promise<MarketplaceExtensionDetail> => {
-  const response = await fetch(`${MARKETPLACE_API_HOST}/extensions/${encodeURIComponent(extensionId)}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
+  const response = await fetch(
+    buildPluginServiceUrl(service.apiBaseUrl, `extensions/${encodeURIComponent(extensionId)}`),
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      credentials: "omit",
+      signal,
     },
-    credentials: "omit",
-    signal,
-  });
+  );
 
   if (!response.ok) {
     throw new MarketplaceRequestError(

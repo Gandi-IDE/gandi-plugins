@@ -15,6 +15,7 @@ import DemoList from "./components/DemoList";
 import toast from "react-hot-toast";
 import { Box } from "@gandi-ide/gandi-ui";
 import HomeIcon from "./icons/home.svg";
+import { buildPluginServiceUrl } from "../../lib/plugin-services";
 
 const DEFAULT_CONTAINER_INFO = {
   width: 300,
@@ -22,11 +23,18 @@ const DEFAULT_CONTAINER_INFO = {
   translateX: 72,
   translateY: 60,
 };
-const LINK = "https://learn.ccw.site";
-// const LINK = "http://localhost:3000";
-// const LINK = "http://learn-qa.xiguacity.cn";
-
-const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, utils }) => {
+const blockSharing: React.FC<PluginContext> = ({
+  msg,
+  vm,
+  workspace,
+  blockly,
+  utils,
+  pluginServices,
+  pluginCapabilities,
+}) => {
+  const contentBaseUrl = pluginServices?.blockSharing?.contentBaseUrl;
+  const importAssetBaseUrl = pluginServices?.blockSharing?.importAssetBaseUrl;
+  const remoteContentAvailable = pluginCapabilities?.blockSharingRemoteContent ?? Boolean(contentBaseUrl);
   const [visible, setVisible] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [loading, setLoading] = React.useState("load");
@@ -121,20 +129,31 @@ const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, ut
   hack.startHack(workspace, blockly, vm, utils, setLoading);
 
   React.useEffect(() => {
-    if (window.location.search.includes("Block") && window.location.search.includes("JumpLink")) {
-      setBlockValue(window.location.search.split("Block=")[1].split("&")[0]);
-      setJumpLink(window.location.search.split("JumpLink=")[1].split("&")[0]);
-      setAutoURL(Boolean(true));
-      handleClick(undefined);
-      if (window.location.search.split("JumpLink=")[1].split("&")[0]) {
-        console.log("e");
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedBlock = searchParams.get("Block");
+    const requestedAsset = searchParams.get("JumpLink");
+    let handledDeepLink = false;
+
+    if (requestedBlock && requestedAsset) {
+      if (contentBaseUrl) {
+        setBlockValue(requestedBlock);
+        setJumpLink(requestedAsset);
+        setAutoURL(true);
+        handleClick(undefined);
+        handledDeepLink = true;
+      }
+      if (importAssetBaseUrl) {
         hack.postBlocks(
-          `https://m.ccw.site/creator-college/images/${window.location.search.split("JumpLink=")[1].split("&")[0]}`,
+          buildPluginServiceUrl(importAssetBaseUrl, encodeURIComponent(requestedAsset)),
           workspace,
           utils,
           vm,
         );
+        handledDeepLink = true;
       }
+    }
+
+    if (handledDeepLink) {
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.delete("Block");
       currentUrl.searchParams.delete("JumpLink");
@@ -145,27 +164,38 @@ const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, ut
     return () => {
       window.postMessage(["dispose"], "*");
     };
-  }, [setAutoURL, msg]);
+  }, [contentBaseUrl, handleClick, importAssetBaseUrl, msg, setAutoURL, utils, vm, workspace]);
 
   const backToHome = () => {
-    (document.getElementById("block-sharing-article-iframe") as HTMLIFrameElement).src = String(
-      new URL("/tag/blueprint/new?hideHeader", LINK),
-    );
+    if (!contentBaseUrl) return;
+    const iframe = document.getElementById("block-sharing-article-iframe") as HTMLIFrameElement | null;
+    if (iframe) iframe.src = buildPluginServiceUrl(contentBaseUrl, "tag/blueprint/new", { hideHeader: "" });
     setCurrentIndex(0);
   };
 
+  const homeUrl = contentBaseUrl
+    ? autoURL
+      ? buildPluginServiceUrl(contentBaseUrl, `article/${encodeURIComponent(blockValue)}`, {
+          hideHeader: "",
+          JumpLink: JumpLink || undefined,
+        })
+      : buildPluginServiceUrl(contentBaseUrl, "tag/blueprint/new", { hideHeader: "" })
+    : "";
+
   return (
     <React.Fragment>
-      {ReactDOM.createPortal(
-        <Tooltip
-          className={styles.icon}
-          icon={<BlockSharingIcon />}
-          onClick={handleClick}
-          tipText={msg("plugins.blockSharing.title")}
-        />,
-        document.querySelector(".plugins-wrapper"),
-      )}
+      {remoteContentAvailable &&
+        ReactDOM.createPortal(
+          <Tooltip
+            className={styles.icon}
+            icon={<BlockSharingIcon />}
+            onClick={handleClick}
+            tipText={msg("plugins.blockSharing.title")}
+          />,
+          document.querySelector(".plugins-wrapper"),
+        )}
       {visible &&
+        remoteContentAvailable &&
         ReactDOM.createPortal(
           <ExpansionBox
             title={msg("plugins.blockSharing.title")}
@@ -220,14 +250,7 @@ const blockSharing: React.FC<PluginContext> = ({ msg, vm, workspace, blockly, ut
                 <></>
               )}
               <IF className={styles.tabWrapper} condition={currentIndex === 0}>
-                <Home
-                  name={
-                    autoURL
-                      ? String(new URL(`/article/${blockValue}`, LINK))
-                      : String(new URL("/tag/blueprint/new", LINK))
-                  }
-                  Jump={JumpLink}
-                />
+                <Home src={homeUrl} loadBlock={autoURL} />
               </IF>
               <IF className={styles.tabWrapper} condition={currentIndex === 1}>
                 <BluePrintList list={hack.bluePrint} msg={msg} />

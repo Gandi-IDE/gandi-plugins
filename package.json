@@ -17,6 +17,7 @@
         "build": "webpack --config webpack.config.js --progress",
         "buildSinglePlugin": "node scripts/build-single-plugin.js",
         "lint": "eslint src --ext .js,.ts",
+        "test:plugin-services": "rimraf .test-dist && tsc --module commonjs --target ES2020 --outDir .test-dist --rootDir src --declaration false --sourceMap false --esModuleInterop true --skipLibCheck true src/lib/plugin-services.ts src/plugins/custom-extension-version-manager/marketplace.ts src/plugins/custom-extension-version-manager/types.ts && node --test test/plugin-services.test.js",
         "prepublishOnly": "pnpm install && pnpm build",
         "clean": "rimraf lib && mkdirp lib && rimraf ./dist && mkdirp dist"
     },

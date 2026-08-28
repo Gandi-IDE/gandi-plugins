@@ -5,7 +5,6 @@ import { defineMessages } from "@formatjs/intl";
 import ExpansionBox, { ExpansionRect } from "components/ExpansionBox";
 import Tooltip from "components/Tooltip";
 import scratchblocks from "gandiblocks";
-import IF from "components/IF";
 import { hotkeyIsDown, transitionHotkeysToString } from "utils/hotkey-helper";
 import useStorageInfo from "hooks/useStorageInfo";
 import zh_cn from "gandiblocks/locales/zh-cn.json"; // 中文
@@ -548,9 +547,6 @@ const CodeFind: React.FC<PluginContext> = ({ workspace, vm, intl, registerSettin
                     )
                   : intl.formatMessage(messages.noResult)}
               </div>
-              <IF condition={!allOptions.length} forceRender>
-                <img className={styles.noFound} src="https://m.xiguacity.cn/scratch/no-found.png" />
-              </IF>
               <ul className={styles.options}>
                 {allOptions.map((item) => (
                   <TargetLi

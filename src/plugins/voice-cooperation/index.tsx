@@ -59,12 +59,10 @@ interface IToken {
   token: string;
 }
 
-const mentionAudio = new Audio(
-  "https://zhishi.oss-cn-beijing.aliyuncs.com/user_projects_assets/65eea7ba445c03e8830c0e9e3280af13.mp3",
-);
-const newTeamMember = new Audio(
-  "https://zhishi.oss-cn-beijing.aliyuncs.com/user_projects_assets/b6c6c4793d2636bfe24ce8c3a573c7f0.mp3",
-);
+const playAudioCue = (url?: string) => {
+  if (!url) return;
+  void new Audio(url).play().catch(() => undefined);
+};
 
 const LocalizationContext = React.createContext<IntlShape>(null);
 const RoomContext = React.createContext<LiveKit.Room>(null);
@@ -72,6 +70,7 @@ const VoiceContext = React.createContext<PluginContext>(null);
 const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext) => {
   // const toast = useMessage({ followCursor: false });
   const { msg } = pluginContext;
+  const voiceService = pluginContext.pluginServices?.voiceCooperation;
   const [room, setRoom] = React.useState<LiveKit.Room>(null);
   const [voiceMemberList, setVoiceMemberList] = React.useState<Array<Member>>([]);
   const voiceMemberListRef = React.useRef<Array<Member>>([]);
@@ -82,6 +81,7 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
   const [isLoading, setIsLoading] = React.useState(false);
   const [isConnected, setIsConnected] = React.useState(false);
   React.useEffect(() => {
+    if (!voiceService) return;
     // 注入css
     const style = document.createElement("style");
     style.innerHTML = globalCss;
@@ -89,8 +89,9 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
     return () => {
       document.head.removeChild(style);
     };
-  }, []);
+  }, [voiceService]);
   const handleClick = async () => {
+    if (!voiceService) return;
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const hasMicrophone = devices.some((device) => device.kind === "audioinput");
@@ -146,16 +147,16 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
         throw new Error();
       }
       const token = tokenReq.token;
-      connectToRoom(token, (connected: boolean, _room?: LiveKit.Room) => {
+      connectToRoom(voiceService.livekitUrl, token, (connected: boolean, _room?: LiveKit.Room) => {
         if (connected) {
           // 播放音效
-          mentionAudio.play();
+          playAudioCue(voiceService.connectedAudioUrl);
           setRoom(_room);
           roomRef.current = _room;
         } else {
           setRoom(null);
           roomRef.current = null;
-          mentionAudio.play();
+          playAudioCue(voiceService.connectedAudioUrl);
           setVoiceMemberList([]);
           voiceMemberListRef.current = [];
         }
@@ -239,7 +240,7 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
       .on(LiveKit.RoomEvent.Reconnected, () => handleReconnect(room))
       .on(LiveKit.RoomEvent.TrackMuted, () => fetchCurrentUserList(room))
       .on(LiveKit.RoomEvent.TrackUnmuted, () => fetchCurrentUserList(room))
-      .on(LiveKit.RoomEvent.ParticipantConnected, () => newTeamMember.play())
+      .on(LiveKit.RoomEvent.ParticipantConnected, () => playAudioCue(voiceService?.memberJoinedAudioUrl))
       .on(LiveKit.RoomEvent.ConnectionQualityChanged, handleQualityChanged);
   };
 
@@ -328,13 +329,14 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
     }
   };
   React.useEffect(() => {
+    if (!voiceService) return;
     const element = document.createElement("div");
     element.id = "audioFloatingWrapper";
     document.body.appendChild(element);
     return () => {
       document.body.removeChild(element);
     };
-  }, []);
+  }, [voiceService]);
 
   const handleQualityChanged = (quality: LiveKit.ConnectionQuality, participant: LiveKit.Participant) => {
     console.log(quality, participant);
@@ -376,7 +378,7 @@ const VoiceCooperation: React.FC<PluginContext> = (pluginContext: PluginContext)
   };
 
   const [isMuted, setIsMuted] = React.useState(false);
-  if (!pluginContext.teamworkManager) {
+  if (!pluginContext.teamworkManager || !voiceService) {
     return null;
   }
 
