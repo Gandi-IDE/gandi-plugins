@@ -4,11 +4,11 @@ import { Spinner } from "@gandi-ide/gandi-ui";
 import hack from "../hack";
 
 interface ArticleProps {
-  name: string;
-  Jump: string;
+  src: string;
+  loadBlock: boolean;
 }
 
-const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
+const Article: React.FC<ArticleProps> = ({ src, loadBlock }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -22,7 +22,7 @@ const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
         // 在这里执行你的加载完成后的逻辑
         setTimeout(() => {
           setTimeout(() => {
-            if (window.location.search.indexOf("Block") !== -1) {
+            if (loadBlock) {
               iframeRef.current.contentWindow.postMessage(["loadBlock"], "*");
             }
           }, 2000);
@@ -30,7 +30,7 @@ const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
         }, 100);
       };
     }
-  }, []);
+  }, [loadBlock]);
 
   return (
     <div className={styles.window}>
@@ -44,7 +44,7 @@ const Article: React.FC<ArticleProps> = ({ name, Jump }) => {
         id="block-sharing-article-iframe"
         ref={iframeRef}
         className={styles.inner}
-        src={name + "?hideHeader" + (Jump ? "&JumpLink=" + Jump : "")}
+        src={src}
         title="教程文章"
         width="100%"
         height="500px"
