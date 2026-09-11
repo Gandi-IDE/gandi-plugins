@@ -419,5 +419,6 @@
   "plugins.editorOptimization.enableFullscreenLabel": "[实验] 启用全屏优化",
   "plugins.editorOptimization.enableFullscreenDesc": "在舞台全屏时隐藏积木区，减少不必要的积木区渲染开销。",
   "plugins.editorOptimization.enablePixiLabel": "[实验] 启用 Pixi 加速渲染",
-  "plugins.editorOptimization.enablePixiDesc": "使用 PixiJS 将积木区渲染为纹理，大幅降低 DOM 节点数并提升拖拽/缩放流畅度。Pixi纹理提供受限的交互功能，通过双击以恢复原生DOM显示。"
+  "plugins.editorOptimization.enablePixiDesc": "使用 PixiJS 将积木区渲染为纹理，大幅降低 DOM 节点数并提升拖拽/缩放流畅度。Pixi纹理提供受限的交互功能，通过双击以恢复原生DOM显示。",
+  "plugins.editorOptimization.downloadCleanProject": "下载无分组注释版本作品"
 }
