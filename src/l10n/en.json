@@ -381,6 +381,7 @@
   "plugins.editorOptimization.enableFullscreenDesc": "Hides the workspace when in fullscreen to reduce unnecessary resource usage.",
   "plugins.editorOptimization.enablePixiLabel": "[Experimental] Enable Pixi Renderer",
   "plugins.editorOptimization.enablePixiDesc": "Partially renders blocks using Pixi.js to increase FPS in the workspace. Blocks rendered by Pixi are transparent, which are faster but provide limited interactive functionality.",
+  "plugins.editorOptimization.downloadCleanProject": "Download the project without group data",
   "plugins.debuggerAddon.title": "Debugger",
   "plugins.debuggerAddon.description": "Debugging tool with support for console logs, real-time metrics monitoring, thread viewing, and performance analysis. Requires Gandi Console extension to function.",
   "plugins.debuggerAddon.console": "Console",
