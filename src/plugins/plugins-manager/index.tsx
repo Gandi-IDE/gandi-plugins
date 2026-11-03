@@ -6,7 +6,6 @@ import PluginsManagerIcon from "assets/icon--plugins-manage.svg";
 import pluginsManifest from "src/plugins-manifest";
 import Plugins from "../../plugins-entry";
 import messages from "../../l10n/en.json";
-import { LoadingPlugins } from "src/plugins-controller";
 import styles from "./styles.less";
 
 const ALL_PLUGINS = Object.keys(Plugins);
@@ -26,18 +25,16 @@ const DEFAULT_INJECT_PLUGINS = [
   "historical-version",
 ];
 interface PluginsManagerProps extends PluginContext {
-  plugins: Record<string, () => void>;
   disabledPlugins: string[];
-  loadAndInjectPlugin: (name: string) => void;
+  setPluginEnabled: (name: string, enabled: boolean) => Promise<void>;
 }
 
 const PluginsManager: React.FC<PluginsManagerProps> = ({
   registerSettings,
   msg,
   intl,
-  plugins,
   disabledPlugins,
-  loadAndInjectPlugin,
+  setPluginEnabled,
 }) => {
   React.useEffect(() => {
     const pluginSettings = ALL_PLUGINS.reduce((acc: Array<PluginSetting>, key) => {
@@ -58,29 +55,20 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
           ? `${msg(`plugins.${pluginName}.description`)}`
           : null,
         onChange: (value: boolean, cancelChange: () => void) => {
-          if (value === false && LoadingPlugins[key]) {
-            // If the plug-in is loading, do not allow it to be injected
-            LoadingPlugins[key]();
-            return;
-          }
-          if (value === true && LoadingPlugins[key]) {
-            // If the plug-in is in the process of loading, you do not need to load it again
-            return;
-          }
           if (disabledPlugins.includes(key)) {
-            // If the plug-in is only used, but wants to be loaded, cancel it
             cancelChange();
             return;
           }
-          if (value && !plugins[key]) {
-            loadAndInjectPlugin(key);
-          } else if (plugins[key]) {
-            plugins[key]();
-            delete plugins[key];
+          const operation = setPluginEnabled(key, value);
+          // Older GUI hosts do not await settings callbacks. Keep the shared
+          // plugin script usable during the host-first rollout.
+          if (!registerSettings.supportsAsyncInitialization) {
+            return operation.catch(() => cancelChange());
           }
+          return operation;
         },
       };
-      if (DEFAULT_INJECT_PLUGINS.includes(key)) {
+      if (!registerSettings.supportsAsyncInitialization && DEFAULT_INJECT_PLUGINS.includes(key)) {
         pluginSetting.onChange(true, noop);
       }
       return acc.concat(pluginSetting);
@@ -123,10 +111,19 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
       ],
       <PluginsManagerIcon />,
     );
+    if (register.initialize) {
+      const defaults = Object.fromEntries(
+        pluginSettings.map((setting) => [
+          setting.key,
+          DEFAULT_INJECT_PLUGINS.some((name) => spinalToCamel(name) === setting.key) && !setting.disabled,
+        ]),
+      );
+      register.initialize({ plugins: defaults });
+    }
     return () => {
       register.dispose();
     };
-  }, [registerSettings, msg, plugins, disabledPlugins, loadAndInjectPlugin]);
+  }, [registerSettings, msg, intl, disabledPlugins, setPluginEnabled]);
 
   return <Toaster />;
 };

@@ -241,3 +241,26 @@
 ├──webpack.config.js               // Webpack 配置文件
 └──webpackDevServer.config.js      // Webpack Dev Server 配置文件
 ```
+
+### 插件启停完成与开关 loading
+
+插件控制器按插件串行执行启停，重复开启不会卸载已经运行的实例。
+加载状态属于当前控制器，退出编辑器后旧下载不能再挂载插件。
+组件插件在 React 提交和同步挂载 effect 完成后解锁；函数插件在初始化返回后解锁，
+关闭会等待 disposer 返回的 Promise。插件自行发起且未返回的异步任务不属于此完成信号。
+下载或挂载错误会清理本次加载状态，可由新 GUI 的开关重试。
+
+新 GUI 支持 `registerSettings.supportsAsyncInitialization` 和返回的 `initialize(defaults)`。
+管理器通过它统一恢复保存的偏好和默认启用项，避免在配置恢复前先加载默认插件。
+旧 GUI 保留兼容路径，但没有 loading/失败反馈；发布时先升级 CCW/Cocrea 宿主的 GUI，
+再部署本插件脚本。本次源码修改不代表包发布或宿主上线。
+
+验证：
+
+```bash
+node --test test/plugin-operations.test.cjs
+pnpm exec tsc --noEmit --skipLibCheck
+```
+
+当前依赖的 Chakra/Pixi 声明与仓库 TypeScript 版本存在全量声明检查错误；
+`--skipLibCheck` 仍检查项目源码，不代表这些第三方声明问题已修复。

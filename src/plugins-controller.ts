@@ -9,16 +9,19 @@ import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
 import { camelToKebab } from "utils/name-helper";
 
-export const LoadingPlugins = {};
+import PluginOperations from "./plugin-operations";
+import PluginMount from "./plugin-mount";
 
 interface PluginComponent extends React.FunctionComponent<PluginContext> {
   displayName: string;
 }
 
+interface PluginInstance {
+  dispose?(): void | Promise<void>;
+}
+
 export interface PluginFunction {
-  (context: PluginContext): {
-    dispose?(): void;
-  };
+  (context: PluginContext): PluginInstance;
 }
 
 export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "msg"> {
@@ -29,7 +32,9 @@ export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "
 
 class PluginsController {
   context: PluginContext;
-  plugins: Record<string, () => void>;
+  plugins: Record<string, () => void | Promise<void>>;
+  operations: PluginOperations;
+  private mounting = new Map<string, () => void>();
   options: PluginsControllerOptions;
   pluginsManager?: {
     dispose: () => void;
@@ -41,6 +46,17 @@ class PluginsController {
    */
   constructor(options: PluginsControllerOptions) {
     this.plugins = {};
+    this.operations = new PluginOperations(async (name, enabled) => {
+      if (enabled) {
+        if (this.plugins[name]) return;
+        const { default: plugin } = await pluginsEntry[name]();
+        if (!this.context) throw new Error("Plugin controller has been disposed");
+        await this.injectPlugin(plugin, pluginsManifest[name].type, name);
+      } else if (this.plugins[name]) {
+        await this.plugins[name]();
+        delete this.plugins[name];
+      }
+    });
     const intl = this.createIntl(options.locale);
     this.context = Object.assign(options, {
       intl,
@@ -74,8 +90,7 @@ class PluginsController {
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
       disabledPlugins: disabledPlugins.concat(unavailablePlugins).map(camelToKebab),
-      loadAndInjectPlugin: this.loadAndInjectPlugin.bind(this),
-      plugins: this.plugins,
+      setPluginEnabled: this.operations.setEnabled.bind(this.operations),
     });
     const root = ReactDOM.createRoot(div);
     root.render(PluginsManagerComponent);
@@ -115,21 +130,46 @@ class PluginsController {
    * @param {string} type - The type of the plugin ('component' or 'function').
    * @param {string} pluginName - The name of the plugin.
    */
-  injectPlugin(plugin: PluginComponent | PluginFunction, type: string, pluginName: string) {
+  async injectPlugin(plugin: PluginComponent | PluginFunction, type: string, pluginName: string) {
     if (type === "component") {
       const div = document.createElement("div");
       div.setAttribute("data-plugin-name", pluginName);
       this.wrapperElement.appendChild(div);
-      const Plugin = React.createElement(plugin as PluginComponent, this.context);
       const root = ReactDOM.createRoot(div);
-      root.render(Plugin);
-      this.plugins[pluginName] = () => {
+      const dispose = () => {
         root.unmount();
-        this.wrapperElement.removeChild(div);
+        div.remove();
       };
+      try {
+        await new Promise<void>((resolve, reject) => {
+          this.mounting.set(pluginName, () => reject(new Error("Plugin controller has been disposed")));
+          root.render(
+            React.createElement(
+              PluginMount,
+              {
+                onReady: resolve,
+                onError: reject,
+              },
+              React.createElement(plugin as PluginComponent, this.context),
+            ),
+          );
+        });
+        if (!this.context) throw new Error("Plugin controller has been disposed");
+        this.plugins[pluginName] = dispose;
+      } catch (error) {
+        dispose();
+        throw error;
+      } finally {
+        this.mounting.delete(pluginName);
+      }
     } else if (type === "function") {
-      const instance = (plugin as PluginFunction)(this.context);
-      this.plugins[pluginName] = instance?.dispose || noop;
+      const instance = await (plugin as PluginFunction)(this.context);
+      const dispose = instance?.dispose || noop;
+      if (!this.context) {
+        await dispose();
+        throw new Error("Plugin controller has been disposed");
+      }
+      this.plugins[pluginName] = dispose;
     }
   }
 
@@ -138,30 +178,24 @@ class PluginsController {
    * @param {string} pluginName - The name of the plugin to load and inject.
    */
   loadAndInjectPlugin(pluginName: string) {
-    let cancelled = false;
-    const manifest = pluginsManifest[pluginName];
-    pluginsEntry[pluginName]().then(({ default: plugin }) => {
-      delete LoadingPlugins[pluginName];
-      if (cancelled) {
-        delete LoadingPlugins[pluginName];
-        return;
-      }
-      if (this.context) {
-        this.injectPlugin(plugin, manifest.type, pluginName);
-      }
-    });
-    LoadingPlugins[pluginName] = () => {
-      cancelled = true;
-    };
+    return this.operations.setEnabled(pluginName, true);
   }
 
   /**
    * Disposes the controller and cleans up resources.
    */
   dispose() {
+    this.context = null;
+    this.operations.dispose();
+    this.mounting.forEach((cancel) => cancel());
+    this.mounting.clear();
     for (const key in this.plugins) {
       if (Object.prototype.hasOwnProperty.call(this.plugins, key)) {
-        this.plugins[key]();
+        try {
+          Promise.resolve(this.plugins[key]()).catch((error) => console.error("Plugin cleanup failed", error));
+        } catch (error) {
+          console.error("Plugin cleanup failed", error);
+        }
       }
     }
     this.pluginsManager?.dispose();

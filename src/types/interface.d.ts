@@ -100,16 +100,18 @@ declare global {
     autoSave?: boolean;
     style?: CSSProperties;
     options?: Array<SettingOption>;
-    onChange?: (value: PluginSettingValueType, cancelChange?: () => void) => void;
+    onChange?: (value: PluginSettingValueType, cancelChange?: () => void) => void | Promise<void>;
   }
 
   interface PluginRegister {
+    supportsAsyncInitialization?: boolean;
     (
       pluginName: string,
       id: string,
       settings: Array<SettingCategory>,
       icon?: string | ReactElement,
     ): {
+      initialize?(defaults?: Record<string, Record<string, PluginSettingValueType>>): Promise<unknown>;
       dispose(): void;
     };
   }
