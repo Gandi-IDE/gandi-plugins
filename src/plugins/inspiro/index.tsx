@@ -27,7 +27,8 @@ const DEFAULT_CONTAINER_INFO = {
   translateY: 0,
 };
 
-const Inspiro: React.FC<PluginContext> = ({ intl, utils, vm, registerSettings, trackEvents }) => {
+const Inspiro: React.FC<PluginContext> = ({ intl, utils, vm, registerSettings, trackEvents, pluginServices }) => {
+  const inspiroService = pluginServices?.inspiro;
   const [visible, setVisible] = React.useState(false);
   const containerRef = React.useRef(null);
   const [containerInfo, setContainerInfo] = useStorageInfo<ExpansionRect>(
@@ -72,6 +73,7 @@ const Inspiro: React.FC<PluginContext> = ({ intl, utils, vm, registerSettings, t
   const handleSizeChange = React.useCallback((value: ExpansionRect) => {
     containerInfoRef.current = value;
   }, []);
+  if (!inspiroService) return null;
   return ReactDOM.createPortal(
     <section className={styles.inspiroRoot} ref={containerRef}>
       <Tooltip
@@ -92,7 +94,7 @@ const Inspiro: React.FC<PluginContext> = ({ intl, utils, vm, registerSettings, t
             minHeight={0}
             borderRadius={0}
           >
-            <Entrance utils={utils} intl={intl}></Entrance>
+            <Entrance utils={utils} intl={intl} service={inspiroService}></Entrance>
           </ExpansionBox>,
           document.body,
         )}

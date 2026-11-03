@@ -23,13 +23,9 @@ import React from "react";
 import { IntlShape } from "react-intl";
 import { defineMessage } from "@formatjs/intl";
 import { Contact, Type } from "../componet/Contact";
-const hostname: string = window.location.hostname;
-let assetHost = "https://m.ccw.site";
-let apiHost = "https://gandi-main.ccw.site";
-if (!hostname.endsWith("ccw.site")) {
-  assetHost = "https://d3sh2pl0ajjotb.cloudfront.net";
-  apiHost = "https://gandi-main.cocrea.world";
-}
+import { buildPluginServiceUrl, PluginServices } from "../../../lib/plugin-services";
+
+type InspiroService = NonNullable<PluginServices["inspiro"]>;
 const messages = defineMessage({
   guestName: {
     id: "plugins.inspiro.guest.name",
@@ -95,7 +91,7 @@ const serviceFactory = (storage: IStorage, updateState: UpdateState) => {
   return new ExampleChatService(storage, updateState);
 };
 let previewMe = null;
-function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
+function Entrance({ utils, intl, service }: { utils: any; intl: IntlShape; service: InspiroService }) {
   const guest = {
     name: intl.formatMessage(messages.guestName),
     avatar: "",
@@ -105,9 +101,9 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
     type: Type.MUSIC,
     desc: intl.formatMessage(messages.audioGeneratorDesc),
     duration: 15,
-    avatar: `${assetHost}/tmp/inspairo-audio-avatar.png`,
+    avatar: buildPluginServiceUrl(service.assetBaseUrl, "tmp/inspairo-audio-avatar.png"),
     generator: async (text: string): Promise<string> => {
-      return message_generator(`${apiHost}/ai/hub/txt2music`, { prompt: text }, "id");
+      return message_generator(buildPluginServiceUrl(service.apiBaseUrl, "ai/hub/txt2music"), { prompt: text }, "id");
     },
   };
   const image = {
@@ -115,9 +111,9 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
     type: Type.IMAGE,
     desc: intl.formatMessage(messages.imageGeneratorDesc),
     duration: 1,
-    avatar: `${assetHost}/tmp/inspairo-image-avatar.png`,
+    avatar: buildPluginServiceUrl(service.assetBaseUrl, "tmp/inspairo-image-avatar.png"),
     generator: async (text: string): Promise<string> => {
-      return message_generator(`${apiHost}/ai/hub/txt2img`, { text: text }, "taskId");
+      return message_generator(buildPluginServiceUrl(service.apiBaseUrl, "ai/hub/txt2img"), { text: text }, "taskId");
     },
   };
   if (previewMe != null && previewMe != guest.name) {
@@ -191,7 +187,7 @@ function Entrance({ utils, intl }: { utils: any; intl: IntlShape }) {
         utils={utils}
         contacts={contacts}
         ext={{
-          ai_domain: apiHost,
+          ai_domain: service.apiBaseUrl,
         }}
       />
     </ChatProvider>

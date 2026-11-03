@@ -1,14 +1,12 @@
 import * as LiveKit from "livekit-client";
 import type { ReconnectContext, ReconnectPolicy } from "livekit-client/dist/src/room/ReconnectPolicy";
-import config from "../config";
 
-const VoiceServer = config.SERVER_URL; // localhost debug
 let globalReason = 0;
 type Callback = {
   (status: true, room: LiveKit.Room): void;
   (status: false): void;
 };
-async function connectToRoom(token: string, callback: Callback) {
+async function connectToRoom(serverUrl: string, token: string, callback: Callback) {
   const room = new LiveKit.Room({
     dynacast: true, // optimize publish bandwidth and CPU for published tracks
     publishDefaults: {
@@ -18,7 +16,7 @@ async function connectToRoom(token: string, callback: Callback) {
     reconnectPolicy: new CustomReconnectPolicy(),
   });
   try {
-    await room.connect(VoiceServer, token);
+    await room.connect(serverUrl, token);
     await room.localParticipant.setMicrophoneEnabled(true);
     callback(true, room);
   } catch (error) {

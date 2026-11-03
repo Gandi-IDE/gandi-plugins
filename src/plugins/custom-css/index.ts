@@ -15,7 +15,7 @@ const autoThemes = [
   { id: "greatPurpleAsBlue", color1: "#402F64", color2: "#70BED2" },
 ];
 
-const CustomCss = ({ registerSettings, msg }: PluginContext) => {
+const CustomCss = ({ registerSettings, msg, pluginServices }: PluginContext) => {
   // 预设主题列表，包括静态预设和自动计算预设
   let presets = [
     "frostBlueIce",
@@ -687,7 +687,7 @@ const CustomCss = ({ registerSettings, msg }: PluginContext) => {
             key: "load-from-url",
             label: msg("plugins.customCss.load"),
             type: "input",
-            value: "https://m.ccw.site/gandi/default.css",
+            value: pluginServices?.customCss?.defaultStylesheetUrl || "",
             description: msg("plugins.customCss.load.description"),
             onChange: (value: string) => {
               if (value.startsWith("http")) {

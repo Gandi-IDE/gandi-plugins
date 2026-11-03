@@ -1,6 +1,7 @@
 import type { IntlShape } from "react-intl";
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
+import type { PluginCapabilities, PluginServices } from "../lib/plugin-services";
 
 interface Action<T = any> {
   type: T;
@@ -155,6 +156,10 @@ declare global {
     teamworkManager: TeamworkManager | null;
     registerSettings: PluginRegister;
     workspace: Blockly.WorkspaceSvg;
+    /** Host-provided remote services. Missing services are treated as unavailable. */
+    pluginServices?: PluginServices;
+    /** Capabilities derived from the validated host service configuration. */
+    pluginCapabilities?: PluginCapabilities;
     /**
      * A shortcut method to replace intl.formatMessage.
      *

@@ -208,7 +208,7 @@
   "plugins.extensionManager.title": "Extension Manager",
   "plugins.extensionManager.intro": "Manage your extensions.",
   "plugins.customExtensionVersionManager.title": "Custom Extension Versions",
-  "plugins.customExtensionVersionManager.description": "Load available versions of installed custom extensions from the CCW asset marketplace and switch safely.",
+  "plugins.customExtensionVersionManager.description": "Load available versions of installed custom extensions from the configured asset marketplace and switch safely.",
   "plugins.customExtensionVersionManager.extension": "Custom extension",
   "plugins.customExtensionVersionManager.noExtensions": "No loaded custom extensions",
   "plugins.customExtensionVersionManager.refreshExtensions": "Refresh extensions",

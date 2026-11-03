@@ -1,14 +1,14 @@
 import * as React from "react";
 import Icon from "assets/icon--costumepiskel.svg?url";
 
-const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
+const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg, pluginServices }) => {
+  const piskelHost = pluginServices?.costumePiskel?.editorUrl;
+
   React.useEffect(() => {
+    if (!piskelHost) return;
     const targetWindowMap = new Map<string, MessageEventSource>();
     const pendingTargetCostumes = new Map<string, string[]>();
     let syncTimer: NodeJS.Timeout;
-
-    // https://github.com/Gandi-IDE/piskel
-    const piskelHost = "https://ai-static.ccw.site/test/piskel-1e80317/index.html";
 
     const handleCostumeMessage = (event: MessageEvent) => {
       if (event.data && event.data.name === "plugin-piskel-update") {
@@ -134,7 +134,7 @@ const CostumePiskel: React.FC<PluginContext> = ({ utils, vm, msg }) => {
         syncTimer = null;
       }
     };
-  }, []);
+  }, [msg, piskelHost, utils, vm]);
 
   return null;
 };

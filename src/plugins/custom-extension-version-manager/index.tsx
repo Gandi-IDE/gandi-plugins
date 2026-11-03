@@ -25,7 +25,15 @@ const formatReleasedAt = (value: string | number | undefined, locale: string) =>
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 };
 
-const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace, intl, msg, registerSettings }) => {
+const CustomExtensionVersionManager: React.FC<PluginContext> = ({
+  vm,
+  workspace,
+  intl,
+  msg,
+  registerSettings,
+  pluginServices,
+}) => {
+  const marketplaceService = pluginServices?.customExtensionVersionManager;
   const [visible, setVisible] = React.useState(false);
   const [containerInfo, setContainerInfo] = useStorageInfo(
     "CUSTOM_EXTENSION_VERSION_MANAGER_CONTAINER_INFO",
@@ -116,6 +124,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
         setLoadingVersions(false);
         return;
       }
+      if (!marketplaceService) return;
 
       const controller = new AbortController();
       marketplaceRequestRef.current = controller;
@@ -124,7 +133,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
       setLoadingVersions(true);
 
       try {
-        const detail = await fetchMarketplaceExtension(extensionId, controller.signal);
+        const detail = await fetchMarketplaceExtension(marketplaceService, extensionId, controller.signal);
         if (!controller.signal.aborted) setMarketplaceDetail(detail);
       } catch (error) {
         if (!controller.signal.aborted) setMarketplaceError(formatMarketplaceError(error, extensionId));
@@ -135,7 +144,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
         }
       }
     },
-    [formatMarketplaceError],
+    [formatMarketplaceError, marketplaceService],
   );
 
   const switchVersion = React.useCallback(
@@ -185,6 +194,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
   );
 
   React.useEffect(() => {
+    if (!marketplaceService) return;
     const register = registerSettings(
       msg("plugins.customExtensionVersionManager.title"),
       "plugin-custom-extension-version-manager",
@@ -199,9 +209,10 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
       <ExtensionVersionIcon />,
     );
     return () => register.dispose();
-  }, [msg, registerSettings]);
+  }, [marketplaceService, msg, registerSettings]);
 
   React.useEffect(() => {
+    if (!marketplaceService) return;
     refreshExtensions();
     const handleRuntimeChange = () => refreshExtensions();
     vm.on("PROJECT_LOADED", handleRuntimeChange);
@@ -212,7 +223,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
       vm.runtime.off("EXTENSION_LIBRARY_UPDATED", handleRuntimeChange);
       vm.runtime.off("GANDI_WILD_EXTENSIONS_CHANGED", handleRuntimeChange);
     };
-  }, [refreshExtensions, vm]);
+  }, [marketplaceService, refreshExtensions, vm]);
 
   React.useEffect(() => {
     if (!visible) return;
@@ -227,6 +238,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
   );
 
   const toolbarHost = document.querySelector(".plugins-wrapper") || document.body;
+  if (!marketplaceService) return null;
 
   return ReactDOM.createPortal(
     <section className={styles.plugin} ref={rootRef}>
@@ -305,7 +317,7 @@ const CustomExtensionVersionManager: React.FC<PluginContext> = ({ vm, workspace,
                     </code>
                     <a
                       className={styles.marketplaceLink}
-                      href={getMarketplacePageUrl(selectedExtension.id)}
+                      href={getMarketplacePageUrl(marketplaceService, selectedExtension.id)}
                       target="_blank"
                       rel="noreferrer"
                     >
