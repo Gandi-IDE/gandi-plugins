@@ -9,8 +9,6 @@ import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
 import { camelToKebab } from "utils/name-helper";
 
-export const LoadingPlugins = {};
-
 interface PluginComponent extends React.FunctionComponent<PluginContext> {
   displayName: string;
 }
@@ -30,6 +28,10 @@ export interface PluginsControllerOptions extends Omit<PluginContext, "intl" | "
 class PluginsController {
   context: PluginContext;
   plugins: Record<string, () => void>;
+  // The latest requested state of each plugin. A pending download only mounts
+  // the plugin if it is still wanted when the download finishes.
+  enabled: Record<string, boolean> = {};
+  loading: Record<string, Promise<void>> = {};
   options: PluginsControllerOptions;
   pluginsManager?: {
     dispose: () => void;
@@ -74,8 +76,7 @@ class PluginsController {
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
       disabledPlugins: disabledPlugins.concat(unavailablePlugins).map(camelToKebab),
-      loadAndInjectPlugin: this.loadAndInjectPlugin.bind(this),
-      plugins: this.plugins,
+      setPluginEnabled: this.setPluginEnabled.bind(this),
     });
     const root = ReactDOM.createRoot(div);
     root.render(PluginsManagerComponent);
@@ -138,21 +139,40 @@ class PluginsController {
    * @param {string} pluginName - The name of the plugin to load and inject.
    */
   loadAndInjectPlugin(pluginName: string) {
-    let cancelled = false;
+    if (this.loading[pluginName]) return;
     const manifest = pluginsManifest[pluginName];
-    pluginsEntry[pluginName]().then(({ default: plugin }) => {
-      delete LoadingPlugins[pluginName];
-      if (cancelled) {
-        delete LoadingPlugins[pluginName];
-        return;
-      }
-      if (this.context) {
-        this.injectPlugin(plugin, manifest.type, pluginName);
-      }
-    });
-    LoadingPlugins[pluginName] = () => {
-      cancelled = true;
+    // Always clear the marker, so a failed download can be retried by toggling.
+    const done = () => {
+      delete this.loading[pluginName];
     };
+    this.loading[pluginName] = pluginsEntry[pluginName]()
+      .then(({ default: plugin }) => {
+        done();
+        if (this.context && this.enabled[pluginName] && !this.plugins[pluginName]) {
+          this.injectPlugin(plugin, manifest.type, pluginName);
+        }
+      })
+      .catch((error) => {
+        done();
+        console.error(`Failed to load plugin ${pluginName}`, error);
+      });
+  }
+
+  /**
+   * Makes the plugin match the requested state. Repeated calls with the same
+   * value are no-ops, so restoring saved settings cannot toggle a plugin off.
+   * @param {string} pluginName - The name of the plugin.
+   * @param {boolean} enabled - Whether the plugin should be running.
+   */
+  setPluginEnabled(pluginName: string, enabled: boolean) {
+    this.enabled[pluginName] = enabled;
+    if (enabled) {
+      if (!this.plugins[pluginName]) this.loadAndInjectPlugin(pluginName);
+    } else if (this.plugins[pluginName]) {
+      const dispose = this.plugins[pluginName];
+      delete this.plugins[pluginName];
+      dispose();
+    }
   }
 
   /**
