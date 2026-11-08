@@ -28,6 +28,7 @@ import findDefinition from "src/plugins/find-definition/manifest";
 import editorOptimization from "src/plugins/editor-optimization/manifest";
 import todoList from "src/plugins/todo-list/manifest";
 import debuggerAddon from "src/plugins/debugger-addon/manifest";
+import easyui from "src/plugins/easyui/manifest";
 
 export default {
   folder,
@@ -60,4 +61,5 @@ export default {
   "editor-optimization": editorOptimization,
   "todo-list": todoList,
   "debugger-addon": debuggerAddon,
+  easyui,
 };

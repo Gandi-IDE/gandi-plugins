@@ -419,5 +419,7 @@
   "plugins.debuggerAddon.terminalLoadMode.d": "Choose how the Gandi Console extension loads.",
   "plugins.debuggerAddon.terminalLoadMode.auto": "Load automatically with project",
   "plugins.debuggerAddon.terminalLoadMode.onClick": "Load on icon click",
-  "plugins.debuggerAddon.terminalLoadMode.manual": "Do not load automatically"
+  "plugins.debuggerAddon.terminalLoadMode.manual": "Do not load automatically",
+  "plugins.easyui.title": "EasyUI",
+  "plugins.easyui.description": "Page, component, theme dashboard and 3D stage components for Gandi IDE."
 }
