@@ -39,4 +39,5 @@ export default {
     import(/* webpackChunkName: "plugin-editor-optimization" */ "src/plugins/editor-optimization"),
   "todo-list": () => import(/* webpackChunkName: "plugin-todo-list" */ "src/plugins/todo-list"),
   "debugger-addon": () => import(/* webpackChunkName: "plugin-debugger-addon" */ "src/plugins/debugger-addon"),
+  easyui: () => import(/* webpackChunkName: "plugin-easyui" */ "src/plugins/easyui"),
 } as const;
