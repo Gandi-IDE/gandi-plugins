@@ -1,3 +1,8 @@
+/**
+ * EasyUI plugin for Gandi IDE.
+ * Runtime version: EasyUI 3.0.0 (bundled as easyui-runtime.asset).
+ * License: LGPL-3.0-only, following the repository root LICENSE.
+ */
 import type { PluginFunction } from "src/plugins-controller";
 import easyuiRuntime from "./easyui-runtime.asset";
 
