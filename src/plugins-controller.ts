@@ -9,6 +9,8 @@ import { createIntl, createIntlCache } from "@formatjs/intl";
 import { IntlShape } from "react-intl";
 import { camelToKebab } from "utils/name-helper";
 
+const EDITOR_OPTIMIZATION = "editor-optimization";
+
 interface PluginComponent extends React.FunctionComponent<PluginContext> {
   displayName: string;
 }
@@ -50,7 +52,7 @@ class PluginsController {
       msg: (id: string) => intl.formatMessage({ id }),
     });
     this.options = options;
-    this.collaborationBlockedPlugin = options.teamworkManager ? "editor-optimization" : null;
+    this.collaborationBlockedPlugin = options.teamworkManager ? EDITOR_OPTIMIZATION : null;
     this.wrapperElement = this.initWrapper();
     this.initPluginsManager();
   }
@@ -161,6 +163,10 @@ class PluginsController {
       });
   }
 
+  private onEditorProjectLoaded = () => {
+    this.setPluginEnabled(EDITOR_OPTIMIZATION, this.enabled[EDITOR_OPTIMIZATION]);
+  };
+
   /**
    * Makes the plugin match the requested state. Repeated calls with the same
    * value are no-ops, so restoring saved settings cannot toggle a plugin off.
@@ -171,6 +177,16 @@ class PluginsController {
     if (!this.context) return;
     const shouldEnable = enabled && pluginName !== this.collaborationBlockedPlugin;
     this.enabled[pluginName] = shouldEnable;
+    if (pluginName === EDITOR_OPTIMIZATION) {
+      const { vm } = this.context;
+      vm.off("PROJECT_LOADED", this.onEditorProjectLoaded);
+      // The host restores settings before it knows which project it will load.
+      // A collaboration controller replaces this one before installing the team's targets.
+      if (shouldEnable && !vm.editingTarget) {
+        vm.once("PROJECT_LOADED", this.onEditorProjectLoaded);
+        return;
+      }
+    }
     if (shouldEnable) {
       if (!this.plugins[pluginName]) this.loadAndInjectPlugin(pluginName);
     } else if (this.plugins[pluginName]) {
@@ -184,6 +200,7 @@ class PluginsController {
    * Disposes the controller and cleans up resources.
    */
   dispose() {
+    this.context.vm.off("PROJECT_LOADED", this.onEditorProjectLoaded);
     for (const key in this.plugins) {
       if (Object.prototype.hasOwnProperty.call(this.plugins, key)) {
         this.plugins[key]();
