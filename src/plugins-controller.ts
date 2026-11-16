@@ -33,6 +33,7 @@ class PluginsController {
   enabled: Record<string, boolean> = {};
   loading: Record<string, Promise<void>> = {};
   options: PluginsControllerOptions;
+  readonly collaborationBlockedPlugin: string | null;
   pluginsManager?: {
     dispose: () => void;
   };
@@ -49,6 +50,7 @@ class PluginsController {
       msg: (id: string) => intl.formatMessage({ id }),
     });
     this.options = options;
+    this.collaborationBlockedPlugin = options.teamworkManager ? "editor-optimization" : null;
     this.wrapperElement = this.initWrapper();
     this.initPluginsManager();
   }
@@ -75,6 +77,7 @@ class PluginsController {
     const { disabledPlugins = [], unavailablePlugins = [] } = this.options;
     const PluginsManagerComponent = React.createElement(PluginsManager, {
       ...this.context,
+      collaborationBlockedPlugin: this.collaborationBlockedPlugin,
       disabledPlugins: disabledPlugins.concat(unavailablePlugins).map(camelToKebab),
       setPluginEnabled: this.setPluginEnabled.bind(this),
     });
@@ -165,8 +168,10 @@ class PluginsController {
    * @param {boolean} enabled - Whether the plugin should be running.
    */
   setPluginEnabled(pluginName: string, enabled: boolean) {
-    this.enabled[pluginName] = enabled;
-    if (enabled) {
+    if (!this.context) return;
+    const shouldEnable = enabled && pluginName !== this.collaborationBlockedPlugin;
+    this.enabled[pluginName] = shouldEnable;
+    if (shouldEnable) {
       if (!this.plugins[pluginName]) this.loadAndInjectPlugin(pluginName);
     } else if (this.plugins[pluginName]) {
       const dispose = this.plugins[pluginName];
