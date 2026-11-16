@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { spinalToCamel } from "utils/name-helper";
 import PluginsManagerIcon from "assets/icon--plugins-manage.svg";
 import pluginsManifest from "src/plugins-manifest";
@@ -25,6 +25,7 @@ const DEFAULT_INJECT_PLUGINS = [
 ];
 interface PluginsManagerProps extends PluginContext {
   disabledPlugins: string[];
+  collaborationBlockedPlugin: string | null;
   setPluginEnabled: (name: string, enabled: boolean) => void;
 }
 
@@ -33,8 +34,10 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
   msg,
   intl,
   disabledPlugins,
+  collaborationBlockedPlugin,
   setPluginEnabled,
 }) => {
+  const notified = React.useRef(false);
   React.useEffect(() => {
     const pluginSettings = ALL_PLUGINS.reduce((acc: Array<PluginSetting>, key) => {
       const pluginName = spinalToCamel(key);
@@ -42,8 +45,13 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
       // Even for default-loaded plugins, if they are on the disabled list, they will only be visible in the plugin list but cannot be loaded or enabled.
       if (disabledPlugins.includes(key) && !DEFAULT_INJECT_PLUGINS.includes(key)) return acc;
 
-      const injectByDefault = DEFAULT_INJECT_PLUGINS.includes(key) && !disabledPlugins.includes(key);
+      const blockedInCollaboration = key === collaborationBlockedPlugin;
+      const disabled = disabledPlugins.includes(key) || blockedInCollaboration;
+      const injectByDefault = DEFAULT_INJECT_PLUGINS.includes(key) && !disabled;
       const title = messages[`plugins.${pluginName}.title`] ? msg(`plugins.${pluginName}.title`) : key;
+      const notice = blockedInCollaboration
+        ? intl.formatMessage({ id: "plugins.editorOptimization.disabledInCollaboration" }, { plugin: title })
+        : null;
       const pluginSetting: PluginSetting = {
         key: pluginName,
         label: title,
@@ -51,15 +59,18 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
         // Must match what is actually running, otherwise restoring a saved
         // `true` is seen as a change and reaches onChange for a loaded plugin.
         value: injectByDefault,
-        disabled: disabledPlugins.includes(key),
+        disabled,
         tags: pluginsManifest[key].credits || [],
-        description: messages[`plugins.${pluginName}.description`]
-          ? `${msg(`plugins.${pluginName}.description`)}`
-          : null,
+        description:
+          notice || (messages[`plugins.${pluginName}.description`] ? msg(`plugins.${pluginName}.description`) : null),
         onChange: (value: boolean, cancelChange: () => void) => {
-          if (disabledPlugins.includes(key)) {
-            // If the plug-in is only used, but wants to be loaded, cancel it
+          if (disabled) {
+            // Cancel the restore for this project without saving over the user's preference.
             cancelChange();
+            if (value && notice && !notified.current) {
+              notified.current = true;
+              toast(notice, { id: "editor-optimization-disabled-in-collaboration" });
+            }
             return;
           }
           setPluginEnabled(key, value);
@@ -111,7 +122,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
     return () => {
       register.dispose();
     };
-  }, [registerSettings, msg, disabledPlugins, setPluginEnabled]);
+  }, [registerSettings, msg, intl, disabledPlugins, collaborationBlockedPlugin, setPluginEnabled]);
 
   return <Toaster />;
 };
