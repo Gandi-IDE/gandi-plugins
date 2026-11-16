@@ -1,5 +1,5 @@
 import * as React from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import { spinalToCamel } from "utils/name-helper";
 import PluginsManagerIcon from "assets/icon--plugins-manage.svg";
 import pluginsManifest from "src/plugins-manifest";
@@ -29,15 +29,28 @@ interface PluginsManagerProps extends PluginContext {
   setPluginEnabled: (name: string, enabled: boolean) => void;
 }
 
+function showCollaborationNotice(sessionId: string, message: string) {
+  // The host can replace the entire plugin bundle several times during one session.
+  const { body } = document;
+  if (body.dataset.gandiEditorOptimizationNotice === sessionId) return;
+  body.dataset.gandiEditorOptimizationNotice = sessionId;
+  const notice = document.createElement("div");
+  notice.className = styles.collaborationNotice;
+  notice.setAttribute("role", "status");
+  notice.textContent = message;
+  body.appendChild(notice);
+  window.setTimeout(() => notice.remove(), 5000);
+}
+
 const PluginsManager: React.FC<PluginsManagerProps> = ({
   registerSettings,
   msg,
   intl,
   disabledPlugins,
   collaborationBlockedPlugin,
+  teamworkManager,
   setPluginEnabled,
 }) => {
-  const notified = React.useRef(false);
   React.useEffect(() => {
     const pluginSettings = ALL_PLUGINS.reduce((acc: Array<PluginSetting>, key) => {
       const pluginName = spinalToCamel(key);
@@ -67,9 +80,8 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
           if (disabled) {
             // Cancel the restore for this project without saving over the user's preference.
             cancelChange();
-            if (value && notice && !notified.current) {
-              notified.current = true;
-              toast(notice, { id: "editor-optimization-disabled-in-collaboration" });
+            if (value && notice && teamworkManager) {
+              showCollaborationNotice(teamworkManager.userInfo.clientId, notice);
             }
             return;
           }
@@ -122,7 +134,7 @@ const PluginsManager: React.FC<PluginsManagerProps> = ({
     return () => {
       register.dispose();
     };
-  }, [registerSettings, msg, intl, disabledPlugins, collaborationBlockedPlugin, setPluginEnabled]);
+  }, [registerSettings, msg, intl, disabledPlugins, collaborationBlockedPlugin, teamworkManager, setPluginEnabled]);
 
   return <Toaster />;
 };

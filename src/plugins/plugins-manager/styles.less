@@ -6,3 +6,20 @@
 .more:hover {
   text-decoration: underline;
 }
+
+.collaborationNotice {
+  position: fixed;
+  z-index: 9999;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(360px, 90vw);
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--theme-color-300, #fff);
+  color: var(--theme-text-primary, #363636);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+}
