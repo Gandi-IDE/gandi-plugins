@@ -345,7 +345,7 @@
   "plugins.debuggerAddon.performance.section.execute": "Ejecutar",
   "plugins.debuggerAddon.performance.section.block": "Bloque",
   "plugins.debuggerAddon.performance.status.profiling": "Perfilando",
-  "plugins.debuggerAddon.performance.status.empty": "Inicie la evaluación",
+  "plugins.debuggerAddon.performance.status.empty": "No evaluado",
   "plugins.debuggerAddon.threads": "Hilos",
   "plugins.debuggerAddon.threads.title": "Lista de hilos",
   "plugins.debuggerAddon.threads.empty": "No hay hilos en ejecución",
@@ -357,5 +357,7 @@
   "plugins.debuggerAddon.terminalLoadMode.d": "Elija cómo se carga la extensión Gandi Console.",
   "plugins.debuggerAddon.terminalLoadMode.auto": "Cargar automáticamente con el proyecto",
   "plugins.debuggerAddon.terminalLoadMode.onClick": "Cargar al hacer clic en el icono",
-  "plugins.debuggerAddon.terminalLoadMode.manual": "No cargar automáticamente"
+  "plugins.debuggerAddon.terminalLoadMode.manual": "No cargar automáticamente",
+  "plugins.debuggerAddon.defaultPage": "Panel predeterminado",
+  "plugins.debuggerAddon.defaultPage.d": "El panel que se muestra por defecto al abrir el depurador"
 }

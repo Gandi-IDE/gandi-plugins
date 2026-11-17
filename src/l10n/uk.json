@@ -343,7 +343,7 @@
   "plugins.debuggerAddon.performance.section.execute": "Виконати",
   "plugins.debuggerAddon.performance.section.block": "Блок",
   "plugins.debuggerAddon.performance.status.profiling": "Профілювання",
-  "plugins.debuggerAddon.performance.status.empty": "Почніть оцінку",
+  "plugins.debuggerAddon.performance.status.empty": "Не оцінено",
   "plugins.debuggerAddon.threads": "Потоки",
   "plugins.debuggerAddon.threads.title": "Список потоків",
   "plugins.debuggerAddon.threads.empty": "Немає виконуваних потоків",
@@ -355,5 +355,7 @@
   "plugins.debuggerAddon.terminalLoadMode.d": "Виберіть спосіб завантаження розширення Gandi Console.",
   "plugins.debuggerAddon.terminalLoadMode.auto": "Завантажувати автоматично з проєктом",
   "plugins.debuggerAddon.terminalLoadMode.onClick": "Завантажувати по кліку на іконку",
-  "plugins.debuggerAddon.terminalLoadMode.manual": "Не завантажувати автоматично"
+  "plugins.debuggerAddon.terminalLoadMode.manual": "Не завантажувати автоматично",
+  "plugins.debuggerAddon.defaultPage": "Панель за замовчуванням",
+  "plugins.debuggerAddon.defaultPage.d": "Панель, що відображається за замовчуванням під час відкриття налагоджувача"
 }

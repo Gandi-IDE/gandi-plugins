@@ -348,7 +348,7 @@
   "plugins.debuggerAddon.performance.section.execute": "Laksana",
   "plugins.debuggerAddon.performance.section.block": "Blok",
   "plugins.debuggerAddon.performance.status.profiling": "Sedang memprofil",
-  "plugins.debuggerAddon.performance.status.empty": "Mulakan penilaian",
+  "plugins.debuggerAddon.performance.status.empty": "Belum dinilai",
   "plugins.debuggerAddon.threads": "Benang",
   "plugins.debuggerAddon.threads.title": "Senarai Benang",
   "plugins.debuggerAddon.threads.empty": "Tiada benang yang sedang berjalan",
@@ -360,5 +360,7 @@
   "plugins.debuggerAddon.terminalLoadMode.d": "Pilih cara sambungan Gandi Console dimuatkan.",
   "plugins.debuggerAddon.terminalLoadMode.auto": "Muat secara automatik dengan projek",
   "plugins.debuggerAddon.terminalLoadMode.onClick": "Muat apabila ikon diklik",
-  "plugins.debuggerAddon.terminalLoadMode.manual": "Jangan muat secara automatik"
+  "plugins.debuggerAddon.terminalLoadMode.manual": "Jangan muat secara automatik",
+  "plugins.debuggerAddon.defaultPage": "Panel lalai",
+  "plugins.debuggerAddon.defaultPage.d": "Panel yang dipaparkan secara lalai apabila penyahpepijat dibuka"
 }

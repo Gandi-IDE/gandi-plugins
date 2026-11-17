@@ -82,6 +82,7 @@ export const PerformanceWindow: React.FC<{ context: WindowContext }> = ({ contex
   React.useEffect(() => {
     const { runtime } = vm;
     const { getOpcodeFunction } = runtime;
+    // @ts-ignore
     runtime.getOpcodeFunction = function (this: Scratch.Runtime, opcode: string) {
       const func = getOpcodeFunction.call(this, opcode);
       if (func) {
