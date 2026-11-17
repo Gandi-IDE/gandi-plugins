@@ -37,6 +37,7 @@ export type WindowContext = PluginContext & {
     setPerformance_records: React.Dispatch<React.SetStateAction<Record>>;
   };
   terminalLoadMode: string;
+  defaultPage: number;
 };
 export type ConsoleLine = {
   msg: string;
@@ -58,8 +59,8 @@ function isSameLine(line1: ConsoleLine, line2: ConsoleLine) {
   return true;
 }
 
-const NavWindow: React.FC<{ items: [React.ReactNode, React.ReactNode][] }> = ({ items }) => {
-  const [pageId, setPageId] = React.useState(0);
+const NavWindow: React.FC<{ items: [React.ReactNode, React.ReactNode][], initialPageId?: number; }> = ({ items,  initialPageId = 0 }) => {
+  const [pageId, setPageId] = React.useState(initialPageId);
   return (
     <>
       <nav className={style.topNav}>
@@ -87,7 +88,7 @@ const MainWindow: React.FC<{
   onClose(): void;
   context: WindowContext;
 }> = ({ context, onClose }) => {
-  const { msg, vm, terminalLoadMode } = context;
+  const { msg, vm, terminalLoadMode, defaultPage } = context;
   const [containerInfo, setContainerInfo] = React.useState({ width: 480, height: 320, translateX: 80, translateY: 80 });
   if (terminalLoadMode === 'onClick') vm.extensionManager.loadExternalExtensionById('GandiTerminal');
 
@@ -123,7 +124,7 @@ const MainWindow: React.FC<{
       stayOnTop
       className={style.overflowHidden}
     >
-      <NavWindow items={pages} />
+      <NavWindow items={pages} initialPageId={defaultPage} />
     </ExpansionBox>
   );
 };
@@ -156,7 +157,9 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
     },
   });
   const [transparentBg, setTransparentBg] = React.useState(true);
-  const [terminalLoadMode, setTerminalLoadMode] = React.useState("auto");
+  const [terminalLoadMode, setTerminalLoadMode] = React.useState("onClick");
+  const [defaultPage, setDefaultPage] = React.useState(0);
+
   const statsDataRef = React.useRef<{
     fps: number[];
     clones: number[];
@@ -313,7 +316,24 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 { label: msg("plugins.debuggerAddon.terminalLoadMode.onClick"), value: "onClick" },
                 { label: msg("plugins.debuggerAddon.terminalLoadMode.manual"), value: "manual" },
               ],
-              onChange: v => setTerminalLoadMode(v as string),
+              onChange: v => {
+                if (v === "auto") vm.extensionManager.loadExternalExtensionById('GandiTerminal');
+                setTerminalLoadMode(v as string);
+              },
+            },
+            {
+              type: "select",
+              value: defaultPage,
+              key: "defaultPage",
+              label: msg("plugins.debuggerAddon.defaultPage"),
+              description: msg("plugins.debuggerAddon.defaultPage.d"),
+              options: [
+                { label: msg("plugins.debuggerAddon.console"), value: 0 },
+                { label: msg("plugins.debuggerAddon.stats"), value: 1 },
+                { label: msg("plugins.debuggerAddon.threads"), value: 2 },
+                { label: msg("plugins.debuggerAddon.performance"), value: 3 },
+              ],
+              onChange: v => setDefaultPage(Number(v)),
             },
             {
               type: "switch",
@@ -374,7 +394,6 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
       ],
       <DebuggerIcon />,
     );
-    terminalLoadMode === "auto" && vm.extensionManager.loadExternalExtensionById('GandiTerminal');
     return () => {
       dispose();
       setLogs([]);
@@ -413,6 +432,7 @@ const DebuggerAddon: React.FC<PluginContext> = (context) => {
                 setPerformance_records,
               },
               terminalLoadMode,
+              defaultPage,
             }}
             onClose={() => setVisible(false)}
           />,
